@@ -310,7 +310,12 @@ def between(t, *ranges):
     return any(a <= t < b for a, b in ranges)
 
 
-def music():
+MARKS = dict(start=4.0, build=10.0, roll=16.0, cut=17.0, back=17.5, restart=18.0, hats2=20.0, drop=24.0,
+             climax=31.0, end=37.0)
+
+
+def music(m=MARKS):
+    """Arrangement paramétré par des repères (s) : intro, montée, coupure, drop, climax, fin."""
     drums, bass, harm, perc = buf(), buf(), buf(), buf()
     nsteps = int(DUR / STEP)
     K = kick()
@@ -321,38 +326,38 @@ def music():
         ts = t + swing
         root, notes = chord_at(t)
         # kick 4/4
-        if st % 4 == 0 and between(t, (4.0, 17.0), (18.0, 37.0)):
-            add(drums, K, t, 0.95 if t >= 24 else 0.8)
+        if st % 4 == 0 and between(t, (m['start'], m['cut']), (m['restart'], m['end'])):
+            add(drums, K, t, 0.95 if t >= m['drop'] else 0.8)
         # clap sur 2 et 4
-        if st in (4, 12) and between(t, (4.0, 16.0), (18.0, 37.0)):
+        if st in (4, 12) and between(t, (m['start'], m['roll']), (m['restart'], m['end'])):
             add(drums, clap(), t, 0.7, 0.05)
         # shaker en double-croches swinguées
-        if between(t, (4.0, 17.0), (18.0, 37.0)):
+        if between(t, (m['start'], m['cut']), (m['restart'], m['end'])):
             acc = 1.0 if st % 4 == 2 else 0.55
             add(perc, shaker(acc), ts, 0.9, 0.35)
         # charleston ouverte sur les contretemps
-        if st % 4 == 2 and between(t, (10.0, 16.0), (20.0, 37.0)):
+        if st % 4 == 2 and between(t, (m['build'], m['roll']), (m['hats2'], m['end'])):
             add(perc, open_hat(), t, 0.8, -0.3)
         # congas / rim
-        if between(t, (10.0, 17.0), (24.0, 37.0)):
+        if between(t, (m['build'], m['cut']), (m['drop'], m['end'])):
             if st in (3, 7, 10, 13, 15):
                 add(perc, conga(330 if st in (3, 10) else 220), ts, 0.7, -0.45 if st % 2 else 0.45)
             if st in (6, 14):
                 add(perc, rim(), ts, 0.7, 0.4)
         # log drum (motif syncopé typique)
-        ld_pat = {0: 0, 3: 0, 6: 12, 8: 0, 11: 7, 14: 10} if t < 24 else {0: 0, 3: 0, 5: 12, 7: 0, 10: 7, 11: 12, 14: 10}
-        if st in ld_pat and between(t, (4.0, 16.0), (18.0, 37.0)):
-            f = midi(root + 12 + ld_pat[st]) if t < 24 else midi(root + ld_pat[st])
-            add(bass, log_drum(f, 0.42 if t >= 24 else 0.32, 2.8 if t >= 24 else 2.0), ts,
-                0.55 if t < 24 else 0.75)
+        ld_pat = {0: 0, 3: 0, 6: 12, 8: 0, 11: 7, 14: 10} if t < m['drop'] else {0: 0, 3: 0, 5: 12, 7: 0, 10: 7, 11: 12, 14: 10}
+        if st in ld_pat and between(t, (m['start'], m['roll']), (m['restart'], m['end'])):
+            f = midi(root + 12 + ld_pat[st]) if t < m['drop'] else midi(root + ld_pat[st])
+            add(bass, log_drum(f, 0.42 if t >= m['drop'] else 0.32, 2.8 if t >= m['drop'] else 2.0), ts,
+                0.55 if t < m['drop'] else 0.75)
         # accords piano électrique
-        if st in (0, 3, 7, 10, 14) and between(t, (4.0, 17.0), (18.0, 37.0)):
-            add(harm, keys(notes, 0.28 if st else 0.5), ts, 0.9 if t < 24 else 1.1, 0.15 if st % 2 else -0.15)
+        if st in (0, 3, 7, 10, 14) and between(t, (m['start'], m['cut']), (m['restart'], m['end'])):
+            add(harm, keys(notes, 0.28 if st else 0.5), ts, 0.9 if t < m['drop'] else 1.1, 0.15 if st % 2 else -0.15)
         # sous-basse sur la montée afro-house
-        if st in (0, 8) and between(t, (24.0, 37.0)):
+        if st in (0, 8) and between(t, (m['drop'], m['end'])):
             add(bass, sub(midi(root - 12), BEAT * 2 - 0.02), t, 0.5)
         # lead « pluck » pentatonique pour le climax
-        if between(t, (31.0, 37.0)):
+        if between(t, (m['climax'], m['end'])):
             mel = {0: 81, 3: 84, 6: 88, 8: 86, 10: 84, 12: 81, 14: 79}
             if st in mel:
                 add(harm, pluck(mel[st] + (0 if (s // 16) % 2 == 0 else -2)), ts, 1.0, 0.25)
@@ -360,38 +365,38 @@ def music():
     for b in range(int(DUR / (BEAT * 4))):
         t = b * BEAT * 4
         root, notes = chord_at(t)
-        if between(t, (24.0, 37.0)):
+        if between(t, (m['drop'], m['end'])):
             add(harm, pad(notes, BEAT * 4 + 0.3, 2200, 0.2), t, 1.0)
-        elif between(t, (10.0, 16.0), (18.0, 24.0)):
+        elif between(t, (m['build'], m['roll']), (m['restart'], m['drop'])):
             add(harm, pad(notes, BEAT * 4 + 0.3, 1200, 0.3), t, 0.6)
     # drone d'intro (montée en ouverture de filtre)
     d = pad([45, 57, 64, 67], 4.2, 600, 2.5)
     add(harm, d, 0.0, 1.3)
-    # roulement de claps 16 → 17 s
+    # roulement de claps avant la coupure
     for k in range(4):
-        add(drums, clap(1.0), 16.0 + k * BEAT / 2, 0.45 + 0.08 * k)
+        add(drums, clap(1.0), m['roll'] + k * BEAT / 2, 0.45 + 0.08 * k)
     for k in range(4):
-        add(drums, clap(1.15), 16.5 + k * STEP, 0.55 + 0.08 * k)
-    for t in (4.0, 18.0, 24.0, 31.0):
-        add(perc, crash(), t, 1.0 if t > 4 else 0.6)
+        add(drums, clap(1.15), m['roll'] + 0.5 + k * STEP, 0.55 + 0.08 * k)
+    for t in (m['start'], m['restart'], m['drop'], m['climax']):
+        add(perc, crash(), t, 1.0 if t > m['start'] else 0.6)
     mix = drums * 1.0 + bass * 1.0 + harm * 1.0 + perc * 0.8
     mix += reverb(drums * 0.25 + harm * 0.6 + perc * 0.2, wet=0.35)
     # montée en filtre de la section 10–17 (ouverture progressive)
-    # coupure nette 17.0 → 17.5 et arrêt en 37.0
+    # coupure nette (cut → back) et arrêt en fin
     g = np.ones(N, np.float32)
     tt = np.arange(N) / SR
-    g[(tt >= 17.0) & (tt < 17.5)] = 0
-    g[tt >= 37.02] = 0
+    g[(tt >= m['cut']) & (tt < m['back'])] = 0
+    g[tt >= m['end'] + 0.02] = 0
     ramp = int(0.004 * SR)
-    for edge in (17.0, 37.02):
+    for edge in (m['cut'], m['end'] + 0.02):
         i = int(edge * SR)
         g[i - ramp:i] = np.linspace(1, 0, ramp)
-    i = int(17.5 * SR)
+    i = int(m['back'] * SR)
     g[i:i + ramp] = np.linspace(0, 1, ramp)
     mix *= g[:, None]
     # accord final tenu (signature)
     fin = pad([45, 57, 60, 64, 71, 76], 2.6, 3000, 0.05)
-    add(mix, fin, 37.95, 1.3)
+    add(mix, fin, m['end'] + 0.95, 1.3)
     return mix
 
 

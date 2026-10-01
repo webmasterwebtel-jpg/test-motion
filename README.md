@@ -1,10 +1,10 @@
-# Crochet Pop Collage — motion design TikTok 40 s
+# Crochet Pop Collage — motion design TikTok 60 s
 
-Vidéo **TikTok 9:16 (1080×1920), 30 i/s, 40 s**, générée entièrement par code à partir des 24 visuels
+Vidéo **TikTok 9:16 (1080×1920), 30 i/s, 60 s**, générée entièrement par code à partir des 24 visuels
 sur fond blanc (`assets/articles/`). **Sans voix off ni texte** : animation, bruitages et musique de fond discrète.
 
-- **Vidéo** : `output/crochet_tiktok_40s.mp4` (H.264 + AAC, ≈ −15 LUFS)
-- Aperçu allégé : `output/crochet_tiktok_40s_apercu.mp4`
+- **Vidéo** : `output/crochet_tiktok_60s.mp4` (H.264 + AAC, ≈ −15 LUFS)
+- Aperçu allégé : `output/crochet_tiktok_60s_apercu.mp4`
 
 ## Direction artistique
 
@@ -13,17 +13,18 @@ formes pop, grain papier), timing « stop-motion » tactile, compositions modula
 carrousel 3D. Le cadrage respecte les zones sûres TikTok (rien d'important sous la légende ni derrière
 la colonne de boutons).
 
-Tout est calé sur **120 BPM** : 1 temps = 0,5 s = 15 images.
+Tout est calé sur **120 BPM** (1 temps = 0,5 s). Rythme posé : **chaque tenue reste environ 2 s à l'écran**
+(une mesure) — l'animation d'entrée est rapide, puis le look est présenté entier et bien lisible.
 
 | Temps | Séquence | Image | Son |
 |---|---|---|---|
-| 0–4 s | Pelote → carrés → look | Une pelote roule en déroulant son fil ; deux carrés granny sont tamponnés sur les battements ; au 3ᵉ impact ils explosent en quartiers et révèlent le premier look en sticker | Roulement, battements, claques papier, impact |
-| 4–10 s | Pile de stickers | 6 looks plaqués un par un (chute, vrille, glissé, retournement), formes pop et ruban adhésif ; plongée caméra dans le dernier | Whooshes, claques de papier, ruban arraché |
-| 10–17 s | Zoom infini | La caméra plonge dans les mailles ; un iris bordé de fil ouvre sur le look suivant, couleur de fond à chaque fois ; accélération au double-temps | « Bloups » d'iris, whooshes, montée |
-| 17–24 s | Mosaïque | 0,5 s de silence, avatar seul ; BOOM : l'écran se découpe en 60 carreaux qui se retournent en vagues (radiale, diagonale, rangées, aléatoire, spirale), un look par temps ; puis échos colorés façon impression riso et fils en orbite | Impact, nuées de clics, snaps |
-| 24–31 s | Grille bento | Cases qui se réorganisent (1+3, 3 colonnes, 2×2 femme & homme, 2×3), contenu qui glisse, fusion en plein cadre | Déclics, glissements |
-| 31–37 s | Carrousel 3D | Cover-flow : une tenue de face par temps, franges qui ondulent | Swish + clic à chaque cran |
-| 37–40 s | Final | Tout est aspiré dans une pelote qui se déroule en fleur au crochet, entourée de mini carrés granny en orbite | Aspiration, BOOM final, scintillements |
+| 0–4 s | Pelote → carrés → look | Une pelote roule en déroulant son fil ; deux carrés granny tamponnés sur les battements ; au 3ᵉ impact ils explosent et révèlent le premier look en sticker | Roulement, battements, claques papier, impact |
+| 4–16 s | Pile de stickers | 6 looks plaqués un toutes les 2 s (chute, vrille, glissé, retournement), formes pop, ruban adhésif ; plongée caméra dans le dernier | Whooshes, claques de papier, ruban arraché |
+| 16–28 s | Pose + zoom infini | Chaque look est posé ~1,4 s (léger flottement), puis la caméra plonge dans les mailles et un iris bordé de fil ouvre sur le suivant | « Bloups » d'iris, whooshes, montée |
+| 28–35 s | Mosaïque | 0,5 s de silence, look seul ; BOOM : 60 carreaux ; ils se retournent en vague vers le look suivant, puis échos colorés façon riso et fils en orbite | Impact, nuées de clics |
+| 35–39 s | Grille bento | 2×2 ensembles femme & homme, puis 2×3, fusion en plein cadre | Déclics, glissements |
+| 39–55 s | Carrousel 3D | Cover-flow : une tenue de face toutes les 2 s, franges qui ondulent | Swish + clic à chaque cran |
+| 55–60 s | Final | Tout est aspiré dans une pelote qui se déroule en fleur au crochet, mini carrés granny en orbite | Aspiration, BOOM final, scintillements |
 
 ## Régénérer
 

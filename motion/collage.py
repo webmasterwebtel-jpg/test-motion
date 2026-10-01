@@ -1,4 +1,4 @@
-"""« Crochet Pop Collage » — motion design 40 s, format TikTok 9:16 (1080x1920, 30 i/s).
+"""« Crochet Pop Collage » — motion design 60 s, format TikTok 9:16 (1080x1920, 30 i/s).
 
 Sans voix ni texte : uniquement de l'animation, des bruitages et une musique de fond.
 Direction : collage mixed-media (stickers découpés, ruban adhésif, grain papier), timing « stop-motion »
@@ -20,7 +20,7 @@ from render import (W, H, FPS, BEAT, BUILD, YARN, LOOK_COLOR, WHITE, clamp01, se
                     in_out_cubic, out_expo, in_expo, out_back, in_back, decay, mix, tint, place, draw_yarn,
                     draw_orbit, catmull, _arclen, ripple, sparkle, flash, vignette_pulse)
 
-DURATION = 40.0
+DURATION = 60.0
 BG = (250, 246, 240)                  # papier blanc chaud
 GAPC = (38, 34, 32)                   # fond sombre visible entre les carreaux de la mosaïque
 PAD = 40                              # marge autour des stickers (px source)
@@ -292,8 +292,9 @@ def sec_intro(c, t, fx):
 
 
 # ----------------------------------------------------------------------------- 4–10 s : pile de stickers
-PILE = [(2.5, 2, "none"), (4.0, 5, "drop"), (5.0, 12, "spin"), (6.0, 16, "slide"), (7.0, 1, "flip"),
-        (8.0, 9, "drop"), (9.0, 18, "spin")]
+# chaque look reste ~2 s (une mesure) au sommet de la pile pour qu'on ait le temps de bien le voir
+PILE = [(2.5, 2, "none"), (4.0, 5, "drop"), (6.0, 12, "spin"), (8.0, 16, "slide"), (10.0, 1, "flip"),
+        (12.0, 9, "drop"), (14.0, 18, "spin")]
 SHAPES = ["circle", "arch", "star", "half", "squircle", "star", "arch"]
 TAPE_COLORS = [(255, 196, 0), (0, 179, 164), (230, 25, 127), (47, 107, 255), (255, 122, 0), (142, 68, 236),
                (255, 196, 0)]
@@ -358,10 +359,10 @@ def draw_pile(c, t, fx, upto=None):
 
 def sec_pile(c, t, fx):
     draw_pile(c, t, fx)
-    # 9,5 → 10 : la caméra plonge dans le dernier sticker (point de détail)
-    if t >= 9.5:
+    # 15,5 → 16 : la caméra plonge dans le dernier sticker (point de détail)
+    if t >= 15.5:
         x, y, r = _pose(6)
-        e = in_expo(seg(t, 9.5, 10.0))
+        e = in_expo(seg(t, 15.5, 16.0))
         k = 1 + 3.2 * e
         dpx, dpy = x + (500 - 512) * CS, y + (760 - 768) * CS
         fx["cam_scale"] *= k
@@ -369,20 +370,17 @@ def sec_pile(c, t, fx):
         fx["cam_dy"] -= (dpy - H / 2) * (k - 1) * 1.0
         if e > 0.2:
             fx["mb"] = 3
-    if t >= 9.78:
-        fx["post"].append(lambda fr, tt=t: iris(fr, tt, 9.78, 10.0, ZOOM[0]))
+    if t >= 15.78:
+        fx["post"].append(lambda fr, tt=t: iris(fr, tt, 15.78, 16.0, ZOOM[0]))
 
 
 # ----------------------------------------------------------------------------- 10–17 s : zoom infini
 # (début, durée, image, point de détail en coords image)
 ZOOM = [
-    (10.0, 0.5, 13, (560, 1130)), (10.5, 0.5, 10, (500, 1140)), (11.0, 0.5, 15, (520, 800)),
-    (11.5, 0.5, 17, (500, 1190)), (12.0, 0.5, 23, (500, 760)), (12.5, 0.5, 20, (470, 1060)),
-    (13.0, 0.5, 22, (470, 880)), (13.5, 0.5, 12, (520, 1040)), (14.0, 0.5, 5, (520, 950)),
-    (14.5, 0.5, 16, (520, 920)), (15.0, 0.5, 24, (520, 640)), (15.5, 0.5, 1, (500, 720)),
-    (16.0, 0.25, 2, (560, 980)), (16.25, 0.25, 9, (500, 800)), (16.5, 0.25, 21, (720, 1000)),
-    (16.75, 0.25, 6, (300, 520)),
+    (16.0, 2.0, 13, (560, 1130)), (18.0, 2.0, 10, (500, 1140)), (20.0, 2.0, 15, (520, 800)),
+    (22.0, 2.0, 17, (500, 1190)), (24.0, 2.0, 23, (500, 760)), (26.0, 2.0, 20, (470, 1060)),
 ]
+ZOOM_IN = 0.6   # la plongée n'occupe que la fin du plan : le look est d'abord bien visible
 S0, S1 = 0.80, 3.4
 
 
@@ -399,9 +397,13 @@ def draw_shot(c, shot, p, small=1.0):
     bgfill(c, tint(LOOK_COLOR[i], 0.78))
     if p <= 0:
         # état de départ (éventuellement plus petit, dans l'iris)
+        shape(c, "circle", CX, CY + 20, 470 * small, 0, tint(LOOK_COLOR[i], 0.6))
         sticker(c, i, s=CS * small, rot=0)
         return
     s, x, y = zoom_state(shot, p)
+    r = 470 * s / S0
+    ox, oy = x + (512 - dx) * s, y + (768 + 25 - dy) * s
+    ImageDraw.Draw(c).ellipse([ox - r, oy - r, ox + r, oy + r], fill=tint(LOOK_COLOR[i], 0.6) + (255,))
     place(c, R._IMG[("st", i)], x, y, s, anchor=(dx + PAD, dy + PAD), key=("st", i))
 
 
@@ -426,17 +428,27 @@ def sec_zoom(c, t, fx):
     for k, shot in enumerate(ZOOM):
         st, du, i, d = shot
         if st <= t < st + du:
-            p = (t - st) / du
-            draw_shot(c, shot, p ** 1.15)
-            if p > 0.55:
-                fx["mb"] = 3
-            if k + 1 < len(ZOOM):
-                fx["post"].append(lambda fr, tt=t, a=st + du * 0.58, b=st + du, n=ZOOM[k + 1]: iris(fr, tt, a, b, n))
+            z0 = st + du - ZOOM_IN
+            if t < z0:
+                # pose : le look est présenté entier, avec un léger flottement
+                bgfill(c, tint(LOOK_COLOR[i], 0.78))
+                shape(c, "circle", CX, CY + 20, 470, 0, tint(LOOK_COLOR[i], 0.6))
+                fl = math.sin((t - st) * 2.2)
+                sticker(c, i, s=CS * (1 + 0.02 * seg(t, st, z0)), cy=CY + 8 * fl, rot=1.2 * fl)
+            else:
+                p = (t - z0) / ZOOM_IN
+                draw_shot(c, shot, p ** 1.15)
+                if p > 0.3:
+                    fx["mb"] = 3
+                if k + 1 < len(ZOOM):
+                    fx["post"].append(lambda fr, tt=t, a=z0 + ZOOM_IN * 0.58, b=st + du, n=ZOOM[k + 1]:
+                                      iris(fr, tt, a, b, n))
             fx["punch"] += 0.02 * decay(t, st, 12)
 
 
 # ----------------------------------------------------------------------------- 17–24 s : mosaïque de carreaux
-WOW = [(17.0, 23), (18.0, 18), (18.5, 22), (19.0, 17), (19.5, 15), (20.0, 24)]
+WOW = [(17.0, 22), (19.0, 24)]   # (temps internes ; la section est jouée à +11 s)
+WOW_SHIFT = 11.0
 COLS, ROWS = 6, 10
 TW, TH = W / COLS, H / ROWS
 
@@ -470,7 +482,7 @@ PATTERNS = ["radial", "diag", "rows", "random", "spiral"]
 def sec_wow(c, t, fx):
     if t < 17.5:
         bgfill(c, BG)
-        sticker(c, 23)
+        sticker(c, 22)
         return
     if t < 20.75:
         bgfill(c, GAPC)
@@ -566,8 +578,8 @@ L4 = [(0, 0, .5, .333), (.5, 0, 1, .333), (0, .333, .5, .667), (.5, .333, 1, .66
       (.5, .667, 1, 1)]
 FULL = ((0 - AX0) / (AX1 - AX0), (0 - AY0) / (AY1 - AY0), (W - AX0) / (AX1 - AX0), (H - AY0) / (AY1 - AY0))
 L5 = [FULL] + [((a + c_) / 2, (b + d) / 2, (a + c_) / 2, (b + d) / 2) for (a, b, c_, d) in L4[1:]]
-BENTO = [(24.0, L1, [9, 12, 15, 18, 9, 9]), (25.5, L2, [13, 16, 22, 22, 22, 22]),
-         (27.0, L3, [3, 4, 6, 7, 7, 7]), (28.5, L4, [8, 11, 14, 19, 5, 17]), (30.0, L5, [21, 11, 14, 19, 5, 17])]
+BENTO = [(35.0, L3, [3, 4, 6, 7, 7, 7]), (37.0, L4, [8, 11, 14, 19, 5, 17]), (38.6, L5, [21, 11, 14, 19, 5, 17])]
+LAST = len(BENTO) - 1
 COUPLES = {3, 4, 6, 7, 8, 11, 14, 19, 21}
 
 
@@ -605,12 +617,12 @@ def sec_bento(c, t, fx):
     prev_lay = BENTO[k - 1][1] if k > 0 else L0
     prev_cont = BENTO[k - 1][2] if k > 0 else cont
     for j in range(6):
-        p = out_expo(seg(t, tb + 0.045 * j, tb + 0.045 * j + 0.5)) if k < 4 else out_expo(seg(t, tb + 0.1, tb + 0.6))
-        if k == 4 and j > 0:
+        p = out_expo(seg(t, tb + 0.045 * j, tb + 0.045 * j + 0.5)) if k < LAST else out_expo(seg(t, tb + 0.1, tb + 0.6))
+        if k == LAST and j > 0:
             p = out_cubic(seg(t, tb, tb + 0.35))
         u = tuple(lerp(a, b, p) for a, b in zip(prev_lay[j], lay[j]))
         rect = _rect(u)
-        full = p if (k == 4 and j == 0) else 0.0
+        full = p if (k == LAST and j == 0) else 0.0
         if cont[j] != prev_cont[j] and k > 0:
             q = seg(t, tb + 0.03 * j, tb + 0.03 * j + 0.28)
             if q < 1:
@@ -621,10 +633,10 @@ def sec_bento(c, t, fx):
         if p < 0.7:
             fx["mb"] = 3
     # petit carré granny qui « épingle » la composition
-    if t < 29.9:
+    if t < BENTO[LAST][0] - 0.1:
         gp = out_back(seg(t, tb + 0.15, tb + 0.45), 2.2)
-        anchors = [(0.6, 0.34), (0.333, 0.5), (0.5, 0.5), (0.5, 0.333)]
-        if k < 4:
+        anchors = [(0.5, 0.5), (0.5, 0.333)]
+        if k < LAST:
             ax, ay = anchors[k]
             x, y = AX0 + ax * (AX1 - AX0), AY0 + ay * (AY1 - AY0)
             place(c, granny(150, k), x, y, gp * (1 - seg(t, BENTO[k + 1][0] - 0.12, BENTO[k + 1][0])),
@@ -633,7 +645,8 @@ def sec_bento(c, t, fx):
 
 
 # ----------------------------------------------------------------------------- 31–37 s : carrousel 3D
-CAR = [2, 12, 3, 5, 15, 7, 16, 24, 14, 13, 9, 6]
+CAR = [21, 14, 19, 11, 8, 2, 12, 24]
+C0, CSTEP, CEND = 39.0, 2.0, 55.0   # une tenue de face toutes les 2 s
 
 
 def swayed_img(im, t, amp):
@@ -656,14 +669,14 @@ def swayed_img(im, t, amp):
 
 
 def sec_carousel(c, t, fx):
-    k = max(0, math.floor((t - 31.0) / BEAT))
-    tb = 31.0 + k * BEAT
-    rot = (k - 1) + out_back(seg(t, tb, tb + 0.28), 1.6) if k > 0 else 0.0
+    k = max(0, math.floor((t - C0) / CSTEP))
+    tb = C0 + k * CSTEP
+    rot = (k - 1) + out_back(seg(t, tb, tb + 0.45), 1.4) if k > 0 else 0.0
     front = CAR[int(round(rot)) % len(CAR)]
     bgfill(c, tint(LOOK_COLOR[front], 0.8))
     pulse = decay(t, tb, 7)
     # collapse final 36,85 → 37,4
-    col = in_cubic(seg(t, 36.85, 37.35))
+    col = in_cubic(seg(t, CEND - 0.15, CEND + 0.35))
     spin = 2.5 * col
     shape(c, "circle", CX, CY + 40, 500 * (1 + 0.06 * pulse) * (1 - col), 0, tint(LOOK_COLOR[front], 0.5))
     ths = np.linspace(0, 2 * math.pi * 1.02, 200) + t * 1.2
@@ -679,7 +692,7 @@ def sec_carousel(c, t, fx):
         ad, sg = abs(d), (1 if d >= 0 else -1)
         m = min(ad, 1.0)
         x = CX + sg * (m * 300 + max(ad - 1, 0) * 105)
-        sc = (lerp(0.84, 0.46, m) - 0.05 * max(ad - 1, 0)) * (1 - 0.85 * col)
+        sc = (lerp(0.88, 0.46, m) - 0.05 * max(ad - 1, 0)) * (1 - 0.85 * col)
         ry = -sg * 62 * m
         y = CY + 20 * m
         x = lerp(x, CX, col)
@@ -694,7 +707,7 @@ def sec_carousel(c, t, fx):
             place(c, im, x, y, sc * (1 + 0.05 * pulse), ry=6 * math.sin((t - tb) * 6), alpha=fade)
         elif fade > 0:
             place(c, R._IMG[("st", i)], x, y, sc, ry=ry, wash=wash, key=("st", i), rot=rr, alpha=fade)
-    if seg(t, tb, tb + 0.28) < 0.6 or col > 0:
+    if (k > 0 and seg(t, tb, tb + 0.45) < 0.6) or col > 0:
         fx["mb"] = 3
     fx["punch"] += 0.04 * pulse * (1 - col)
 
@@ -713,11 +726,19 @@ def _petal(k, n=8, R_=230):
     return np.stack([x, y], 1)
 
 
-def sec_finale(c, t, fx):
-    if t < 37.35:
+FIN_SHIFT = 18.0
+
+
+def sec_finale_shifted(c, t, fx):
+    if t < CEND + 0.35:
         sec_carousel(c, t, fx)
     else:
         bgfill(c, BG)
+    sec_finale(c, t - FIN_SHIFT, fx)
+
+
+def sec_finale(c, t, fx):
+    """Pelote -> fleur (temps internes 37 → 42)."""
     # pelote
     if 37.0 <= t < 38.15:
         g = out_back(seg(t, 37.0, 37.4), 1.8)
@@ -773,8 +794,12 @@ def sec_finale(c, t, fx):
 
 
 # ----------------------------------------------------------------------------- composition
-SECTIONS = [(0.0, 4.0, sec_intro), (4.0, 10.0, sec_pile), (10.0, 17.0, sec_zoom), (17.0, 24.0, sec_wow),
-            (24.0, 31.0, sec_bento), (31.0, 37.0, sec_carousel), (37.0, 40.01, sec_finale)]
+def sec_wow_shifted(c, t, fx):
+    sec_wow(c, t - WOW_SHIFT, fx)
+
+
+SECTIONS = [(0.0, 4.0, sec_intro), (4.0, 16.0, sec_pile), (16.0, 28.0, sec_zoom), (28.0, 35.0, sec_wow_shifted),
+            (35.0, 39.0, sec_bento), (39.0, CEND, sec_carousel), (CEND, DURATION + 0.01, sec_finale_shifted)]
 _GRAIN = None
 
 
@@ -845,7 +870,11 @@ def main():
     else:
         segs = [(k * 5.0, k * 5.0 + 5.0) for k in range(int(DURATION // 5))]
         final = os.path.join(BUILD, "collage_silent.mp4")
-    seg_dir = os.path.join(BUILD, "collage_segments"); os.makedirs(seg_dir, exist_ok=True)
+    # le cache de segments dépend du code : une modification invalide automatiquement les anciens segments
+    import hashlib
+    here = os.path.dirname(os.path.abspath(__file__))
+    sig = hashlib.md5(b"".join(open(os.path.join(here, f), "rb").read() for f in ("collage.py", "render.py")))
+    seg_dir = os.path.join(BUILD, "collage_segments", sig.hexdigest()[:10]); os.makedirs(seg_dir, exist_ok=True)
     paths = []
     with Pool(os.cpu_count(), initializer=load) as pool:
         for a, b in segs:
