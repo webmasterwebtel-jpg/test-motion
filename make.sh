@@ -1,9 +1,14 @@
 #!/usr/bin/env bash
 # Génère la vidéo complète : détourage -> bande-son -> rendu image -> mux final.
-# Dépendances : python3 (pillow numpy scipy fonttools), ffmpeg, sox, pico2wave (libttspico-utils).
+# Dépendances : python3 (pillow numpy scipy kokoro-onnx), ffmpeg, sox.
 set -euo pipefail
 cd "$(dirname "$0")"
 python3 motion/prep.py
+# modèle de voix Kokoro (≈ 350 Mo, téléchargé une seule fois)
+K=build/kokoro; mkdir -p $K
+for f in kokoro-v1.0.onnx voices-v1.0.bin; do
+  [ -s $K/$f ] || curl -sSL -o $K/$f https://github.com/thewh1teagle/kokoro-onnx/releases/download/model-files-v1.0/$f
+done
 python3 motion/audio.py
 python3 motion/render.py
 mkdir -p output

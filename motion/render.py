@@ -12,9 +12,7 @@ from PIL import Image, ImageDraw, ImageFilter, ImageFont, ImageChops
 from scipy import ndimage
 
 # ----------------------------------------------------------------------------- réglages
-BRAND_NAME = "Maison Crochet"          # <- nom / logo de la marque (écran final)
 BRAND_TAGLINE = "LE CROCHET. AUTREMENT."
-HANDLES = "@Instagram  •  WhatsApp  •  Site"
 
 W, H, FPS, DURATION = 1080, 1920, 30, 40.0
 BPM = 120
@@ -762,9 +760,9 @@ def sec_wow(c, t, fx):
             draw_yarn(c, pts, 9, [YARN[k % 7], YARN[(k + 2) % 7]], tot * out_cubic(seg(p, 0.15, 1)) * 0.9 + 120,
                       tot * out_expo(p) + 160, 120, shadow=False)
     # « LOOK 0n »
-    if 18.0 <= t < 20.6:
+    if 18.0 <= t < 20.45:
         n = sum(1 for b, _ in S4_LOOKS[1:] if t >= b)
-        a_out = seg(t, 20.45, 20.6)
+        a_out = seg(t, 20.3, 20.45)
         sz = text_img("LOOK", "Anton.ttf", 170, INK, 6).size
         x_look = W / 2 - 80
         text_mask_reveal(c, "LOOK", "Anton.ttf", 170, INK, x_look, 200, seg(t, 18.0, 18.25) * (1 - a_out),
@@ -785,7 +783,7 @@ def sec_wow(c, t, fx):
                 if p < 1:
                     place(c, text_img(num, "Playfair-BlackItalic.ttf", 150, LOOK_COLOR[S4_LOOKS[j][1]]),
                           nx, bb - out_expo(p) * 150, 1, clip=(0, 110, W, 290))
-    pill(c, "UNE SEULE RÈGLE :", W / 2, 200, t, 20.6, 21.45, size=80)
+    pill(c, "UNE SEULE RÈGLE :", W / 2, 200, t, 20.45, 21.45, size=80)
     # pas de musique 17.0–17.5 : image figée, puis BOOM
     fx["punch"] += 0.07 * decay(t, 17.5, 7) + sum(0.03 * decay(t, b, 11) for b, _ in S4_LOOKS[1:])
     fx["punch"] += sum(0.03 * decay(t, ts, 10) for _, ts in S4_STACK)
@@ -1056,17 +1054,16 @@ def sec_signature(c, t, fx):
         ths = np.linspace(0, 2 * math.pi * 1.04, 120) + rot
         ring = np.stack([LOGO_C[0] + 36 * np.cos(ths), LOGO_C[1] + 36 * np.sin(ths)], 1)
         draw_yarn(c, ring, 12, [(255, 196, 0)], 0, _arclen(ring)[-1] * out_cubic(seg(p, 0, 0.6)), 999)
-        # nom de marque
+        # appel à l'action (sans nom de marque ni réseaux)
         q = seg(t, 38.12, 38.5)
-        text(c, BRAND_NAME, "Playfair-BlackItalic.ttf", 128, INK, W / 2, 1070, scale=lerp(1.25, 1.0, out_expo(q)),
+        text(c, "DÉCOUVREZ", "Anton.ttf", 170, INK, W / 2, 1090, tracking=8, scale=lerp(1.3, 1.0, out_expo(q)),
              alpha=clamp01(q * 3))
-        lw = 380 * out_expo(seg(t, 38.3, 38.7))
+        text_letters(c, "la collection.", "Playfair-BlackItalic.ttf", 120, LOOK_COLOR[2], W / 2, 1240, t, 38.4,
+                     stagger=0.03, dur=0.3)
+        lw = 300 * out_expo(seg(t, 38.75, 39.15))
         if lw > 1:
             d = ImageDraw.Draw(c)
-            d.rectangle([W / 2 - lw, 1168, W / 2 + lw, 1172], fill=LOOK_COLOR[2] + (255,))
-        text_mask_reveal(c, "DÉCOUVREZ LA COLLECTION", "Montserrat-Black.ttf", 50, INK, W / 2, 1250,
-                         seg(t, 38.45, 38.8), tracking=8)
-        handles(c, W / 2, 1352, seg(t, 38.75, 39.1))
+            d.rectangle([W / 2 - lw, 1338, W / 2 + lw, 1342], fill=INK + (255,))
         tag = seg(t, 38.9, 39.3)
         text(c, BRAND_TAGLINE, "Montserrat-Bold.ttf", 30, (120, 120, 120), W / 2, 1735, tracking=12,
              alpha=out_cubic(tag))
@@ -1087,44 +1084,6 @@ def sec_signature(c, t, fx):
     ripple(c, t, 38.1, LOGO_C[0], LOGO_C[1], YARN[2], 1000, 1.0, 4, 0.45)
     fx["flash"] = (WHITE, 0.7 * decay(t, 38.0, 14))
     fx["cam_scale"] = 1 + 0.03 * seg(t, 38.0, 40.0)
-
-
-def handles(c, cx, cy, p):
-    if p <= 0:
-        return
-    f = "Montserrat-Bold.ttf"
-    parts = [("ig", "@Instagram"), ("wa", "WhatsApp"), ("web", "Site")]
-    size = 36
-    icon = 40
-    gap_i, gap_p = 14, 50
-    widths = [icon + gap_i + text_img(s, f, size, INK).width for _, s in parts]
-    total = sum(widths) + gap_p * (len(parts) - 1)
-    x = cx - total / 2
-    a = out_cubic(p)
-    lay = Image.new("RGBA", (W, 120), (0, 0, 0, 0))
-    d = ImageDraw.Draw(lay)
-    yc = 60
-    for (kind, s), wd in zip(parts, widths):
-        ix, iy = x, yc - icon / 2
-        col = INK + (255,)
-        if kind == "ig":
-            d.rounded_rectangle([ix, iy, ix + icon, iy + icon], radius=11, outline=col, width=4)
-            d.ellipse([ix + 11, iy + 11, ix + icon - 11, iy + icon - 11], outline=col, width=4)
-            d.ellipse([ix + icon - 12, iy + 6, ix + icon - 6, iy + 12], fill=col)
-        elif kind == "wa":
-            d.ellipse([ix + 2, iy + 2, ix + icon - 2, iy + icon - 2], outline=col, width=4)
-            d.polygon([(ix + 2, iy + icon), (ix + 8, iy + icon - 15), (ix + 17, iy + icon - 7)], fill=col)
-            d.arc([ix + 12, iy + 11, ix + icon - 12, iy + icon - 11], 100, 250, fill=col, width=4)
-        else:
-            d.ellipse([ix + 2, iy + 2, ix + icon - 2, iy + icon - 2], outline=col, width=4)
-            d.ellipse([ix + 12, iy + 2, ix + icon - 12, iy + icon - 2], outline=col, width=3)
-            d.line([ix + 2, iy + icon / 2, ix + icon - 2, iy + icon / 2], fill=col, width=3)
-        ti = text_img(s, f, size, INK)
-        lay.alpha_composite(ti, (int(ix + icon + gap_i), int(yc - ti.height / 2)))
-        x += wd + gap_p
-        if kind != "web":
-            d.ellipse([x - gap_p / 2 - 4, yc - 4, x - gap_p / 2 + 4, yc + 4], fill=LOOK_COLOR[2] + (255,))
-    place(c, lay, W / 2, cy + (1 - a) * 40, 1.0, alpha=a)
 
 
 # ----------------------------------------------------------------------------- composition d'une image

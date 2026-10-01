@@ -1,6 +1,6 @@
 """Bande-son complète : musique Afro-house / Amapiano synthétisée (120 BPM), SFX et voix off.
 
-Tout est généré hors-ligne (numpy/scipy + SVOX Pico pour la voix) et calé sur la même
+Tout est généré hors-ligne (numpy/scipy + Kokoro pour la voix) et calé sur la même
 grille que l'image : 1 temps = 0,5 s, 1 double-croche = 0,125 s.
 Sortie : build/audio/mix.wav (+ stems music/sfx/voice).
 """
@@ -467,59 +467,76 @@ def sfx():
     return b
 
 
-# ----------------------------------------------------------------------------- voix off (SVOX Pico, fr-FR)
-# (début s, texte, vitesse %, hauteur %)
+# ----------------------------------------------------------------------------- voix off (Kokoro, voix féminine fr « ff_siwis »)
+# (début s, texte, débit) — le débit est relevé automatiquement si une phrase déborde sur la suivante
 VO = [
-    (0.45, "Et si le crochet devenait…", 86, 93),
-    (2.62, "une véritable déclaration de style ?", 92, 93),
-    (4.85, "Des couleurs qui captent le regard.", 96, 97),
-    (6.85, "Des créations qui imposent leur présence.", 96, 97),
-    (10.02, "Chaque maille.", 100, 99),
-    (11.02, "Chaque couleur.", 100, 99),
-    (12.02, "Chaque détail…", 98, 99),
-    (13.1, "pensé pour se faire remarquer.", 98, 98),
-    (18.05, "Du plus doux…", 88, 95),
-    (19.0, "au plus audacieux.", 92, 98),
-    (20.6, "Une seule règle :", 92, 96),
-    (21.55, "ne jamais passer inaperçue.", 92, 97),
-    (24.55, "Une collection créée pour transformer chaque apparition…", 94, 95),
-    (28.0, "en moment.", 88, 94),
-    (31.02, "Crochet.", 96, 100),
-    (32.02, "Couleur.", 96, 100),
-    (33.02, "Créativité.", 96, 100),
-    (34.02, "Et surtout…", 92, 98),
-    (35.0, "du caractère.", 90, 97),
-    (37.25, "Portez l'originalité.", 94, 95),
-    (38.68, "Affirmez votre style.", 92, 94),
+    (0.45, "Et si le crochet devenait…", 0.88),
+    (2.62, "une véritable déclaration de style ?", 0.95),
+    (4.85, "Des couleurs qui captent le regard.", 1.0),
+    (6.85, "Des créations qui imposent leur présence.", 1.0),
+    (10.02, "Chaque maille.", 1.05),
+    (11.02, "Chaque couleur.", 1.05),
+    (12.02, "Chaque détail…", 1.0),
+    (13.1, "pensé pour se faire remarquer.", 1.0),
+    (18.05, "Du plus doux…", 0.9),
+    (19.0, "au plus audacieux.", 0.95),
+    (20.42, "Une seule règle :", 0.95),
+    (21.55, "ne jamais passer inaperçue.", 0.95),
+    (24.55, "Une collection créée pour transformer chaque apparition…", 0.95),
+    (28.0, "en moment.", 0.88),
+    (31.02, "Crochet.", 1.0),
+    (32.02, "Couleur.", 1.0),
+    (33.02, "Créativité.", 1.0),
+    (34.02, "Et surtout…", 0.95),
+    (35.0, "du caractère.", 0.92),
+    (37.25, "Portez l'originalité.", 0.95),
+    (38.68, "Affirmez votre style.", 0.95),
 ]
+KOKORO = os.path.join(ROOT, "build", "kokoro")
+VOICE = "ff_siwis"
+
+
+def _tts(tts, txt, speed, path):
+    x, sr = tts.create(txt, voice=VOICE, speed=speed, lang="fr-fr")
+    x = signal.resample_poly(np.asarray(x, np.float64), SR, sr)
+    # coupe les silences de début / fin
+    e = np.abs(x) > 0.01 * np.abs(x).max()
+    i0, i1 = np.argmax(e), len(e) - np.argmax(e[::-1])
+    x = x[max(i0 - int(0.01 * SR), 0):i1 + int(0.04 * SR)]
+    wavfile.write(path, SR, (np.clip(x / (np.abs(x).max() + 1e-9), -1, 1) * 22000).astype(np.int16))
+    return len(x) / SR
 
 
 def voice():
+    from kokoro_onnx import Kokoro
+    tts = Kokoro(os.path.join(KOKORO, "kokoro-v1.0.onnx"), os.path.join(KOKORO, "voices-v1.0.bin"))
     b = buf()
     vdir = os.path.join(OUT, "vo")
     os.makedirs(vdir, exist_ok=True)
     report = []
-    for k, (t0, txt, spd, pit) in enumerate(VO):
+    for k, (t0, txt, speed) in enumerate(VO):
         raw = os.path.join(vdir, "raw_%02d.wav" % k)
         pro = os.path.join(vdir, "vo_%02d.wav" % k)
-        ssml = "<speed level='%d'><pitch level='%d'>%s</pitch></speed>" % (spd, pit, txt)
-        subprocess.run(["pico2wave", "-l", "fr-FR", "-w", raw, ssml], check=True)
-        # nettoyage + timbre : coupe les silences, EQ douce, compression, normalisation
-        subprocess.run(["sox", raw, "-r", str(SR), pro,
-                        "silence", "1", "0.02", "0.4%", "reverse", "silence", "1", "0.02", "0.4%", "reverse",
-                        "highpass", "90", "equalizer", "220", "1q", "-2", "equalizer", "3200", "1.2q", "+3",
-                        "treble", "+2", "8000", "compand", "0.005,0.12", "-60,-60,-30,-14,-10,-6,0,-3", "-2",
+        limit = (VO[k + 1][0] - 0.08) if k + 1 < len(VO) else DUR - 0.05
+        d = _tts(tts, txt, speed, raw)
+        while t0 + d > limit and speed < 1.3:
+            speed += 0.05
+            d = _tts(tts, txt, speed, raw)
+        # timbre : EQ douce (présence + air), compression légère, normalisation
+        subprocess.run(["sox", raw, pro, "highpass", "80", "equalizer", "250", "1q", "-1.5",
+                        "equalizer", "3500", "1.2q", "+2.5", "treble", "+2", "9000",
+                        "compand", "0.005,0.12", "-60,-60,-30,-16,-10,-7,0,-3", "-2",
                         "gain", "-n", "-1"], check=True)
         sr, x = wavfile.read(pro)
         x = x.astype(np.float32) / 32768.0
         fo = int(0.03 * SR)
         x[:240] *= np.linspace(0, 1, 240); x[-fo:] *= np.linspace(1, 0, fo)
         add(b, x, t0, 1.0)
-        report.append((t0, t0 + len(x) / SR, txt))
-    for a, e, txt in report:
-        print("  VO %6.2f → %6.2f  %s" % (a, e, txt))
+        report.append((t0, t0 + len(x) / SR, txt, speed))
+    for a, e, txt, sp in report:
+        print("  VO %6.2f → %6.2f  x%.2f  %s" % (a, e, sp, txt))
     wet = reverb(b, wet=0.12, dur=0.9, decay=0.25)
-    return b + wet, report
+    return b + wet, [r[:3] for r in report]
 
 
 # ----------------------------------------------------------------------------- mixage
