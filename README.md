@@ -1,53 +1,48 @@
-# Le crochet. Autrement. — motion design 40 s
+# Crochet Pop Collage — motion design TikTok 40 s
 
-Vidéo verticale 1080×1920 (Reels / TikTok / Shorts), 30 i/s, 40 s, générée entièrement par code
-à partir des 24 visuels sur fond blanc (`assets/articles/`).
+Vidéo **TikTok 9:16 (1080×1920), 30 i/s, 40 s**, générée entièrement par code à partir des 24 visuels
+sur fond blanc (`assets/articles/`). **Sans voix off ni texte** : animation, bruitages et musique de fond discrète.
 
-- **Vidéo finale** : `output/crochet_motion_40s.mp4` (H.264 + AAC 256 kbit/s, ≈ −13 LUFS)
-- **Sous-titres de la voix off** : `output/crochet_motion_40s.srt`
+- **Vidéo** : `output/crochet_tiktok_40s.mp4` (H.264 + AAC, ≈ −15 LUFS)
+- Aperçu allégé : `output/crochet_tiktok_40s_apercu.mp4`
+
+## Direction artistique
+
+Inspirée des tendances motion 2026 : collage mixed-media (stickers découpés à liseré blanc, ruban adhésif,
+formes pop, grain papier), timing « stop-motion » tactile, compositions modulaires (mosaïque, bento),
+carrousel 3D. Le cadrage respecte les zones sûres TikTok (rien d'important sous la légende ni derrière
+la colonne de boutons).
+
+Tout est calé sur **120 BPM** : 1 temps = 0,5 s = 15 images.
+
+| Temps | Séquence | Image | Son |
+|---|---|---|---|
+| 0–4 s | Pelote → carrés → look | Une pelote roule en déroulant son fil ; deux carrés granny sont tamponnés sur les battements ; au 3ᵉ impact ils explosent en quartiers et révèlent le premier look en sticker | Roulement, battements, claques papier, impact |
+| 4–10 s | Pile de stickers | 6 looks plaqués un par un (chute, vrille, glissé, retournement), formes pop et ruban adhésif ; plongée caméra dans le dernier | Whooshes, claques de papier, ruban arraché |
+| 10–17 s | Zoom infini | La caméra plonge dans les mailles ; un iris bordé de fil ouvre sur le look suivant, couleur de fond à chaque fois ; accélération au double-temps | « Bloups » d'iris, whooshes, montée |
+| 17–24 s | Mosaïque | 0,5 s de silence, avatar seul ; BOOM : l'écran se découpe en 60 carreaux qui se retournent en vagues (radiale, diagonale, rangées, aléatoire, spirale), un look par temps ; puis échos colorés façon impression riso et fils en orbite | Impact, nuées de clics, snaps |
+| 24–31 s | Grille bento | Cases qui se réorganisent (1+3, 3 colonnes, 2×2 femme & homme, 2×3), contenu qui glisse, fusion en plein cadre | Déclics, glissements |
+| 31–37 s | Carrousel 3D | Cover-flow : une tenue de face par temps, franges qui ondulent | Swish + clic à chaque cran |
+| 37–40 s | Final | Tout est aspiré dans une pelote qui se déroule en fleur au crochet, entourée de mini carrés granny en orbite | Aspiration, BOOM final, scintillements |
 
 ## Régénérer
 
 ```bash
-sudo apt-get install ffmpeg sox
-pip install pillow numpy scipy kokoro-onnx
+sudo apt-get install ffmpeg
+pip install pillow numpy scipy
 ./make.sh
 ```
 
-Pour retoucher la voix off (texte, départ, débit) : la liste `VO` dans `motion/audio.py`. Le débit est
-automatiquement relevé si une phrase déborde sur la suivante.
+Images de contrôle : `python3 motion/collage.py --stills 2.7 17.6 38.5`
+Aperçu d'un passage : `python3 motion/collage.py --range 17 24`
 
-Images de contrôle : `python3 motion/render.py --stills 2.7 17.6 38.5`
-Aperçu d'un passage : `python3 motion/render.py --range 17 24`
+## Fichiers
 
-## Grille et découpage
+- `motion/prep.py` — détourage automatique du fond blanc.
+- `motion/render.py` — moteur de rendu (placement 2D/3D, fils de laine, effets) + première version du film.
+- `motion/collage.py` — le film « Crochet Pop Collage ».
+- `motion/audio.py` — instruments et musique afro-house / amapiano synthétisée (120 BPM).
+- `motion/audio_collage.py` — bruitages du film et mixage (musique ≈ 11 dB sous les bruitages).
 
-Tout est calé sur **120 BPM** : 1 temps = 0,5 s = 15 images. Chaque changement de tenue tombe sur un temps.
-
-| Temps | Section | Image | Son |
-|---|---|---|---|
-| 0–4 s | Intro / suspense | Fil chiné multicolore au ralenti ; BOOM à 0,5 / 1,5 / 2,5 s ; au 3ᵉ impact, zoom cinématique sur l'avatar. « LE CROCHET. *Autrement.* » | Battements graves, glissement de fil, whoosh, impact |
-| 4–10 s | Premiers looks | 6 tenues, transitions zoom → flash → slide → rotation → whoosh → zoom ; mots cinétiques AUDACIEUX. / COLORÉ. / UNIQUE. | Groove afro-house entre ; whoosh / snap / boom |
-| 10–17 s | Accélération | Gros plans mailles, fleurs, franges (anneau de fil), retour instantané sur l'avatar ; cuts au double-temps sur la dernière seconde | Percussions, montée, ticks et impacts |
-| 17–24 s | Moment WOW | 17,0–17,5 s : silence total, avatar seul. BOOM. LOOK 01 → 05, une tenue par temps (balayage + fil) ; fils en orbite qui passent devant/derrière ; « NE / JAMAIS / PASSER / INAPERÇUE. » | Impact, groove repart, snaps sur chaque look |
-| 24–31 s | Collection | 3 panneaux qui glissent puis pivotent, grille 2×2 femme & homme, grille 3×3, fusion vers le plein cadre | Montée afro-house / amapiano complète, basse profonde |
-| 31–37 s | Final showcase | 12 tenues, une par kick (0,5 s), petit mouvement 3D + balancement des franges | Climax, mélodie, accents sur chaque kick |
-| 37–40 s | Signature | Les tenues disparaissent, 6 fils convergent et dessinent une fleur au crochet, « DÉCOUVREZ *la collection.* » | BOOM final, scintillement, réverbe courte |
-
-## Pipeline
-
-1. `motion/prep.py` — détourage automatique du fond blanc (remplissage depuis les bords → alpha doux).
-   Ça permet de faire passer textes et fils **derrière** les personnages.
-2. `motion/audio.py` — musique afro-house / amapiano synthétisée (kick, log drum, shaker, claps, congas,
-   accords type Rhodes, nappes, sous-basse, lead), SFX (impacts, whooshes, snaps, ticks, frottement de fil,
-   scintillements), voix off féminine française (Kokoro, voix `ff_siwis`, traitée EQ / compression / réverbe), ducking de la musique
-   sous la voix, limiteur.
-3. `motion/render.py` — rendu image par image (PIL/numpy), avec flou de mouvement par sur-échantillonnage
-   temporel sur les transitions rapides, puis encodage ffmpeg.
-
-## Limites
-
-- La voix off est une synthèse neuronale (Kokoro). Pour une voix encore plus incarnée, on peut enregistrer
-  une comédienne sur les mêmes phrases et minutages (`VO`), puis relancer `python3 motion/audio.py` et le mux.
-- La musique est générée par code. Pour une diffusion commerciale, on peut la remplacer par une piste
-  Afro-house sous licence à 120 BPM, sans toucher au montage.
+La musique est générée par code ; pour une diffusion commerciale on peut la remplacer par une piste
+sous licence à 120 BPM sans toucher au montage.
