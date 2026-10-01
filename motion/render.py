@@ -448,7 +448,7 @@ def vignette_pulse(canvas, amount):
 def ripple(canvas, t, t0, cx=W / 2, cy=H / 2, color=INK, maxr=950, dur=0.9, width=4, strength=0.35):
     if t < t0 or t > t0 + dur:
         return
-    p = (t - t0) / dur
+    p = clamp01((t - t0) / dur)
     r = 60 + maxr * out_cubic(p)
     a = int(255 * strength * (1 - p) ** 1.5)
     lay = Image.new("RGBA", (W, H), (0, 0, 0, 0))
