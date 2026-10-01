@@ -582,6 +582,8 @@ def _cell(c, i, rect, oy=0.0, full=0.0):
         return
     g = 7 * (1 - full)
     x0, y0, x1, y1 = x0 + g, y0 + g, x1 - g, y1 - g
+    if x1 - x0 < 3 or y1 - y0 < 3:
+        return
     ImageDraw.Draw(c).rounded_rectangle([x0, y0, x1, y1], radius=int(18 * (1 - full)) + 1,
                                         fill=tint(LOOK_COLOR[i], 0.72) + (255,))
     cw, ch = x1 - x0, y1 - y0
@@ -837,23 +839,39 @@ def main():
                 os.path.join(out, "t%06.2f.jpg" % t), quality=88)
         return
     from multiprocessing import Pool
-    start, end = 0, int(DURATION * FPS)
-    out_path = os.path.join(BUILD, "collage_silent.mp4")
     if args and args[0] == "--range":
-        start, end = int(float(args[1]) * FPS), int(float(args[2]) * FPS)
-        out_path = os.path.join(BUILD, "collage_%s_%s.mp4" % (args[1], args[2]))
-    ff = subprocess.Popen(["ffmpeg", "-y", "-loglevel", "error", "-f", "rawvideo", "-pix_fmt", "rgb24",
-                           "-s", "%dx%d" % (W, H), "-r", str(FPS), "-i", "-", "-c:v", "libx264", "-preset", "slow",
-                           "-crf", "18", "-pix_fmt", "yuv420p", "-movflags", "+faststart", out_path],
-                          stdin=subprocess.PIPE)
+        segs = [(float(args[1]), float(args[2]))]
+        final = None
+    else:
+        segs = [(k * 5.0, k * 5.0 + 5.0) for k in range(int(DURATION // 5))]
+        final = os.path.join(BUILD, "collage_silent.mp4")
+    seg_dir = os.path.join(BUILD, "collage_segments"); os.makedirs(seg_dir, exist_ok=True)
+    paths = []
     with Pool(os.cpu_count(), initializer=load) as pool:
-        for k, buf in enumerate(pool.imap(render_frame, range(start, end), chunksize=4)):
-            ff.stdin.write(buf)
-            if k % 60 == 0:
-                print("frame %d/%d" % (start + k, end), flush=True)
-    ff.stdin.close()
-    ff.wait()
-    print("->", out_path)
+        for a, b in segs:
+            path = os.path.join(seg_dir, "seg_%05.1f_%05.1f.mp4" % (a, b))
+            paths.append(path)
+            if final and os.path.exists(path):
+                continue  # segment déjà rendu (reprise après interruption)
+            tmp = path + ".part.mp4"
+            ff = subprocess.Popen(["ffmpeg", "-y", "-loglevel", "error", "-f", "rawvideo", "-pix_fmt", "rgb24",
+                                   "-s", "%dx%d" % (W, H), "-r", str(FPS), "-i", "-", "-c:v", "libx264",
+                                   "-preset", "slow", "-crf", "18", "-pix_fmt", "yuv420p", tmp],
+                                  stdin=subprocess.PIPE)
+            start, end = int(round(a * FPS)), int(round(b * FPS))
+            for buf in pool.imap(render_frame, range(start, end), chunksize=4):
+                ff.stdin.write(buf)
+            ff.stdin.close()
+            ff.wait()
+            os.replace(tmp, path)
+            print("segment %.1f–%.1f s ok" % (a, b), flush=True)
+    if final:
+        lst = os.path.join(seg_dir, "list.txt")
+        with open(lst, "w") as f:
+            f.writelines("file '%s'\n" % p for p in paths)
+        subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-f", "concat", "-safe", "0", "-i", lst,
+                        "-c", "copy", "-movflags", "+faststart", final], check=True)
+        print("->", final)
 
 
 if __name__ == "__main__":
