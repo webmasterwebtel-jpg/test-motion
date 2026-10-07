@@ -47,3 +47,18 @@ Aperçu d'un passage : `python3 motion/collage.py --range 17 24`
 
 La musique est générée par code ; pour une diffusion commerciale on peut la remplacer par une piste
 sous licence à 120 BPM sans toucher au montage.
+
+## Outils de travail (skills Claude Code)
+
+Le dossier `.claude/skills/` contient sept skills qui outillent le travail sur le film : relecture
+(`motion-review` : planches-contacts, pelure d'oignon, courbe de mouvement et synchro son), canon de timing
+(`motion-timing`), direction artistique et journal des retours (`motion-direction`), API du moteur
+(`motion-engine`), analyse musicale et relevé des bruitages (`motion-audio-sync`), contrôle de livraison
+(`motion-delivery`) et guide des autres moteurs (`motion-tools`, avec un gabarit Remotion). Les scripts
+fonctionnent aussi seuls, par exemple :
+
+```bash
+python3 .claude/skills/motion-review/scripts/motion_graph.py output/crochet_tiktok_60s.mp4 --bpm 120
+python3 .claude/skills/motion-delivery/scripts/check_delivery.py output/crochet_tiktok_60s.mp4
+```
+
