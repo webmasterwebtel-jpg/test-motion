@@ -5,6 +5,17 @@ Les entrées de 2026-10-01 ont été reconstituées à partir de l'historique Gi
 
 ---
 
+**2026-10-22** — L'utilisateur demande « d'autres skills et artefacts pour le motion design » → quatre skills ajoutés
+(`motion-accessibility`, `motion-compare`, `motion-storyboard`, `motion-captions`) et deux artefacts interactifs
+(Easing Lab, Beat Planner). Aucune règle de goût nouvelle : c'est de l'outillage. Constats faits en les testant sur
+`crochet_tiktok_60s.mp4` :
+- **flashs** : aucun passage à risque photosensible (au plus 4 flashs/s sur un bloc, sur moins de 6 % de l'image) ;
+- **daltonisme** : les fils 5 (bleu) et 6 (violet) se confondent en protanopie (ΔE 8) ; sans conséquence tant qu'ils restent décoratifs ;
+- **timeline image/son** : cohérente (30 événements visuels, tous avec un bruitage dans la fenêtre) ;
+- le texte reste exclu du film : `motion-captions` ne sert que sur demande explicite.
+
+---
+
 **2026-10-07** — L'utilisateur demande quels skills m'aideraient à progresser en motion design,
 puis « fais tout » → créer les outils de relecture, le canon de timing, ce journal, l'API du moteur, la
 synchro audio, les specs de livraison et le guide des autres moteurs → `.claude/skills/motion-*`.

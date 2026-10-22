@@ -38,8 +38,8 @@ plutôt que le code source.
 
 - **La timeline existe en double.** Les temps de `collage.py` (PILE, ZOOM, BENTO, CAR, C0, CSTEP,
   CEND, FIN_SHIFT…) sont recopiés dans `audio_collage.py` (PILE, ZOOM, MARKS, CAR0…). Toute
-  modification de timing se fait **dans les deux fichiers**, puis se vérifie avec `motion_graph.py`
-  (section synchro). C'est la cause n°1 des désynchronisations.
+  modification de timing se fait **dans les deux fichiers**, puis se vérifie avec `motion-storyboard/scripts/timeline_check.py` (contrôle automatique des deux
+  fichiers, 5 s) et `motion_graph.py` (section synchro). C'est la cause n°1 des désynchronisations.
 - **Le son d'un impact se cale sur l'instant où l'image se pose, pas sur le début du mouvement.**
   Une entrée combine souvent plusieurs canaux (échelle `out_back`, rotation `out_expo`…), et elle
   n'est « posée » que quand **tous** ont atteint leur cible. Repères : `out_back(s=1.7)` passe la

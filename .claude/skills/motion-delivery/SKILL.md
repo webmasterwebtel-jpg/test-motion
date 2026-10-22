@@ -41,6 +41,7 @@ re-vérifie sur une capture réelle si une publication importante en dépend.
 1. `./make.sh`, qui rend le master H.264 CRF 20 (maxrate 10M) + AAC 256k, faststart, loudnorm.
 2. `check_delivery.py`, puis `--fix` si le loudness ou la crête ne passe pas.
 3. `safe_zone.py` sur les moments clés.
+3b. `flash_check.py` et `colorblind.py` (skill `motion-accessibility`) : flashs à risque photosensible et lisibilité.
 4. Un **aperçu allégé** pour partager (messagerie) :
    `ffmpeg -i output/film.mp4 -vf scale=720:-2 -c:v libx264 -crf 26 -preset slow -c:a aac -b:a 128k -movflags +faststart output/film_apercu.mp4`
 5. Une **miniature** (image d'accroche pour la couverture) :

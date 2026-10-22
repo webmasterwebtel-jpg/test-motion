@@ -1,0 +1,346 @@
+<title>Beat Planner</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=JetBrains+Mono:wght@400;600&family=Montserrat:wght@500;700;800&display=swap">
+<style>
+/* Mise en page : en-tête, réglages de grille, tableau des séquences, frise des mesures, contrôles, export JSON.
+   Même palette et mêmes polices que l'Easing Lab (projet Crochet Pop Collage). */
+:root {
+  --paper: #faf6f0; --panel: #ffffff; --ink: #1a1614; --muted: #6b625b; --line: #e6ddd2; --chip: #f1e9de;
+  --pink: #d4146f; --teal: #00877b; --yellow: #ffc400; --blue: #2f6bff; --warn: #b4531a; --bad: #c4162b;
+  --hold: #8fb7f2; --burst: #f08c72; --edge: #86c98a; --brk: #cfc6bb; --code-bg: #1d1a18; --code-fg: #f4eee6;
+  --display: "Anton", "Arial Narrow", sans-serif; --body: "Montserrat", system-ui, sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #171413; --panel: #231f1d; --ink: #f3ede6; --muted: #a49a91; --line: #3a3330; --chip: #2e2825;
+    --pink: #ff5aa5; --teal: #2fd3c3; --blue: #7aa2ff; --warn: #ff9a5c; --bad: #ff6b7d;
+    --hold: #4f7fc4; --burst: #d4694c; --edge: #5aa561; --brk: #5b534c; --code-bg: #100e0d; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #171413; --panel: #231f1d; --ink: #f3ede6; --muted: #a49a91; --line: #3a3330; --chip: #2e2825;
+  --pink: #ff5aa5; --teal: #2fd3c3; --blue: #7aa2ff; --warn: #ff9a5c; --bad: #ff6b7d;
+  --hold: #4f7fc4; --burst: #d4694c; --edge: #5aa561; --brk: #5b534c; --code-bg: #100e0d; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--paper); color: var(--ink); font-family: var(--body); font-size: 14px; line-height: 1.5; padding-block: 24px 48px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.wrap { max-width: 1180px; margin: 0 auto; display: grid; gap: 20px; }
+h1 { font-family: var(--display); font-weight: 400; font-size: clamp(34px, 7vw, 52px); letter-spacing: .02em; line-height: 1; margin: 0; text-transform: uppercase; }
+.sub { color: var(--muted); margin: 6px 0 0; max-width: 64ch; }
+h2 { font-family: var(--display); font-weight: 400; font-size: 17px; letter-spacing: .06em; text-transform: uppercase; margin: 0 0 12px; }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 16px; min-width: 0; }
+.grid-set { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; }
+label, .lab { display: block; font-size: 12px; font-weight: 700; color: var(--muted); letter-spacing: .03em; margin-bottom: 4px; }
+input, select, textarea { font: inherit; color: var(--ink); background: var(--paper); border: 1px solid var(--line); border-radius: 8px; padding: 7px 9px; width: 100%; min-width: 0; }
+input[type="number"] { font-family: var(--mono); font-size: 13px; }
+textarea { font-family: var(--mono); font-size: 12px; min-height: 180px; line-height: 1.5; }
+button { font: inherit; font-weight: 700; font-size: 12px; color: var(--ink); background: var(--chip); border: 1px solid transparent; border-radius: 8px; padding: 7px 12px; cursor: pointer; }
+button:hover { border-color: var(--pink); }
+button.primary { background: var(--ink); color: var(--paper); }
+button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+.tablewrap { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; min-width: 980px; }
+th { text-align: left; font-size: 11px; color: var(--muted); font-weight: 700; letter-spacing: .03em; padding: 0 8px 6px 0; white-space: nowrap; }
+td { padding: 4px 8px 4px 0; vertical-align: middle; }
+td.calc { font-family: var(--mono); font-size: 12px; white-space: nowrap; color: var(--ink); }
+td.calc small { color: var(--muted); }
+td input[type="number"] { width: 78px; }
+td select { min-width: 92px; }
+td.name input { min-width: 110px; }
+td.note input { min-width: 200px; }
+td.act { white-space: nowrap; }
+td.act button { padding: 4px 8px; }
+tr.bad td.calc.pl { color: var(--bad); font-weight: 700; }
+.bar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: space-between; margin-top: 12px; }
+.total { font-family: var(--mono); font-size: 13px; }
+.total b.ok { color: var(--teal); } .total b.ko { color: var(--bad); }
+svg { display: block; width: 100%; height: auto; }
+svg text { font-family: var(--mono); font-size: 11px; fill: var(--muted); }
+svg text.nm { fill: var(--ink); font-family: var(--body); font-weight: 700; font-size: 12px; }
+/* la frise garde une largeur minimale et défile sur téléphone, pour que ses textes restent lisibles */
+#timeline { overflow-x: auto; }
+#timeline svg { min-width: 900px; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 12px; color: var(--muted); margin-top: 8px; }
+.legend i { display: inline-block; width: 12px; height: 12px; border-radius: 3px; margin-right: 6px; vertical-align: -2px; }
+ul.checks { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
+ul.checks li { display: grid; grid-template-columns: 22px minmax(0, 1fr); gap: 6px; }
+ul.checks .k { font-weight: 800; text-align: center; }
+.k.bad { color: var(--bad); } .k.warn { color: var(--warn); } .k.info { color: var(--muted); }
+.cols { display: grid; gap: 20px; grid-template-columns: minmax(0, 1fr); }
+@media (min-width: 900px) { .cols { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } }
+.cmd { font-family: var(--mono); font-size: 12px; background: var(--code-bg); color: var(--code-fg); padding: 10px 12px; border-radius: 8px; overflow-x: auto; white-space: pre; margin-top: 10px; }
+.hint { color: var(--muted); font-size: 12px; margin: 8px 0 0; }
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>Beat Planner</h1>
+    <p class="sub">Découpe un film en mesures, vois ce que ça donne en secondes et en images, et contrôle le rythme avant d'écrire une ligne de code. Le brief s'exporte au format de <code>beat_sheet.py</code>.</p>
+  </header>
+
+  <section class="card" aria-label="Grille">
+    <h2>Grille</h2>
+    <div class="grid-set">
+      <div><label for="bpm">Tempo (BPM)</label><input id="bpm" type="number" min="60" max="200" step="1"></div>
+      <div><label for="fps">Images par seconde</label><input id="fps" type="number" min="12" max="60" step="1"></div>
+      <div><label for="bpb">Temps par mesure</label><input id="bpb" type="number" min="2" max="7" step="1"></div>
+      <div><label for="target">Durée cible (s, 0 = aucune)</label><input id="target" type="number" min="0" max="600" step="1"></div>
+    </div>
+    <p class="hint" id="gridinfo"></p>
+  </section>
+
+  <section class="card" aria-label="Séquences">
+    <h2>Séquences</h2>
+    <div class="tablewrap">
+      <table>
+        <thead><tr>
+          <th>Nom</th><th>Type</th><th>Mesures</th><th>Looks</th><th>Énergie</th>
+          <th>Début → fin</th><th>Durée</th><th>Images</th><th>Par look</th><th>Note</th><th></th>
+        </tr></thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+    <div class="bar">
+      <div class="total" id="total"></div>
+      <div style="display:flex; gap:8px; flex-wrap:wrap">
+        <button type="button" id="add">Ajouter une séquence</button>
+        <button type="button" id="reset">Film actuel (60 s)</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="card" aria-label="Frise">
+    <h2>Frise des mesures</h2>
+    <div id="timeline"></div>
+    <div class="legend">
+      <span><i style="background:var(--hold)"></i>posé (hold)</span><span><i style="background:var(--burst)"></i>enchaînement rapide (burst)</span>
+      <span><i style="background:var(--edge)"></i>intro / outro</span><span><i style="background:var(--brk)"></i>respiration (break)</span>
+      <span>hauteur = énergie · une colonne = une mesure · contour rouge = blocage</span>
+    </div>
+  </section>
+
+  <div class="cols">
+    <section class="card" aria-label="Contrôles">
+      <h2>Contrôles</h2>
+      <ul class="checks" id="checks"></ul>
+      <p class="hint">Règles du projet : une tenue de look d'au moins 1,3 s (idéal 2 s) hors burst, un burst de 4 s au maximum, un arc d'énergie qui monte puis redescend, un départ sur la grille de croches. Ce sont des repères de goût, pas des lois.</p>
+    </section>
+    <section class="card" aria-label="Brief JSON">
+      <h2>Brief JSON</h2>
+      <label for="json">Brief courant (modifiable : colle un brief puis charge-le)</label>
+      <textarea id="json" spellcheck="false"></textarea>
+      <div class="bar" style="margin-top:10px">
+        <div style="display:flex; gap:8px; flex-wrap:wrap">
+          <button type="button" class="primary" id="copy">Copier</button>
+          <button type="button" id="load">Charger ce texte</button>
+        </div>
+        <span class="hint" id="msg" role="status" style="margin:0"></span>
+      </div>
+      <div class="cmd" id="cmd">python3 .claude/skills/motion-storyboard/scripts/beat_sheet.py build/brief.json</div>
+    </section>
+  </div>
+</div>
+
+<script>
+(function () {
+  var $ = function (id) { return document.getElementById(id); };
+  var MIN_HOLD = 1.3, IDEAL_HOLD = 2.0, MAX_BURST = 4.0;
+  var TYPES = ["hold", "burst", "intro", "outro", "break"];
+  var EXAMPLE = {
+    bpm: 120, fps: 30, beats_per_bar: 4, target_s: 60,
+    sequences: [
+      { name: "intro", bars: 2, looks: 1, type: "intro", energy: 2, note: "pelote, carrés tamponnés, révélation du 1er look" },
+      { name: "pile", bars: 6, looks: 6, type: "hold", energy: 3, note: "stickers plaqués, 1 look par mesure" },
+      { name: "zoom", bars: 6, looks: 6, type: "hold", energy: 3, note: "pose puis plongée dans les mailles, iris" },
+      { name: "mosaique", bars: 1.875, looks: 2, type: "burst", energy: 5, note: "silence 0,5 s, BOOM, 60 carreaux qui se retournent" },
+      { name: "echo", bars: 1.625, looks: 1, type: "hold", energy: 4, note: "look en échos riso, fils en orbite, pulsation sur le beat" },
+      { name: "bento", bars: 2, looks: 6, type: "burst", energy: 4, note: "grilles qui se réorganisent" },
+      { name: "carrousel", bars: 8, looks: 8, type: "hold", energy: 4, note: "cover-flow 3D, 1 tenue par mesure" },
+      { name: "final", bars: 2.5, looks: 0, type: "outro", energy: 3, note: "aspiration en pelote, fleur" }
+    ]
+  };
+  var B = JSON.parse(JSON.stringify(EXAMPLE));
+  try { var sv = JSON.parse(localStorage.getItem("beat-planner") || "null"); if (sv && sv.sequences && sv.sequences.length) B = sv; } catch (e) {}
+  function save() { try { localStorage.setItem("beat-planner", JSON.stringify(B)); } catch (e) {} }
+
+  // arrondi « au pair » comme Python round(), pour que la page et beat_sheet.py donnent les mêmes images
+  function pyRound(x) {
+    var f = Math.floor(x), d = x - f;
+    if (Math.abs(d - 0.5) < 1e-9) return f % 2 === 0 ? f : f + 1;
+    return Math.round(x);
+  }
+  // échappement HTML (les messages contiennent « < » et « > » qu'il faut afficher, pas supprimer)
+  function esc(t) { return String(t).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
+  // arrondi identique à Python '%.nf' : sur une égalité exacte (0,625 → 2 décimales) Python arrondit au pair, toFixed vers le haut
+  function fx(v, d) {
+    var s = Number(v).toFixed(30), i = s.indexOf("."), cut = i + 1 + d, rest = s.slice(cut);
+    if (/^50*$/.test(rest) && parseInt(s.slice(0, cut).replace(/[^0-9]/g, "").slice(-1), 10) % 2 === 0) return s.slice(0, d ? cut : i);
+    return Number(v).toFixed(d);
+  }
+  var f2 = function (v) { return fx(v, 2); };
+
+  function plan() {
+    var beat = 60 / B.bpm, bpb = B.beats_per_bar, bar = beat * bpb, t = 0, rows = [];
+    B.sequences.forEach(function (s) {
+      var dur = s.bars * bar;
+      rows.push({ s: s, start: t, end: t + dur, dur: dur, sf: pyRound(t * B.fps), ef: pyRound((t + dur) * B.fps),
+                  startBar: t / bar + 1, perLook: s.looks ? dur / s.looks : null });
+      t += dur;
+    });
+    return { beat: beat, bar: bar, total: t, rows: rows };
+  }
+
+  function check(p) {
+    var m = [], tgt = B.target_s, fps = B.fps;
+    if (tgt && Math.abs(p.total - tgt) > 0.05) m.push(["!", "durée totale " + f2(p.total) + " s ≠ cible " + f2(tgt) + " s (" + ((tgt - p.total) / p.bar >= 0 ? "+" : "") + fx((tgt - p.total) / p.bar, 1) + " mesures)", -1]);
+    p.rows.forEach(function (r, i) {
+      var kind = r.s.type || "hold", name = r.s.name;
+      if (r.perLook !== null) {
+        if ((kind === "hold" || kind === "intro" || kind === "outro") && r.perLook < MIN_HOLD) m.push(["!", name + " : " + f2(r.perLook) + " s par look (< " + fx(MIN_HOLD, 1) + " s) — trop rapide pour lire le produit", i]);
+        else if (kind === "hold" && r.perLook < IDEAL_HOLD - 0.01) m.push(["~", name + " : " + f2(r.perLook) + " s par look (idéal du projet : 2 s)", i]);
+      }
+      if (kind === "burst" && r.dur > MAX_BURST + 0.01) m.push(["!", name + " : burst de " + fx(r.dur, 1) + " s (> 4 s) — fatigue, ajouter une respiration", i]);
+      var q = r.start / p.beat, frac = q - Math.floor(q);
+      if (Math.min(frac, 1 - frac) > 1e-6) {
+        var half = Math.abs(frac - 0.5) < 1e-6;
+        m.push([half ? "~" : "!", name + " démarre " + (half ? "sur une croche (demi-temps) : correct si voulu" : "entre les croches : hors grille") + " (" + fx(q, 3) + " temps)", i]);
+      }
+      if (Math.abs(r.sf / fps - r.start) > 0.5 / fps + 1e-9) m.push(["~", name + " : début arrondi à l'image (" + fx(r.start, 3) + " → " + fx(r.sf / fps, 3) + " s)", i]);
+    });
+    var e = p.rows.filter(function (r) { return r.s.energy; }).map(function (r) { return r.s.energy; });
+    if (e.length >= 4) {
+      var uniq = e.filter(function (v, i) { return e.indexOf(v) === i; });
+      if (uniq.length === 1) m.push(["!", "énergie plate (" + e[0] + " partout) : pas d'arc, le film paraîtra monotone", -1]);
+      else {
+        var peak = e.indexOf(Math.max.apply(null, e));
+        if (peak === 0 || peak === e.length - 1) m.push(["~", "le pic d'énergie est à une extrémité : prévoir une montée, un sommet, puis une résolution", -1]);
+      }
+      for (var i = 0; i < e.length - 2; i++) if (e[i] >= 4 && e[i + 1] >= 4 && e[i + 2] >= 4) {
+        m.push(["~", "3 séquences d'énergie ≥ 4 de suite (" + p.rows[i].s.name + "…) : prévoir une respiration", -1]); break;
+      }
+    }
+    m.push(["i", "accroche : la 1re séquence (" + p.rows[0].s.name + ") doit montrer quelque chose dès l'image 0 (pas de papier vide)", -1]);
+    return m;
+  }
+
+  /* ---------- tableau ---------- */
+  function buildRows() {
+    var tb = $("rows"); tb.innerHTML = "";
+    B.sequences.forEach(function (s, i) {
+      var tr = document.createElement("tr");
+      tr.innerHTML =
+        '<td class="name"><input type="text" aria-label="Nom" data-i="' + i + '" data-k="name"></td>' +
+        '<td><select aria-label="Type" data-i="' + i + '" data-k="type">' + TYPES.map(function (t) { return '<option>' + t + '</option>'; }).join("") + '</select></td>' +
+        '<td><input type="number" step="0.125" min="0.25" aria-label="Mesures" data-i="' + i + '" data-k="bars"></td>' +
+        '<td><input type="number" step="1" min="0" aria-label="Looks" data-i="' + i + '" data-k="looks"></td>' +
+        '<td><select aria-label="Énergie" data-i="' + i + '" data-k="energy">' + [1, 2, 3, 4, 5].map(function (n) { return '<option value="' + n + '">' + n + '</option>'; }).join("") + '</select></td>' +
+        '<td class="calc pl" data-c="span"></td><td class="calc" data-c="dur"></td><td class="calc" data-c="fr"></td><td class="calc" data-c="pl"></td>' +
+        '<td class="note"><input type="text" aria-label="Note" data-i="' + i + '" data-k="note"></td>' +
+        '<td class="act"><button type="button" data-a="up" data-i="' + i + '" aria-label="Monter">↑</button> <button type="button" data-a="dn" data-i="' + i + '" aria-label="Descendre">↓</button> <button type="button" data-a="rm" data-i="' + i + '" aria-label="Supprimer">✕</button></td>';
+      tb.appendChild(tr);
+      tr.querySelectorAll("[data-k]").forEach(function (el) {
+        var k = el.dataset.k; el.value = s[k] === undefined ? (k === "energy" ? 3 : "") : s[k];
+        el.addEventListener("input", function () {
+          var v = el.value;
+          if (k === "bars" || k === "looks" || k === "energy") { v = parseFloat(v); if (isNaN(v)) return; }
+          B.sequences[i][k] = v; recompute();
+        });
+      });
+      tr.querySelectorAll("[data-a]").forEach(function (b) {
+        b.addEventListener("click", function () {
+          var a = b.dataset.a, q = B.sequences;
+          if (a === "rm" && q.length > 1) q.splice(i, 1);
+          if (a === "up" && i > 0) { var t = q[i]; q[i] = q[i - 1]; q[i - 1] = t; }
+          if (a === "dn" && i < q.length - 1) { var u = q[i]; q[i] = q[i + 1]; q[i + 1] = u; }
+          buildRows(); recompute();
+        });
+      });
+    });
+  }
+
+  function timeline(p, msgs) {
+    var W = 1000, H = 292, L = 14, top = 26, base = 168, k = (W - 2 * L) / p.total;
+    var pal = { hold: "var(--hold)", burst: "var(--burst)", intro: "var(--edge)", outro: "var(--edge)", "break": "var(--brk)" };
+    var bad = {}; msgs.forEach(function (m) { if (m[0] === "!" && m[2] >= 0) bad[m[2]] = true; });
+    var s = '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Frise des séquences">';
+    for (var b = 0; b <= Math.floor(p.total / p.bar + 1e-9); b++) {
+      var x = L + b * p.bar * k;
+      s += '<line x1="' + x + '" x2="' + x + '" y1="' + top + '" y2="' + base + '" stroke="var(--line)"/>';
+      if (b % 2 === 0 || p.total / p.bar < 12) s += '<text x="' + (x + 3) + '" y="' + (top - 8) + '">' + (b + 1) + '</text>';
+    }
+    // étiquettes : sur la première rangée libre, pour que les séquences courtes ne se chevauchent pas
+    var fs = 1, rowEnd = [-1e9, -1e9, -1e9];
+    p.rows.forEach(function (r, i) {
+      var e = r.s.energy || 2, h = 30 + e * 24, x0 = L + r.start * k, w = Math.max(r.dur * k - 3, 2);
+      s += '<rect x="' + x0 + '" y="' + (base - h) + '" width="' + w + '" height="' + h + '" rx="6" fill="' + (pal[r.s.type || "hold"] || "var(--brk)") + '"' +
+           (bad[i] ? ' stroke="var(--bad)" stroke-width="3"' : '') + '/>';
+      var span = fx(r.start, 1) + '–' + fx(r.end, 1) + ' s';
+      var lw = (Math.max(String(r.s.name).length * 8.5, span.length * 6.8) + 14) * fs, row = 0;
+      while (row < 2 && x0 + 6 < rowEnd[row] + 4) row++;
+      rowEnd[row] = x0 + 6 + lw;
+      var y = base + 18 + row * 40;
+      if (row) s += '<line x1="' + (x0 + 2) + '" x2="' + (x0 + 2) + '" y1="' + (base + 38) + '" y2="' + (y - 14) + '" stroke="var(--muted)" stroke-dasharray="2 3"/>';
+      s += '<text class="nm" x="' + (x0 + 6) + '" y="' + y + '">' + esc(r.s.name) + '</text>';
+      s += '<text x="' + (x0 + 6) + '" y="' + (y + 16) + '">' + span + '</text>';
+    });
+    $("timeline").innerHTML = s + '</svg>';
+  }
+
+  function recompute() {
+    var p = plan(), msgs = check(p);
+    document.querySelectorAll("#rows tr").forEach(function (tr, i) {
+      var r = p.rows[i]; if (!r) return;
+      var q = function (c) { return tr.querySelector('[data-c="' + c + '"]'); };
+      q("span").innerHTML = f2(r.start) + ' → ' + f2(r.end) + ' <small>s</small>';
+      q("dur").textContent = f2(r.dur) + " s";
+      q("fr").textContent = r.sf + "–" + r.ef;
+      q("pl").textContent = r.perLook === null ? "—" : f2(r.perLook) + " s";
+      var kind = r.s.type || "hold", low = r.perLook !== null && r.perLook < MIN_HOLD && (kind === "hold" || kind === "intro" || kind === "outro");
+      q("pl").style.color = low ? "var(--bad)" : ""; q("pl").style.fontWeight = low ? "700" : "";
+    });
+    var tgt = B.target_s, ok = !tgt || Math.abs(p.total - tgt) <= 0.05;
+    $("total").innerHTML = 'Total <b class="' + (ok ? "ok" : "ko") + '">' + f2(p.total) + ' s</b> = ' + fx(p.total / p.bar, 3).replace(/\.?0+$/, "") + ' mesures = ' + pyRound(p.total * B.fps) + ' images' + (tgt ? ' · cible ' + tgt + ' s' : '');
+    $("gridinfo").textContent = "1 temps = " + fx(p.beat, 3) + " s (" + fx(p.beat * B.fps, 2).replace(/\.?0+$/, "") + " images) · 1 mesure = " + fx(p.bar, 3) + " s (" + fx(p.bar * B.fps, 2).replace(/\.?0+$/, "") + " images)";
+    $("checks").innerHTML = msgs.map(function (m) {
+      var cls = m[0] === "!" ? "bad" : m[0] === "~" ? "warn" : "info";
+      return '<li><span class="k ' + cls + '">' + (m[0] === "!" ? "✗" : m[0] === "~" ? "△" : "·") + '</span><span>' + esc(m[1]) + '</span></li>';
+    }).join("");
+    if (!msgs.some(function (m) { return m[0] === "!"; })) $("checks").insertAdjacentHTML("beforeend", '<li><span class="k info">✔</span><span>aucun blocage</span></li>');
+    timeline(p, msgs);
+    if (document.activeElement !== $("json")) $("json").value = JSON.stringify(B, null, 1);
+    save();
+  }
+
+  ["bpm", "fps", "bpb", "target"].forEach(function (id) {
+    $(id).addEventListener("input", function () {
+      var v = parseFloat(this.value); if (isNaN(v) || v < 0) return;
+      if (id === "bpb") B.beats_per_bar = Math.max(1, Math.round(v)); else if (id === "target") B.target_s = v; else B[id] = v;
+      recompute();
+    });
+  });
+  function fillGrid() { $("bpm").value = B.bpm; $("fps").value = B.fps; $("bpb").value = B.beats_per_bar; $("target").value = B.target_s || 0; }
+  $("add").addEventListener("click", function () { B.sequences.push({ name: "séquence " + (B.sequences.length + 1), bars: 2, looks: 1, type: "hold", energy: 3, note: "" }); buildRows(); recompute(); });
+  $("reset").addEventListener("click", function () { B = JSON.parse(JSON.stringify(EXAMPLE)); fillGrid(); buildRows(); recompute(); });
+  $("copy").addEventListener("click", function () {
+    var t = $("json").value;
+    var ok = function (good) { $("msg").textContent = good ? "Copié." : "Sélectionne le texte et copie-le."; setTimeout(function () { $("msg").textContent = ""; }, 2500); };
+    var fallback = function () { $("json").focus(); $("json").select(); ok(false); };
+    try { navigator.clipboard.writeText(t).then(function () { ok(true); }, fallback); } catch (e) { fallback(); }
+  });
+  $("load").addEventListener("click", function () {
+    try {
+      var j = JSON.parse($("json").value);
+      if (!j.sequences || !j.sequences.length || !j.bpm) throw new Error("il manque bpm ou sequences");
+      j.fps = j.fps || 30; j.beats_per_bar = j.beats_per_bar || 4;
+      B = j; fillGrid(); buildRows(); $("json").blur(); recompute(); $("msg").textContent = "Brief chargé.";
+    } catch (e) { $("msg").textContent = "JSON invalide : " + e.message; }
+    setTimeout(function () { $("msg").textContent = ""; }, 3500);
+  });
+
+  fillGrid(); buildRows(); recompute();
+})();
+</script>

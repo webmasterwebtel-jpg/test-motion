@@ -1,0 +1,486 @@
+<title>Easing Lab</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=JetBrains+Mono:wght@400;600&family=Montserrat:wght@500;700;800&display=swap">
+<style>
+/* Mise en page : panneau de réglages à gauche, aperçu + courbe + code à droite ; une colonne sur téléphone.
+   Palette du projet Crochet Pop Collage : papier chaud, encre, rose du fil, turquoise, jaune. */
+:root {
+  --paper: #faf6f0; --panel: #ffffff; --ink: #1a1614; --muted: #6b625b; --line: #e6ddd2;
+  --pink: #d4146f; --teal: #00877b; --yellow: #ffc400; --blue: #2f6bff; --warn: #b4531a;
+  --chip: #f1e9de; --code-bg: #1d1a18; --code-fg: #f4eee6; --track: #efe6da;
+  --display: "Anton", "Arial Narrow", sans-serif; --body: "Montserrat", system-ui, sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #171413; --panel: #231f1d; --ink: #f3ede6; --muted: #a49a91; --line: #3a3330;
+    --pink: #ff5aa5; --teal: #2fd3c3; --yellow: #ffc400; --blue: #7aa2ff; --warn: #ff9a5c;
+    --chip: #2e2825; --code-bg: #100e0d; --code-fg: #f4eee6; --track: #2b2522; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #171413; --panel: #231f1d; --ink: #f3ede6; --muted: #a49a91; --line: #3a3330;
+  --pink: #ff5aa5; --teal: #2fd3c3; --yellow: #ffc400; --blue: #7aa2ff; --warn: #ff9a5c;
+  --chip: #2e2825; --code-bg: #100e0d; --code-fg: #f4eee6; --track: #2b2522; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--paper); color: var(--ink); font-family: var(--body); font-size: 14px; line-height: 1.5;
+  padding-block: 24px 48px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.wrap { max-width: 1180px; margin: 0 auto; display: grid; gap: 20px; }
+header { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 8px 24px; }
+h1 { font-family: var(--display); font-weight: 400; font-size: clamp(34px, 7vw, 52px); letter-spacing: 0.02em; line-height: 1; margin: 0; text-transform: uppercase; }
+.sub { color: var(--muted); margin: 6px 0 0; max-width: 60ch; }
+.tag { font-family: var(--mono); font-size: 12px; background: var(--chip); padding: 4px 10px; border-radius: 99px; color: var(--muted); }
+.grid { display: grid; gap: 20px; grid-template-columns: minmax(0, 1fr); }
+@media (min-width: 880px) { .grid { grid-template-columns: minmax(0, 340px) minmax(0, 1fr); align-items: start; } }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 16px; min-width: 0; }
+.card + .card { margin-top: 20px; }
+h2 { font-family: var(--display); font-weight: 400; font-size: 17px; letter-spacing: 0.06em; text-transform: uppercase; margin: 0 0 12px; }
+label, .lab { display: block; font-size: 12px; font-weight: 700; color: var(--muted); letter-spacing: 0.03em; margin-bottom: 4px; }
+.field { margin-bottom: 14px; min-width: 0; }
+select, input[type="number"] {
+  width: 100%; font: inherit; color: var(--ink); background: var(--paper); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px;
+}
+input[type="range"] { width: 100%; accent-color: var(--pink); }
+.row { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.val { font-family: var(--mono); font-size: 12px; color: var(--ink); }
+.seg { display: flex; gap: 6px; }
+.seg button, .chips button, .tabs button, .play {
+  font: inherit; font-weight: 700; font-size: 12px; color: var(--ink); background: var(--chip); border: 1px solid transparent;
+  border-radius: 8px; padding: 7px 12px; cursor: pointer;
+}
+.seg button { flex: 1; }
+.seg button[aria-pressed="true"], .tabs button[aria-selected="true"] { background: var(--ink); color: var(--paper); }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chips button:hover, .play:hover { border-color: var(--pink); }
+button:focus-visible, select:focus-visible, input:focus-visible, summary:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+.check { display: flex; gap: 8px; align-items: flex-start; font-size: 13px; font-weight: 500; color: var(--ink); letter-spacing: 0; }
+.check input { margin-top: 3px; accent-color: var(--pink); }
+.bz { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
+.bz input { padding: 6px; font-family: var(--mono); font-size: 12px; }
+/* aperçu animé */
+.stage { display: grid; gap: 14px; }
+.lane { position: relative; height: 72px; background: var(--track); border-radius: 12px; margin: 0; padding: 0 56px 0 12px; }
+.lane .inner { position: relative; height: 100%; }
+.ghost { position: absolute; top: 50%; width: 6px; height: 6px; margin: -3px 0 0 25px; border-radius: 50%; background: var(--muted); opacity: 0.55; }
+.ghost.end { background: var(--pink); opacity: 1; width: 8px; height: 8px; margin: -4px 0 0 24px; }
+.sticker { position: absolute; top: 8px; left: 0; width: 56px; height: 56px; border-radius: 12px; background: var(--pink); box-shadow: 4px 5px 0 rgba(0,0,0,.22); will-change: transform; }
+.pop { display: grid; place-items: center; height: 120px; background: var(--track); border-radius: 12px; }
+.pop .sq { width: 74px; height: 74px; border-radius: 14px; background: var(--teal); box-shadow: 5px 6px 0 rgba(0,0,0,.22); }
+.hint { font-size: 12px; color: var(--muted); margin: 0; }
+.bar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between; }
+svg { display: block; width: 100%; height: auto; }
+svg text { font-family: var(--mono); font-size: 11px; fill: var(--muted); }
+.metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-top: 14px; }
+.m { background: var(--paper); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; min-width: 0; }
+.m b { display: block; font-family: var(--mono); font-size: 16px; font-weight: 600; overflow-wrap: anywhere; }
+/* le SVG est mis à l'échelle de la largeur : sur téléphone, on agrandit le texte (unités du viewBox) pour qu'il reste lisible */
+@media (max-width: 640px) { svg text { font-size: 21px; } }
+.m span { font-size: 11px; color: var(--muted); font-weight: 700; letter-spacing: .03em; }
+.m.warn b { color: var(--warn); }
+.note { font-size: 12.5px; color: var(--warn); margin: 10px 0 0; min-height: 1.4em; }
+/* code */
+.tabs { display: flex; gap: 6px; margin-bottom: 10px; flex-wrap: wrap; }
+pre { margin: 0; background: var(--code-bg); color: var(--code-fg); border-radius: 10px; padding: 14px; overflow-x: auto; font-family: var(--mono); font-size: 12.5px; line-height: 1.6; }
+.copy { margin-top: 10px; }
+details { margin-top: 14px; }
+summary { cursor: pointer; font-weight: 700; font-size: 13px; }
+.scroll { overflow-x: auto; margin-top: 10px; }
+table { border-collapse: collapse; font-family: var(--mono); font-size: 12px; min-width: 360px; }
+th, td { text-align: right; padding: 4px 12px; border-bottom: 1px solid var(--line); }
+th { color: var(--muted); font-weight: 600; }
+@media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
+</style>
+
+<div class="wrap">
+  <header>
+    <div>
+      <h1>Easing Lab</h1>
+      <p class="sub">Choisis une courbe, règle sa durée en images, regarde où tombent réellement les images, puis copie le code pour le moteur du film.</p>
+    </div>
+    <span class="tag">120 BPM · 1 temps = 15 images · 1 mesure = 60 images</span>
+  </header>
+
+  <div class="grid">
+    <section class="card" aria-label="Réglages">
+      <h2>Réglages</h2>
+      <div class="field">
+        <label for="curve">Courbe</label>
+        <select id="curve"></select>
+      </div>
+      <div id="params"></div>
+      <div class="field">
+        <div class="row"><label for="dur" style="margin:0">Durée</label><span class="val" id="durv"></span></div>
+        <input id="dur" type="range" min="0.1" max="1.5" step="0.01" value="0.4">
+      </div>
+      <div class="field">
+        <span class="lab">Cadence</span>
+        <div class="seg" id="fps" role="group" aria-label="Cadence">
+          <button type="button" data-v="24" aria-pressed="false">24 i/s</button>
+          <button type="button" data-v="30" aria-pressed="true">30 i/s</button>
+          <button type="button" data-v="60" aria-pressed="false">60 i/s</button>
+        </div>
+      </div>
+      <div class="field">
+        <label class="check" for="stepped"><input id="stepped" type="checkbox" checked><span>Aperçu à la cadence choisie, saccadé comme la vidéo</span></label>
+      </div>
+      <div class="field" style="margin-bottom:0">
+        <span class="lab">Réglages du canon de timing</span>
+        <div class="chips" id="presets"></div>
+      </div>
+    </section>
+
+    <div>
+      <section class="card" aria-label="Aperçu">
+        <div class="bar" style="margin-bottom:12px">
+          <h2 style="margin:0">Aperçu</h2>
+          <button type="button" class="play" id="play">Rejouer</button>
+        </div>
+        <div class="stage">
+          <div class="lane" aria-hidden="true"><div class="inner" id="inner"><div class="sticker" id="sticker"></div></div></div>
+          <div class="pop" aria-hidden="true"><div class="sq" id="sq"></div></div>
+          <p class="hint">Haut : déplacement, les points marquent la position à chaque image. Bas : entrée d'un sticker, avec échelle de 55 à 100 % et rotation de −14° à −3°.</p>
+        </div>
+      </section>
+
+      <section class="card" aria-label="Courbe et espacement">
+        <h2>Courbe et espacement</h2>
+        <div id="plot"></div>
+        <div id="strip"></div>
+        <div class="metrics" id="metrics"></div>
+        <p class="note" id="note" role="status"></p>
+        <details>
+          <summary>Valeur image par image</summary>
+          <div class="scroll"><table id="table"></table></div>
+        </details>
+      </section>
+
+      <section class="card" aria-label="Code">
+        <h2>Code</h2>
+        <div class="tabs" role="tablist" id="tabs">
+          <button type="button" role="tab" aria-selected="true" data-t="py">Python (render.py)</button>
+          <button type="button" role="tab" aria-selected="false" data-t="css">CSS</button>
+          <button type="button" role="tab" aria-selected="false" data-t="rem">Remotion</button>
+        </div>
+        <pre id="code" tabindex="0"></pre>
+        <button type="button" class="play copy" id="copy">Copier</button>
+        <span class="hint" id="copied" role="status"></span>
+      </section>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  var TAU = Math.PI * 2;
+  var $ = function (id) { return document.getElementById(id); };
+
+  /* ---------- courbes : mêmes formules que motion-timing/scripts/easings.py ---------- */
+  function outBounce(x) {
+    var n = 7.5625, d = 2.75;
+    if (x < 1 / d) return n * x * x;
+    if (x < 2 / d) { x -= 1.5 / d; return n * x * x + 0.75; }
+    if (x < 2.5 / d) { x -= 2.25 / d; return n * x * x + 0.9375; }
+    x -= 2.625 / d; return n * x * x + 0.984375;
+  }
+  function bezierFn(x1, y1, x2, y2) {
+    var B = function (u, a, b) { return 3 * a * u * (1 - u) * (1 - u) + 3 * b * u * u * (1 - u) + u * u * u; };
+    return function (x) {
+      var lo = 0, hi = 1;
+      for (var i = 0; i < 40; i++) { var m = (lo + hi) / 2; if (B(m, x1, x2) < x) lo = m; else hi = m; }
+      return B((lo + hi) / 2, y1, y2);
+    };
+  }
+  function spring(t, z, f) {
+    if (t <= 0) return 0;
+    var w = TAU * f;
+    if (z < 1) { var wd = w * Math.sqrt(1 - z * z); return 1 - Math.exp(-z * w * t) * (Math.cos(wd * t) + z * w / wd * Math.sin(wd * t)); }
+    return 1 - Math.exp(-w * t) * (1 + w * t);
+  }
+  function springSettle(z, f, tol) {
+    var last = 0;
+    for (var t = 0; t < 5; t += 1 / 240) if (Math.abs(spring(t, z, f) - 1) > tol) last = t;
+    return last;
+  }
+  var CURVES = [
+    { id: "linear", label: "linear", f: function (x) { return x; } },
+    { id: "in_sine", label: "in_sine", f: function (x) { return 1 - Math.cos(Math.PI * x / 2); } },
+    { id: "out_sine", label: "out_sine", f: function (x) { return Math.sin(Math.PI * x / 2); } },
+    { id: "in_out_sine", label: "in_out_sine", f: function (x) { return -(Math.cos(Math.PI * x) - 1) / 2; } },
+    { id: "in_quad", label: "in_quad", f: function (x) { return x * x; } },
+    { id: "out_quad", label: "out_quad", f: function (x) { return 1 - Math.pow(1 - x, 2); } },
+    { id: "in_out_quad", label: "in_out_quad", f: function (x) { return x < .5 ? 2 * x * x : 1 - Math.pow(-2 * x + 2, 2) / 2; } },
+    { id: "in_cubic", label: "in_cubic", f: function (x) { return x * x * x; } },
+    { id: "out_cubic", label: "out_cubic", f: function (x) { return 1 - Math.pow(1 - x, 3); } },
+    { id: "in_out_cubic", label: "in_out_cubic", f: function (x) { return x < .5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2; } },
+    { id: "out_quart", label: "out_quart", f: function (x) { return 1 - Math.pow(1 - x, 4); } },
+    { id: "out_quint", label: "out_quint", f: function (x) { return 1 - Math.pow(1 - x, 5); } },
+    { id: "in_out_quint", label: "in_out_quint", f: function (x) { return x < .5 ? 16 * Math.pow(x, 5) : 1 - Math.pow(-2 * x + 2, 5) / 2; } },
+    { id: "in_expo", label: "in_expo", f: function (x) { return x <= 0 ? 0 : Math.pow(2, 10 * x - 10); } },
+    { id: "out_expo", label: "out_expo", f: function (x) { return x >= 1 ? 1 : 1 - Math.pow(2, -10 * x); } },
+    { id: "in_out_expo", label: "in_out_expo", f: function (x) { return x <= 0 ? 0 : x >= 1 ? 1 : x < .5 ? Math.pow(2, 20 * x - 10) / 2 : (2 - Math.pow(2, -20 * x + 10)) / 2; } },
+    { id: "out_circ", label: "out_circ", f: function (x) { return Math.sqrt(1 - (x - 1) * (x - 1)); } },
+    { id: "in_back", label: "in_back (anticipation)", p: ["s"], f: function (x, p) { return (p.s + 1) * x * x * x - p.s * x * x; } },
+    { id: "out_back", label: "out_back (dépassement)", p: ["s"], f: function (x, p) { x -= 1; return 1 + (p.s + 1) * x * x * x + p.s * x * x; } },
+    { id: "in_out_back", label: "in_out_back", p: ["s"], f: function (x, p) {
+        var c = p.s * 1.525;
+        return x < .5 ? (Math.pow(2 * x, 2) * ((c + 1) * 2 * x - c)) / 2 : (Math.pow(2 * x - 2, 2) * ((c + 1) * (2 * x - 2) + c) + 2) / 2; } },
+    { id: "out_elastic", label: "out_elastic", p: ["period"], f: function (x, p) {
+        return x <= 0 ? 0 : x >= 1 ? 1 : Math.pow(2, -10 * x) * Math.sin((x - p.period / 4) * TAU / p.period) + 1; } },
+    { id: "out_bounce", label: "out_bounce", f: outBounce },
+    { id: "bezier", label: "bezier (CSS / After Effects)", p: ["bz"], f: function (x, p) { return bezierFn(p.bz[0], p.bz[1], p.bz[2], p.bz[3])(x); } },
+    { id: "spring", label: "spring (ressort amorti)", p: ["z", "f"], phys: true, f: null }
+  ];
+  var BY = {}; CURVES.forEach(function (c) { BY[c.id] = c; });
+
+  var S = { curve: "out_cubic", dur: 0.4, fps: 30, stepped: true, tab: "py",
+            p: { s: 1.70158, period: 0.3, bz: [0.2, 0, 0, 1], z: 0.4, f: 6 } };
+  try { var saved = JSON.parse(localStorage.getItem("easing-lab") || "null"); if (saved && BY[saved.curve]) S = Object.assign(S, saved, { p: Object.assign(S.p, saved.p) }); } catch (e) {}
+  function save() { try { localStorage.setItem("easing-lab", JSON.stringify(S)); } catch (e) {} }
+
+  function frames() { return Math.max(1, Math.round(S.dur * S.fps)); }
+  function durEff() { return frames() / S.fps; }
+  function val(x) {
+    var c = BY[S.curve];
+    if (c.phys) return spring(x * durEff(), S.p.z, S.p.f);
+    return c.f(Math.min(Math.max(x, 0), 1), S.p);
+  }
+  function fmt(v, n) { return String(+(+v).toFixed(n === undefined ? 3 : n)); }
+
+  /* ---------- panneau de réglages ---------- */
+  var sel = $("curve");
+  CURVES.forEach(function (c) { var o = document.createElement("option"); o.value = c.id; o.textContent = c.label; sel.appendChild(o); });
+
+  function slider(key, label, min, max, step, dec) {
+    return '<div class="field"><div class="row"><label for="p_' + key + '" style="margin:0">' + label + '</label><span class="val" id="pv_' + key + '"></span></div>' +
+           '<input id="p_' + key + '" type="range" min="' + min + '" max="' + max + '" step="' + step + '" data-k="' + key + '" data-d="' + dec + '"></div>';
+  }
+  function renderParams() {
+    var c = BY[S.curve], h = "";
+    if (c.p) c.p.forEach(function (k) {
+      if (k === "s") h += slider("s", "Dépassement s", 0.3, 3, 0.05, 2);
+      if (k === "period") h += slider("period", "Période", 0.1, 0.8, 0.01, 2);
+      if (k === "z") h += slider("z", "Amortissement ζ", 0.1, 1.2, 0.05, 2);
+      if (k === "f") h += slider("f", "Fréquence (Hz)", 2, 14, 0.5, 1);
+      if (k === "bz") h += '<div class="field"><span class="lab">cubic-bezier(x1, y1, x2, y2)</span><div class="bz">' +
+        [0, 1, 2, 3].map(function (i) { return '<input type="number" step="0.05" ' + (i % 2 === 0 ? 'min="0" max="1"' : 'min="-1" max="2"') + ' data-bz="' + i + '" aria-label="' + ["x1", "y1", "x2", "y2"][i] + '">'; }).join("") + '</div></div>';
+    });
+    $("params").innerHTML = h;
+    $("params").querySelectorAll("input[data-k]").forEach(function (el) {
+      el.value = S.p[el.dataset.k];
+      $("pv_" + el.dataset.k).textContent = (+el.value).toFixed(+el.dataset.d);
+      el.addEventListener("input", function () {
+        S.p[el.dataset.k] = +el.value; $("pv_" + el.dataset.k).textContent = (+el.value).toFixed(+el.dataset.d); refresh();
+      });
+    });
+    $("params").querySelectorAll("input[data-bz]").forEach(function (el) {
+      el.value = S.p.bz[el.dataset.bz];
+      el.addEventListener("input", function () { var v = parseFloat(el.value); if (!isNaN(v)) { S.p.bz[el.dataset.bz] = v; refresh(); } });
+    });
+  }
+  sel.addEventListener("change", function () { S.curve = sel.value; renderParams(); refresh(); });
+  $("dur").addEventListener("input", function () { S.dur = +this.value; refresh(); });
+  $("stepped").addEventListener("change", function () { S.stepped = this.checked; save(); });
+  $("fps").querySelectorAll("button").forEach(function (b) {
+    b.addEventListener("click", function () { S.fps = +b.dataset.v; refresh(); });
+  });
+  var PRESETS = [
+    ["Entrée sobre", { curve: "out_cubic", dur: 0.33 }], ["Entrée vive", { curve: "out_expo", dur: 0.3 }],
+    ["Rebond vivant", { curve: "out_back", dur: 0.34, p: { s: 1.4 } }], ["Rebond élégant", { curve: "out_back", dur: 0.4, p: { s: 1.0 } }],
+    ["Ressort ferme", { curve: "spring", dur: 0.4, p: { z: 0.7, f: 8 } }], ["Chute", { curve: "in_cubic", dur: 0.16 }],
+    ["Sortie", { curve: "in_cubic", dur: 0.22 }], ["Déplacement doux", { curve: "in_out_sine", dur: 0.5 }]
+  ];
+  PRESETS.forEach(function (p) {
+    var b = document.createElement("button"); b.type = "button"; b.textContent = p[0];
+    b.addEventListener("click", function () {
+      S.curve = p[1].curve; S.dur = p[1].dur; if (p[1].p) Object.assign(S.p, p[1].p);
+      sel.value = S.curve; renderParams(); refresh();
+    });
+    $("presets").appendChild(b);
+  });
+
+  /* ---------- tracés ---------- */
+  function plot() {
+    var n = frames(), W = 640, H = 270, L = 40, R = 14, T = 14, B = 30;
+    var ys = [], i;
+    for (i = 0; i <= 300; i++) ys.push(val(i / 300));
+    var lo = Math.min(0, Math.min.apply(null, ys)) - 0.06, hi = Math.max(1, Math.max.apply(null, ys)) + 0.06;
+    var X = function (x) { return L + x * (W - L - R); }, Y = function (v) { return T + (H - T - B) * (1 - (v - lo) / (hi - lo)); };
+    var s = '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Courbe de valeur en fonction du temps">';
+    [0, 1].forEach(function (g) {
+      s += '<line x1="' + L + '" x2="' + (W - R) + '" y1="' + Y(g) + '" y2="' + Y(g) + '" stroke="var(--line)" stroke-dasharray="4 4"/>' +
+           '<text x="' + (L - 6) + '" y="' + (Y(g) + 4) + '" text-anchor="end">' + g + '</text>';
+    });
+    var de = durEff();
+    [0, 0.25, 0.5, 0.75, 1].forEach(function (g) {
+      s += '<text x="' + X(g) + '" y="' + (H - 8) + '" text-anchor="' + (g === 1 ? "end" : g === 0 ? "start" : "middle") + '">' + fmt(g * de, 2) + ' s</text>';
+    });
+    s += '<polyline fill="none" stroke="var(--pink)" stroke-width="2.5" stroke-linejoin="round" points="' +
+         ys.map(function (v, k) { return X(k / 300).toFixed(1) + "," + Y(v).toFixed(1); }).join(" ") + '"/>';
+    for (i = 0; i <= n; i++) s += '<circle cx="' + X(i / n).toFixed(1) + '" cy="' + Y(val(i / n)).toFixed(1) + '" r="3.2" fill="var(--panel)" stroke="var(--ink)" stroke-width="1.4"/>';
+    $("plot").innerHTML = s + '</svg>';
+
+    var vals = []; for (i = 0; i <= n; i++) vals.push(val(i / n));
+    var vlo = Math.min(0, Math.min.apply(null, vals)), vhi = Math.max(1, Math.max.apply(null, vals));
+    var W2 = 640, H2 = 58, X2 = function (v) { return L + (v - vlo) / (vhi - vlo) * (W2 - L - R); };
+    var t = '<svg viewBox="0 0 ' + W2 + ' ' + H2 + '" role="img" aria-label="Charte d\'espacement : position à chaque image">' +
+            '<line x1="' + L + '" x2="' + (W2 - R) + '" y1="18" y2="18" stroke="var(--line)"/>';
+    vals.forEach(function (v, k) {
+      t += '<line x1="' + X2(v).toFixed(1) + '" x2="' + X2(v).toFixed(1) + '" y1="8" y2="28" stroke="' + (k === 0 || k === n ? "var(--pink)" : "var(--ink)") + '" stroke-width="2"/>';
+    });
+    t += '<text x="' + L + '" y="52">un trait par image (' + n + ' images, ' + S.fps + ' i/s)</text></svg>';
+    $("strip").innerHTML = t;
+    return vals;
+  }
+
+  /* ---------- mesures ---------- */
+  function metrics(vals) {
+    var n = frames(), de = durEff(), max = Math.max.apply(null, vals), i;
+    var fine = [], reach = null, settle = 0;
+    for (i = 0; i <= 600; i++) {
+      var v = val(i / 600); fine.push(v);
+      if (reach === null && v >= 0.995) reach = i / 600;
+      if (Math.abs(v - 1) > 0.01) settle = i / 600;
+    }
+    var c = BY[S.curve], settleS = c.phys ? springSettle(S.p.z, S.p.f, 0.01) : settle * de;
+    var tail = 0; for (i = n; i >= 1 && Math.abs(vals[i] - vals[i - 1]) < 0.005; i--) tail++;
+    var over = (max - 1) * 100;
+    var items = [
+      ["Dépassement", over > 0.05 ? fmt(over, 1) + " %" : "aucun", false],
+      ["Cible atteinte à", reach === null ? "jamais" : fmt(reach * 100, 0) + " % (" + fmt(reach * de, 2) + " s)", false],
+      ["Posé à ±1 % après", fmt(settleS, 2) + " s", c.phys && settleS > de + 1e-9],
+      ["Images presque immobiles en fin", tail + " sur " + n, tail >= Math.max(3, n * 0.3)]
+    ];
+    $("metrics").innerHTML = items.map(function (m) { return '<div class="m' + (m[2] ? " warn" : "") + '"><b>' + m[1] + '</b><span>' + m[0] + '</span></div>'; }).join("");
+    var note = "";
+    if (c.phys && settleS > de + 1e-9) note = "Le ressort n'est pas posé à la fin de la fenêtre (" + fmt(settleS, 2) + " s pour " + fmt(de, 2) + " s affichées) : allonge la durée ou raidis le ressort.";
+    else if (tail >= Math.max(3, n * 0.3)) note = tail + " des " + n + " images bougent à peine : l'élément semble arriver avant la fin. Raccourcis la durée ou choisis une courbe moins plate en fin de course.";
+    else if (S.curve === "linear") note = "Mouvement linéaire : à réserver aux défilements continus et aux fondus courts.";
+    $("note").textContent = note;
+    var rows = '<tr><th>image</th><th>temps (s)</th><th>valeur</th><th>écart</th></tr>';
+    for (i = 0; i <= n; i++) rows += '<tr><td>' + i + '</td><td>' + (i / S.fps).toFixed(3) + '</td><td>' + vals[i].toFixed(4) + '</td><td>' + (i ? (vals[i] - vals[i - 1]).toFixed(4) : "") + '</td></tr>';
+    $("table").innerHTML = rows;
+  }
+
+  /* ---------- code ---------- */
+  var RENDER_PY = { in_cubic: 1, out_cubic: 1, in_out_cubic: 1, in_out_sine: 1, out_expo: 1, in_expo: 1, out_back: 1, in_back: 1 };
+  var CSS_BEZ = {
+    linear: "0, 0, 1, 1", in_sine: "0.47, 0, 0.745, 0.715", out_sine: "0.39, 0.575, 0.565, 1", in_out_sine: "0.445, 0.05, 0.55, 0.95",
+    in_quad: "0.55, 0.085, 0.68, 0.53", out_quad: "0.25, 0.46, 0.45, 0.94", in_out_quad: "0.455, 0.03, 0.515, 0.955",
+    in_cubic: "0.55, 0.055, 0.675, 0.19", out_cubic: "0.215, 0.61, 0.355, 1", in_out_cubic: "0.645, 0.045, 0.355, 1",
+    out_quart: "0.165, 0.84, 0.44, 1", out_quint: "0.23, 1, 0.32, 1", in_out_quint: "0.86, 0, 0.07, 1", in_expo: "0.95, 0.05, 0.795, 0.035",
+    out_expo: "0.19, 1, 0.22, 1", in_out_expo: "1, 0, 0, 1", out_circ: "0.075, 0.82, 0.165, 1"
+  };
+  var REM = { linear: "Easing.linear", in_sine: "Easing.in(Easing.sin)", out_sine: "Easing.out(Easing.sin)", in_out_sine: "Easing.inOut(Easing.sin)",
+    in_quad: "Easing.in(Easing.quad)", out_quad: "Easing.out(Easing.quad)", in_out_quad: "Easing.inOut(Easing.quad)",
+    in_cubic: "Easing.in(Easing.cubic)", out_cubic: "Easing.out(Easing.cubic)", in_out_cubic: "Easing.inOut(Easing.cubic)",
+    out_quart: "Easing.out(Easing.poly(4))", out_quint: "Easing.out(Easing.poly(5))", in_out_quint: "Easing.inOut(Easing.poly(5))",
+    in_expo: "Easing.in(Easing.exp)", out_expo: "Easing.out(Easing.exp)", in_out_expo: "Easing.inOut(Easing.exp)",
+    out_circ: "Easing.out(Easing.circle)", out_bounce: "Easing.bounce" };
+  function code() {
+    var c = BY[S.curve], n = frames(), de = durEff(), p = S.p, d = fmt(de, 3);
+    var infoLine = n + " images à " + S.fps + " i/s = " + d + " s";
+    if (S.tab === "py") {
+      if (c.phys) return "# " + infoLine + " (la physique impose la durée : posé à ±1 % après " + fmt(springSettle(p.z, p.f, 0.01), 2) + " s)\n" +
+        "from easings import spring        # motion-timing/scripts/easings.py\n\ne = spring(t - t0, " + fmt(p.z, 2) + ", " + fmt(p.f, 1) + ")\nx = lerp(x0, x1, e)";
+      var call;
+      if (c.id === "bezier") call = "bezier(" + p.bz.map(function (v) { return fmt(v, 3); }).join(", ") + ")(seg(t, t0, t0 + " + d + "))";
+      else {
+        var args = "seg(t, t0, t0 + " + d + ")";
+        if (c.id.indexOf("back") >= 0) args += ", " + fmt(p.s, 2);
+        if (c.id === "out_elastic") args += ", " + fmt(p.period, 2);
+        call = c.id + "(" + args + ")";
+      }
+      var imp = RENDER_PY[c.id] ? "" : "from easings import " + c.id + "   # absent de render.py : motion-timing/scripts/easings.py\n";
+      return "# " + infoLine + "\n" + imp + "e = " + call + "\nx = lerp(x0, x1, e)";
+    }
+    if (S.tab === "css") {
+      var bz = c.id === "bezier" ? p.bz.map(function (v) { return fmt(v, 3); }).join(", ") : CSS_BEZ[c.id];
+      var samples = [], k, m = Math.min(40, Math.max(12, n * 2));
+      for (k = 0; k <= m; k++) samples.push(fmt(val(k / m), 3));
+      var s = "/* " + infoLine + " */\n";
+      if (bz) s += "transition: transform " + d + "s cubic-bezier(" + bz + ");   /* " + (c.id === "bezier" ? "exacte" : "approximation CSS de la formule") + " */\n\n";
+      s += "/* exacte pour toute courbe, y compris ressort et rebond (navigateurs récents) */\ntransition: transform " + d + "s linear(" + samples.join(", ") + ");";
+      return s;
+    }
+    var frames_ = n;
+    if (c.phys) {
+      var k2 = Math.pow(TAU * p.f, 2), cd = 2 * p.z * Math.sqrt(k2);
+      return "// équivalent physique exact du ressort (masse 1), vérifié contre spring() de Remotion\nconst e = spring({frame, fps: " + S.fps + ", config: {mass: 1, stiffness: " + fmt(k2, 1) + ", damping: " + fmt(cd, 2) + "}});\nconst x = interpolate(e, [0, 1], [x0, x1]);";
+    }
+    var easing;
+    if (c.id === "bezier") easing = "Easing.bezier(" + p.bz.map(function (v) { return fmt(v, 3); }).join(", ") + ")";
+    else if (c.id === "out_back") easing = "Easing.out(Easing.back(" + fmt(p.s, 2) + "))";
+    else if (c.id === "in_back") easing = "Easing.in(Easing.back(" + fmt(p.s, 2) + "))";
+    else if (c.id === "in_out_back") easing = "Easing.inOut(Easing.back(" + fmt(p.s, 2) + "))";
+    else easing = REM[c.id];
+    if (c.id === "out_elastic") return "// Easing.elastic de Remotion a une autre formule : pas d'équivalent exact de cette courbe.\n// Utiliser plutôt un ressort (onglet précédent avec « spring »), ou interpoler sur des échantillons :\nconst e = interpolate(frame, [0, " + frames_ + "], [0, 1], {extrapolateRight: 'clamp'});";
+    return "// " + infoLine + (c.id === "out_expo" || c.id === "in_expo" || c.id === "in_out_expo" ? "\n// écart < 0,001 avec la formule du film (réglage de borne de Remotion)" : "") +
+      "\nconst e = interpolate(frame, [0, " + frames_ + "], [0, 1], {\n  easing: " + easing + ",\n  extrapolateLeft: 'clamp',\n  extrapolateRight: 'clamp',\n});\nconst x = interpolate(e, [0, 1], [x0, x1]);";
+  }
+
+  /* ---------- aperçu animé ---------- */
+  var ghosts = [];
+  function buildGhosts(vals) {
+    var inner = $("inner");
+    ghosts.forEach(function (g) { g.remove(); }); ghosts = [];
+    vals.forEach(function (v, i) {
+      var g = document.createElement("i"); g.className = "ghost" + (i === vals.length - 1 ? " end" : "");
+      g.style.left = "calc(" + v + " * (100% - 56px))"; inner.insertBefore(g, $("sticker")); ghosts.push(g);
+    });
+  }
+  function apply(v) {
+    $("sticker").style.left = "calc(" + v + " * (100% - 56px))";
+    $("sq").style.transform = "scale(" + (0.55 + 0.45 * v) + ") rotate(" + (-14 + 11 * v) + "deg)";
+  }
+  var reduce = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var run = 0, startT = null;
+  function play() {
+    var id = ++run; startT = null;
+    function tick(now) {
+      if (id !== run) return;
+      if (startT === null) startT = now;
+      var t = (now - startT) / 1000, de = durEff(), n = frames(), cycle = de + 0.7;
+      if (reduce && t > de) { apply(val(1)); return; }
+      t = t % cycle;
+      var x = Math.min(t / de, 1);
+      if (S.stepped) x = Math.min(Math.floor(t * S.fps + 1e-6) / n, 1);
+      apply(val(x));
+      requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+  }
+  $("play").addEventListener("click", play);
+
+  /* ---------- code : onglets et copie ---------- */
+  $("tabs").querySelectorAll("button").forEach(function (b) {
+    b.addEventListener("click", function () {
+      S.tab = b.dataset.t;
+      $("tabs").querySelectorAll("button").forEach(function (o) { o.setAttribute("aria-selected", o === b ? "true" : "false"); });
+      $("code").textContent = code();
+    });
+  });
+  $("copy").addEventListener("click", function () {
+    var text = $("code").textContent, done = function (ok) { $("copied").textContent = ok ? " Copié." : " Sélectionne le texte et copie-le."; setTimeout(function () { $("copied").textContent = ""; }, 2500); };
+    try { navigator.clipboard.writeText(text).then(function () { done(true); }, function () { sel_(); done(false); }); } catch (e) { sel_(); done(false); }
+    function sel_() { var r = document.createRange(); r.selectNodeContents($("code")); var s = window.getSelection(); s.removeAllRanges(); s.addRange(r); }
+  });
+
+  function refresh() {
+    $("durv").textContent = fmt(durEff(), 3) + " s · " + frames() + " images";
+    $("dur").value = S.dur;
+    $("fps").querySelectorAll("button").forEach(function (b) { b.setAttribute("aria-pressed", String(+b.dataset.v === S.fps)); });
+    $("stepped").checked = S.stepped;
+    var vals = plot();
+    metrics(vals); buildGhosts(vals);
+    $("code").textContent = code();
+    save(); play();
+  }
+  sel.value = S.curve;
+  renderParams();
+  refresh();
+})();
+</script>

@@ -50,15 +50,31 @@ sous licence à 120 BPM sans toucher au montage.
 
 ## Outils de travail (skills Claude Code)
 
-Le dossier `.claude/skills/` contient sept skills qui outillent le travail sur le film : relecture
-(`motion-review` : planches-contacts, pelure d'oignon, courbe de mouvement et synchro son), canon de timing
-(`motion-timing`), direction artistique et journal des retours (`motion-direction`), API du moteur
-(`motion-engine`), analyse musicale et relevé des bruitages (`motion-audio-sync`), contrôle de livraison
-(`motion-delivery`) et guide des autres moteurs (`motion-tools`, avec un gabarit Remotion). Les scripts
-fonctionnent aussi seuls, par exemple :
+Le dossier `.claude/skills/` contient onze skills qui outillent le travail sur le film :
+
+| Skill | Rôle |
+|---|---|
+| `motion-direction` | préférences validées, direction artistique, journal des retours, planche de style générée depuis le code |
+| `motion-storyboard` | découpage en mesures, contrôles de rythme, **cohérence image ↔ son de la timeline** (`timeline_check.py`) |
+| `motion-timing` | canon chiffré des durées et des courbes, traceur d'easings |
+| `motion-engine` | API du moteur Python, pièges, rendu rapide de quelques images |
+| `motion-audio-sync` | tempo et structure d'une musique, relevé des bruitages comparé à l'image |
+| `motion-review` | planches-contacts, pelure d'oignon, courbe de mouvement et synchro son |
+| `motion-compare` | comparaison avant/après d'un rendu : où ça a changé, et rien d'autre |
+| `motion-delivery` | contrôle du fichier, loudness, zones sûres TikTok/Reels/Shorts |
+| `motion-accessibility` | flashs à risque photosensible, daltonisme, contraste |
+| `motion-captions` | sous-titres et texte incrusté, sur demande uniquement (le film n'a pas de texte) |
+| `motion-tools` | autres moteurs : Remotion (gabarit testé), Blender, Lottie, ffmpeg |
+
+Deux pages interactives, sources HTML dans le dépôt : `.claude/skills/motion-timing/assets/easing-lab.html` (courbes, ressorts,
+espacement image par image, code Python/CSS/Remotion) et `.claude/skills/motion-storyboard/assets/beat-planner.html`
+(découpage en mesures, frise d'énergie, export du brief JSON).
+
+Les scripts fonctionnent aussi seuls, par exemple :
 
 ```bash
 python3 .claude/skills/motion-review/scripts/motion_graph.py output/crochet_tiktok_60s.mp4 --bpm 120
 python3 .claude/skills/motion-delivery/scripts/check_delivery.py output/crochet_tiktok_60s.mp4
+python3 .claude/skills/motion-accessibility/scripts/flash_check.py output/crochet_tiktok_60s.mp4
+python3 .claude/skills/motion-storyboard/scripts/timeline_check.py
 ```
-

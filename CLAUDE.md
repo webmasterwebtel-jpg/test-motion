@@ -7,10 +7,13 @@ Film TikTok 9:16 généré par code (Python, Pillow, numpy, scipy, ffmpeg). Voir
 |---|---|
 | Avant de concevoir ou modifier quoi que ce soit, et à chaque retour de l'utilisateur | `motion-direction` (préférences, DA, journal des retours) |
 | Pour coder dans `motion/` | `motion-engine` (API du moteur, pièges, rendu rapide d'images) |
-| Pour choisir une durée, un easing ou un rythme | `motion-timing` |
+| Pour planifier un film ou une séquence en mesures, ou avant de changer un temps dans `collage.py` / `audio_collage.py` | `motion-storyboard` (brief, contrôles de rythme, `timeline_check.py`) |
+| Pour choisir une durée, un easing ou un rythme | `motion-timing` (+ Easing Lab interactif) |
 | Pour une musique, un bruitage ou la synchro | `motion-audio-sync` |
 | Après chaque rendu (je ne vois pas les vidéos : jamais de jugement sur 2 ou 3 images fixes) | `motion-review` |
-| Avant de livrer | `motion-delivery` (format, loudness, zones sûres) |
+| Après chaque correction, pour vérifier ce qui a changé et rien d'autre | `motion-compare` (prendre une copie « avant » d'abord) |
+| Avant de livrer | `motion-delivery` (format, loudness, zones sûres) puis `motion-accessibility` (flashs, daltonisme, contraste) |
+| Seulement si du texte est explicitement demandé (le film actuel n'en a pas) | `motion-captions` |
 | Si le moteur Python ne suffit plus | `motion-tools` (Remotion, Blender, Lottie, ffmpeg) |
 
 ## Rappels

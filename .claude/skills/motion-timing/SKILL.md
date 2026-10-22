@@ -63,3 +63,6 @@ ou s'arrête à l'écran. Il reste acceptable pour un défilement continu, une r
   (valeurs CSS/After Effects), `spring(t, damping, freq)` et `spring_settle`. Le module est importable (copier
   les fonctions utiles dans `motion/render.py`) et sert aussi à tracer les courbes (`--names`, `--dur`, `--list`).
 - `references/timing.md` : le canon détaillé (durées, valeurs mesurées des courbes, ressorts, BPM, texte).
+- `assets/easing-lab.html` : laboratoire interactif (artefact publié, source dans le dépôt). Choisir une courbe, régler la durée
+  en images, voir l'espacement réel et copier le code Python, CSS ou Remotion. Les équivalences Remotion ont été vérifiées
+  numériquement (exactes, sauf `exp` à moins de 0,001 près ; l'élastique n'a pas d'équivalent et la page le dit).
