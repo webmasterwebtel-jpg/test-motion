@@ -23,6 +23,16 @@ mes réflexes** : je les applique sans qu'on me les redemande. Le détail daté 
 6. Quand une voix off est demandée : une **voix féminine française naturelle**. La voix neuronale
    Kokoro `ff_siwis` a été préférée à la synthèse SVOX Pico, jugée trop robotique.
 
+## Préférences générales de l'utilisateur (tous projets)
+Exprimées le 2026-10-22 pour le film MyWebtel, à appliquer par défaut à toute vidéo :
+- **voix off naturelle**, bon timbre et bon rythme, qui « ne fasse pas IA » : vérifier chaque segment par transcription
+  (`mywebtel/asr.py`) et corriger la phonétique plutôt que d'accepter une diction douteuse ;
+- **musique de fond jamais plus forte que la voix** (ducking automatique sous la voix) ;
+- **effets et bruitages sans exagération** : au service du propos, jamais démonstratifs ;
+- quand une référence est donnée (ici « présentation Apple »), la suivre : une idée par plan, beaucoup d'air, sobriété ;
+- **pas de sous-titres** sauf demande explicite.
+Projet MyWebtel : direction détaillée dans `mywebtel/DIRECTION.md`.
+
 ## Direction artistique « Crochet Pop Collage »
 
 - **Collage mixed-media** : visuels détourés en *stickers* (liseré blanc, ombre portée dure,

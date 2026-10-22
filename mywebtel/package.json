@@ -1,0 +1,7 @@
+{
+  "name": "mywebtel-film",
+  "private": true,
+  "description": "Rendu du film de présentation MyWebtel (HTML piloté par le temps, Chromium + ffmpeg)",
+  "scripts": { "render": "node render.js" },
+  "dependencies": { "playwright-core": "1.56.1" }
+}

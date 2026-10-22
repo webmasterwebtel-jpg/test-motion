@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>MyWebtel — film de présentation</title>
+<style>
+@font-face { font-family: "Inter"; src: url(fonts/Inter-Regular.otf); font-weight: 400; }
+@font-face { font-family: "Inter"; src: url(fonts/Inter-Medium.otf); font-weight: 500; }
+@font-face { font-family: "Inter"; src: url(fonts/Inter-SemiBold.otf); font-weight: 600; }
+@font-face { font-family: "Inter"; src: url(fonts/Inter-Bold.otf); font-weight: 700; }
+@font-face { font-family: "InterDisplay"; src: url(fonts/InterDisplay-Medium.otf); font-weight: 500; }
+@font-face { font-family: "InterDisplay"; src: url(fonts/InterDisplay-SemiBold.otf); font-weight: 600; }
+@font-face { font-family: "InterDisplay"; src: url(fonts/InterDisplay-Bold.otf); font-weight: 700; }
+/* charte réelle de l'app (webtel-intra-clean/app/globals.css) + teintes douces dérivées */
+:root {
+  --paper: #f4f7fb; --white: #ffffff; --navy: #112d50; --ink: #061427; --muted: #66758a; --line: #dce3ec;
+  --green: #16784a; --green-soft: #e6f4ec; --red: #b42318; --red-soft: #fdeceb; --amber: #9a5b07; --amber-soft: #fff4df;
+  --sel: #1f5fae; --sel-soft: #e8f0fb; --night: #061427; --night2: #0c2443;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { width: 1920px; height: 1080px; overflow: hidden; background: var(--paper); }
+body { font-family: "Inter", sans-serif; color: var(--ink); -webkit-font-smoothing: antialiased; }
+#stage { position: absolute; inset: 0; overflow: hidden; background: var(--paper); }
+.layer, .scene { position: absolute; inset: 0; }
+.abs { position: absolute; }
+.center { position: absolute; left: 50%; top: 50%; }
+.fill { position: absolute; inset: 0; }
+svg.i { width: 1em; height: 1em; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+.display { font-family: "InterDisplay", "Inter", sans-serif; letter-spacing: -0.02em; }
+
+/* --- marque */
+.bm { width: 120px; height: 120px; border-radius: 34px; background: var(--navy); color: #fff; display: grid; place-items: center;
+      font-family: "InterDisplay"; font-weight: 700; font-size: 66px; letter-spacing: -0.03em; }
+.wordmark { font-family: "InterDisplay"; font-weight: 700; font-size: 132px; letter-spacing: -0.045em; color: var(--ink); }
+.wordmark b { font-weight: 700; color: var(--navy); }
+.eyebrow { font-size: 22px; font-weight: 600; letter-spacing: 0.32em; text-transform: uppercase; color: var(--muted); }
+
+/* --- verre sombre (ouverture) */
+.glass { background: rgba(255,255,255,0.065); border: 1px solid rgba(255,255,255,0.14); border-radius: 28px; color: #eef3fa;
+         box-shadow: 0 30px 80px rgba(0,0,0,0.35); display: flex; align-items: center; gap: 22px; padding: 28px 36px; }
+.glass .ic { width: 74px; height: 74px; border-radius: 20px; background: rgba(255,255,255,0.10); display: grid; place-items: center; font-size: 36px; }
+.glass .t1 { font-size: 31px; font-weight: 600; }
+.glass .t2 { font-size: 23px; color: rgba(238,243,250,0.62); margin-top: 4px; }
+.mini { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); border-radius: 14px; color: rgba(238,243,250,0.8);
+        display: flex; align-items: center; gap: 10px; padding: 10px 16px; font-size: 16px; font-weight: 500; white-space: nowrap; }
+.mini svg { font-size: 19px; opacity: 0.8; }
+
+/* --- cartes d'interface claires */
+.card { background: #fff; border: 1px solid var(--line); border-radius: 22px; box-shadow: 0 24px 70px rgba(17,45,80,0.10); }
+.pill { display: inline-flex; align-items: center; gap: 8px; border-radius: 999px; font-weight: 600; font-size: 15px; padding: 6px 12px; white-space: nowrap; }
+.pill .dot { width: 9px; height: 9px; border-radius: 50%; background: currentColor; }
+.p-green { background: var(--green-soft); color: var(--green); } .p-red { background: var(--red-soft); color: var(--red); }
+.p-amber { background: var(--amber-soft); color: var(--amber); } .p-grey { background: #eef2f7; color: var(--muted); }
+.p-sel { background: var(--sel-soft); color: var(--sel); } .p-navy { background: var(--navy); color: #fff; }
+.btn { background: var(--navy); color: #fff; border-radius: 14px; font-weight: 600; display: grid; place-items: center; }
+.muted { color: var(--muted); }
+.av { border-radius: 50%; display: grid; place-items: center; color: #fff; font-weight: 600; flex: none; }
+
+/* --- appareils génériques (aucune marque) */
+.laptop { position: absolute; }
+.laptop .lid { position: absolute; left: 0; top: 0; width: 1340px; height: 860px; border-radius: 30px; background: #0b1017; padding: 26px; box-shadow: 0 60px 120px rgba(6,20,39,0.28); }
+.laptop .scr { width: 100%; height: 100%; border-radius: 10px; overflow: hidden; background: var(--paper); position: relative; }
+.laptop .base { position: absolute; left: -90px; top: 860px; width: 1520px; height: 34px; border-radius: 0 0 26px 26px;
+                background: linear-gradient(#d9dee5, #aeb6c1); box-shadow: 0 30px 60px rgba(6,20,39,0.18); }
+.laptop .base::after { content: ""; position: absolute; left: 50%; top: 0; width: 240px; height: 12px; margin-left: -120px; border-radius: 0 0 12px 12px; background: #c3cad3; }
+.phone { position: absolute; width: 430px; height: 900px; border-radius: 68px; background: #0b1017; padding: 16px; box-shadow: 0 60px 120px rgba(6,20,39,0.30); }
+.phone .scr { width: 100%; height: 100%; border-radius: 54px; overflow: hidden; background: var(--paper); position: relative; }
+.tablet { position: absolute; width: 700px; height: 940px; border-radius: 44px; background: #0b1017; padding: 22px; box-shadow: 0 60px 120px rgba(6,20,39,0.28); }
+.tablet .scr { width: 100%; height: 100%; border-radius: 24px; overflow: hidden; background: var(--paper); position: relative; }
+
+/* --- application (bureau) */
+.app { position: absolute; inset: 0; display: flex; font-size: 15px; }
+.side { width: 250px; background: #fff; border-right: 1px solid var(--line); padding: 26px 18px; display: flex; flex-direction: column; gap: 4px; }
+.side .brand { display: flex; align-items: center; gap: 12px; margin: 0 6px 22px; font-weight: 700; font-size: 19px; }
+.side .brand .bm { width: 38px; height: 38px; border-radius: 11px; font-size: 21px; }
+.nav { display: flex; align-items: center; gap: 12px; padding: 11px 12px; border-radius: 12px; color: var(--muted); font-weight: 500; }
+.nav svg { font-size: 19px; }
+.nav.on { background: var(--sel-soft); color: var(--navy); font-weight: 600; }
+.main { flex: 1; padding: 30px 34px; display: flex; flex-direction: column; gap: 22px; min-width: 0; }
+.main .grid6 { flex: 1; grid-template-rows: 1fr 1fr auto; }
+.tile.wide { grid-column: 1 / span 3; display: flex; flex-direction: row; gap: 28px; align-items: stretch; }
+.chart { display: flex; align-items: flex-end; gap: 18px; height: 150px; padding-top: 10px; }
+.chart div { flex: 1; max-width: 64px; height: 100%; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; gap: 6px; font-size: 13px; color: var(--muted); }
+.chart i { display: block; width: 100%; border-radius: 8px 8px 4px 4px; background: #c9d6e6; }
+.chart i.today { background: var(--navy); }
+.top { display: flex; justify-content: space-between; align-items: center; }
+.hello { font-family: "InterDisplay"; font-weight: 700; font-size: 30px; letter-spacing: -0.02em; }
+.grid6 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+.tile { background: #fff; border: 1px solid var(--line); border-radius: 18px; padding: 20px; display: flex; flex-direction: column; gap: 10px; min-height: 176px; }
+.tile h4 { font-size: 15px; font-weight: 600; color: var(--muted); display: flex; align-items: center; gap: 9px; }
+.tile h4 svg { font-size: 18px; color: var(--navy); }
+.tile .big { font-family: "InterDisplay"; font-weight: 700; font-size: 34px; letter-spacing: -0.02em; }
+.tile .sub { font-size: 14px; color: var(--muted); }
+.bar { height: 8px; border-radius: 99px; background: #e9eef5; overflow: hidden; }
+.bar i { display: block; height: 100%; background: var(--navy); border-radius: 99px; }
+
+/* --- texte de titre (pas de sous-titres : quelques mots seulement) */
+.title { font-family: "InterDisplay"; font-weight: 700; letter-spacing: -0.035em; color: var(--ink); line-height: 1.02; }
+</style>
+</head>
+<body>
+<div id="stage"></div>
+<script src="film.js"></script>
+</body>
+</html>

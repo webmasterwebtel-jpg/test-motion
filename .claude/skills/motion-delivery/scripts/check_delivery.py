@@ -19,6 +19,8 @@ PROFILES = {
     "tiktok": dict(w=1080, h=1920, fps=(24, 60), max_dur=600, lufs=-14.0, lufs_tol=1.5, tp=-1.0),
     "reels": dict(w=1080, h=1920, fps=(24, 60), max_dur=180, lufs=-14.0, lufs_tol=1.5, tp=-1.0),
     "shorts": dict(w=1080, h=1920, fps=(24, 60), max_dur=180, lufs=-14.0, lufs_tol=1.5, tp=-1.0),
+    # film horizontal de présentation (site, salon, réunion, YouTube) : voix off, -16 LUFS comme les vidéos d'entreprise
+    "presentation": dict(w=1920, h=1080, fps=(24, 60), max_dur=600, lufs=-16.0, lufs_tol=1.0, tp=-1.0),
 }
 
 

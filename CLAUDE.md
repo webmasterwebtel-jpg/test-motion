@@ -21,3 +21,5 @@ Film TikTok 9:16 généré par code (Python, Pillow, numpy, scipy, ffmpeg). Voir
   Toute modification de timing se fait dans les deux fichiers.
 - `build/` n'est pas versionné. `python3 motion/prep.py` régénère les détourages (environ 25 s).
 - Rendu complet : `./make.sh` (dépendances : `pip install pillow numpy scipy`, plus ffmpeg).
+- Second projet : `mywebtel/`, film de présentation 16:9 avec voix off, rendu par Chromium à partir de HTML.
+  Voir `mywebtel/README.md` ; rendu complet `mywebtel/make.sh <modèles>`, contrôle `check_delivery.py --profile presentation`.
