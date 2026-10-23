@@ -5,6 +5,17 @@ Les entrées de 2026-10-01 ont été reconstituées à partir de l'historique Gi
 
 ---
 
+**2026-10-23** — Retour sur le film MyWebtel V1 : « la voix a un rythme trop lent et fait encore IA » ; « c'est
+exactement la plateforme que tu dois mettre, sans inventer », « mettre le bon logo » (Webtel, cercle bleu et combiné),
+montrer les fonctions de base (pointer, pause, finir la journée, ticket, justifier un pointage, absences, documents RH,
+documents) ; « impressionne-moi ». → Règles : cadence normale (voir SKILL.md), vrai logo, seulement les fonctions citées.
+→ V2 : nouveau texte (182 mots, 77 s), voix Kokoro mélangée (NISQA-TTS 4,84 contre 4,64) à 1,08 et silences rognés,
+mots datés par Parakeet pour caler chaque clic sur la voix ; logo vectorisé depuis l'image fournie ; une seule fenêtre
+d'application suivie par une caméra 3D ; écrans repris du code réel (libellés, styles) et modules recréés dans la même
+charte (pas d'accès à la plateforme en ligne : choix de l'utilisateur « Recrée sans captures »).
+
+---
+
 **2026-10-22 (soir)** — Nouvelle demande : un film de présentation de l'app **MyWebtel** (intranet de Webtel), « pro,
 premium », voix off naturelle « pas IA », musique jamais plus forte que la voix, effets sans exagération, style
 présentation Apple, sans sous-titres → préférences générales ajoutées dans SKILL.md ; direction dans

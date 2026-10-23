@@ -26,7 +26,11 @@ mes réflexes** : je les applique sans qu'on me les redemande. Le détail daté 
 ## Préférences générales de l'utilisateur (tous projets)
 Exprimées le 2026-10-22 pour le film MyWebtel, à appliquer par défaut à toute vidéo :
 - **voix off naturelle**, bon timbre et bon rythme, qui « ne fasse pas IA » : vérifier chaque segment par transcription
-  (`mywebtel/asr.py`) et corriger la phonétique plutôt que d'accepter une diction douteuse ;
+  (`mywebtel/vo.py` le fait) et corriger la phonétique plutôt que d'accepter une diction douteuse ;
+- **cadence normale, jamais lente** (retour du 2026-10-23) : ~190 mots/min pendant la parole, ~150 sur la durée
+  parlée, respirations de 0,1 à 0,7 s ; une voix à 115 mots/min a été jugée « trop lente, IA » ;
+- **montrer le vrai produit, avec le vrai logo, sans rien inventer** : partir du code et des visuels réels, et ne
+  montrer que les fonctions que l'utilisateur cite ;
 - **musique de fond jamais plus forte que la voix** (ducking automatique sous la voix) ;
 - **effets et bruitages sans exagération** : au service du propos, jamais démonstratifs ;
 - quand une référence est donnée (ici « présentation Apple »), la suivre : une idée par plan, beaucoup d'air, sobriété ;

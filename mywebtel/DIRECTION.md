@@ -1,31 +1,39 @@
 # MyWebtel — direction du film de présentation
 
-## Demande (22 octobre 2026)
-Vidéo motion design pro et premium pour présenter l'app MyWebtel et ses fonctionnalités. Voix off naturelle (bon timbre,
-bon rythme, « que ça ne fasse pas IA »), musique de fond **jamais plus forte que la voix**, effets et bruitages **sans
-exagération**, esprit **présentation Apple**, **sans sous-titres**. Source : le dossier fonctionnel MyWebtel.
+## Demande
+- **22 octobre 2026.** Vidéo motion design pro et premium pour présenter l'app MyWebtel et ses fonctionnalités. Voix off
+  naturelle (« que ça ne fasse pas IA »), musique **jamais plus forte que la voix**, bruitages **sans exagération**,
+  esprit **présentation Apple**, **sans sous-titres**.
+- **23 octobre 2026 (V2), retour de l'utilisateur :** voix trop lente, encore « IA » → cadence normale et naturelle.
+  Montrer **exactement la plateforme**, avec le **bon logo** (Webtel, cercle bleu et combiné, mention
+  « MYWEBTEL · ESPACE COLLABORATEUR »), **sans rien inventer**, et les fonctions de base : pointer, aller en pause,
+  finir la journée, justifier un pointage, absences, créer un ticket, documents RH, documents. « Impressionne-moi. »
+  Sans captures de la plateforme en ligne (inaccessible depuis l'environnement), l'utilisateur a choisi de recréer les
+  écrans dans la charte, limités à ces fonctions.
 
-## Parti pris
-- **Une idée par plan.** Chaque phrase de la voix a un seul visuel, centré, avec beaucoup d'air autour. Le texte à
-  l'écran se limite à des titres de quelques mots (ce ne sont pas des sous-titres : ils ne reprennent pas la voix mot à mot).
-- **Fond calme, produit lumineux.** Fonds blanc cassé (`#f4f7fb`, le fond réel de l'app) et bleu nuit (`#061427`) en
-  alternance ; la couleur vient de l'interface MyWebtel elle-même.
-- **Identité réelle de l'app** (dépôt `webtel-intra-clean`, `app/globals.css`) : marine `#112d50`, encre `#061427`,
-  gris `#66758a`, filets `#dce3ec`, fond `#f4f7fb`, vert `#16784a`, rouge `#b42318` ; logo carré arrondi « W » ;
-  vocabulaire de l'interface (« Ma journée », « Session de travail », matricule `WTL-00001`).
-- **Typographie** : Inter Display pour les titres (grands, serrés, graisse 600–700), Inter pour l'interface.
-- **Mouvement** : lent et précis. Entrées en `out_expo`/ressort ferme (dépassement ≤ 5 %), déplacements en
-  `in_out_cubic`, caméra en légère dérive continue (parallaxe), aucune secousse, aucun flash. Transitions par fondu
-  enchaîné, glissement ou zoom doux, calées sur les temps (100 BPM, 1 temps = 0,6 s).
-- **Son** : voix au premier plan ; musique calme (piano, nappe, pulsation légère) baissée automatiquement sous la voix ;
-  bruitages d'interface discrets (clics, glissés, carillon doux) à peine audibles.
+## Parti pris V2
+- **Un seul objet, une seule caméra.** La fenêtre de l'application reste à l'écran du début à la fin ; une caméra 3D
+  la suit (plans larges inclinés, gros plans sur le bouton cliqué) au lieu d'enchaîner des cartes. Chaque geste tombe
+  sur le mot que dit la voix (mots datés par transcription).
+- **Écrans fidèles au code réel** (`webtel-intra-clean`) : structure de `app/login/page.tsx`, `app/dashboard/page.tsx`
+  et `components/AttendanceCard.tsx`, styles de `app/globals.css` (Arial, marine `#112d50`, filets `#dce3ec`, fond
+  `#f4f7fb`…), libellés réels (« Activer ma session », « Terminer ma session », « Session de travail active »,
+  « Journée terminée », « Pointage enregistré. », « Pointage indisponible : vous devez être connecté au réseau
+  Webtel. »). Les modules pause, justification, absences, tickets et documents reprennent les mêmes composants.
+- **Logo réel** vectorisé depuis l'image fournie (`film/brand/`), animé : la marque tourne et se pose sur le premier
+  temps, le mot se dévoile ; à « au même endroit », le logo vole jusqu'à sa place dans la carte de connexion.
+- **Ouverture nuit, produit en lumière.** Les démarches du quotidien flottent dans la nuit, l'horloge s'emballe, puis la
+  lumière se fait sur le logo.
+- **Pas de sous-titres.** Seuls éléments de film hors application : l'heure de la journée (08:02, 12:31, 13:29, 17:46)
+  et deux annotations sur le réseau Webtel.
+- **Son** : voix au premier plan (~16 dB au-dessus de la musique pendant la parole), bruitages d'interface
+  synchronisés automatiquement sur les gestes du film (`cues.json`).
 
-## Ce que la vidéo ne fait pas
-- Elle ne cite que des fonctions décrites dans le dossier fonctionnel ; elle ne parle ni de la technique ni de la
-  géolocalisation (règle en cours d'évolution).
-- Elle n'utilise ni logo ni appareil d'une marque tierce : les écrans sont posés dans des cadres génériques.
+## Voix
+Kokoro, mélange 80 % `ff_siwis` + 20 % `af_heart`, vitesse 1,08 : meilleure note de naturel (NISQA-TTS 4,84 contre 4,64
+pour `ff_siwis` seule ; les voix Piper françaises plafonnent vers 3,2). ~150 mots/min sur la durée parlée, respirations
+courtes. Chaque segment est contrôlé par transcription (Parakeet) ; il ne reste que des homophones (« paie »/« paix »).
 
 ## Attention avant diffusion
-Le dossier fonctionnel décrit le **comportement souhaité** ; le dépôt actuel (V1) ne contient que la connexion et le
-pointage, les autres modules y sont « Bientôt disponible ». Vérifier que les fonctions montrées sont en service avant
-de diffuser la vidéo comme une présentation de l'existant.
+Les écrans des modules pause, justification, absences, tickets et documents sont recréés dans la charte (le dépôt ne
+contient que la connexion et le pointage) : faire valider la ressemblance avec la plateforme en service.

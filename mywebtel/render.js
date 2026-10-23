@@ -45,6 +45,11 @@ async function renderRange(browser, n0, n1, file) {
 (async () => {
   const browser = await chromium.launch({ executablePath: EXE, args: ["--no-sandbox", "--force-color-profile=srgb", "--disable-lcd-text", "--font-render-hinting=none"] });
   const t0 = Date.now();
+  {                                                     // repères du film pour les bruitages (sfx_mix.py)
+    const page = await openPage(browser);
+    fs.writeFileSync(path.join(OUT, "cues.json"), JSON.stringify(await page.evaluate(() => window.FILM), null, 1));
+    await page.context().close();
+  }
   if (args.includes("--stills")) {
     const dir = path.join(OUT, "stills"); fs.mkdirSync(dir, { recursive: true });
     const page = await openPage(browser);

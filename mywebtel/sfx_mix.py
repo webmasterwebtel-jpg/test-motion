@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Bruitages d'interface discrets + mixage final MyWebtel (voix, musique avec ducking, bruitages).
 
-Les instants des bruitages reprennent les formules de film/film.js (mêmes repères de timeline.json), pour que chaque son
-tombe sur son geste à l'image. Les sons sont synthétisés, courts et feutrés : présence, jamais démonstration.
+Les instants des bruitages viennent de build/mywebtel/cues.json, que render.js exporte depuis le film lui-même :
+chaque son tombe sur son geste à l'image, sans recopier les formules. Les sons sont synthétisés, courts et feutrés : présence, jamais démonstration.
 
 Règles de mixage (préférences de l'utilisateur) :
   - la voix domine ; la musique est ~10 dB sous la voix et s'abaisse encore de 7 dB pendant la parole (ducking lent) ;
@@ -114,94 +114,80 @@ def add(x, t0, gain=1.0, pan=0.0):
     bus[i0:i0 + n, 1] += x[:n] * r * gain * math.sqrt(2)
 
 
-def cues():
-    # 1. ouverture
-    for k, pan in enumerate((-0.5, 0.5, -0.4, 0.4)):
-        add(pop(480, 760, 0.45), segT("hook", k) - 0.12, 0.8, pan)
+def keys(t0, t1, n, gain=0.45, pan=0.0):
+    """Frappe au clavier : n déclics irréguliers entre t0 et t1."""
+    r = np.random.default_rng(int(t0 * 100))
+    for k in range(n):
+        add(tick(), t0 + (t1 - t0) * (k + r.uniform(-0.3, 0.3)) / max(n, 1), gain * r.uniform(0.7, 1.0), pan + r.uniform(-0.1, 0.1))
+
+
+def roll(t0, d=0.7, gain=0.35):
+    """Défilement rapide de l'heure : petits déclics qui ralentissent."""
     for k in range(10):
-        add(tick(), segT("hook", 4) + k * 0.16, 0.5, (k % 5 - 2) / 3)
-    add(air(2.4, 0.22), 11.7)
+        add(tick(), t0 + d * (1 - (1 - k / 10) ** 2), gain)
+
+
+def cues():
+    """Bruitages V2 : les instants viennent de build/mywebtel/cues.json, exporté par le film lui-même (render.js)."""
+    C = json.load(open(os.path.join(OUT, "cues.json")))
+    T = C["T"]
+    # 1. ouverture : une démarche = un petit « pop », puis l'horloge qui s'emballe
+    for k, t in enumerate(C["tasks"]):
+        add(pop(480, 760, 0.45), t, 0.8, (-0.5, 0.5, -0.4, 0.4)[k])
+    r0 = segT("hook", 1)
+    tt, k = r0, 0
+    while tt < T["logo"] - 0.6:
+        add(tick(), tt, 0.55, 0.15 * (-1) ** k)
+        tt += max(0.07, 0.3 * (1 - (tt - r0) / (T["logo"] - r0)) ** 1.5)
+        k += 1
+    add(air(1.6, 0.2), T["logo"] - 1.6)
     # 2. logo
-    logo = segT("reveal", 1)
-    add(air(1.4, 0.18), logo - 1.4)
-    add(thump(0.55), logo)
-    add(chime((1174.7, 1760.0), 0.12, 1.6), logo + 0.05)
-    # 3. vision
-    v0 = S0("vision")
-    add(swoosh(0.9, 300, 1800, 0.28), v0 - 0.4)
-    for k, w in enumerate(["collaborateurs", "horaires", "congés", "documents", "annonces", "devis"]):
-        add(pop(560, 900, 0.35), wordT("vision", 0, w) - 0.1, 0.8, -0.5 if k < 3 else 0.5)
-    add(swoosh(0.8, 2500, 600, 0.25), segT("vision", 1))
-    add(chime((1318.5, 1760.0), 0.1, 1.0), segT("vision", 1) + 0.75)
-    # 4. rôles (zoom de sortie de l'ordinateur)
-    add(swoosh(0.8, 400, 2200, 0.2), S0("roles") - 0.55)
-    for k in range(5):
-        add(swoosh(0.35, 800, 3000, 0.12), segT("roles", 0) + 0.05 + k * 0.09, 1, (k - 2) / 2.5)
-    for k, w in enumerate(["salarié", "manager", "rh", "direction", "administrateur"]):
-        add(tick(), wordT("roles", 1, w) + 0.25, 0.8, (k - 2) / 2.5)
-    for k in range(5):
-        add(pop(700, 1000, 0.18), segT("roles", 2) - 0.1 + k * 0.12, 1, (k - 2) / 2.5)
-    # 5. pointage
-    add(swoosh(0.7, 300, 1500, 0.22), S0("pointage") + 0.05)
-    for k in range(4):
-        add(tap(), partT("pointage", 1, k) - 0.08, 0.9, -0.3)
-    add(ping(), wordT("pointage", 2, "les RH") - 0.1, 1, 0.4)
-    for k in range(3):
-        add(pop(600, 820, 0.25), segT("pointage", 3) + 0.15 + k * 0.35, 1, 0.4)
-    # 6. congés
-    c0 = S0("conges")
-    add(swoosh(0.7, 300, 1500, 0.22), c0 + 0.05)
-    td = wordT("conges", 1, "dates") - 0.2
-    for k in range(4):
-        add(tick(), td + k * 0.12, 0.9, -0.3)
-    tm = wordT("conges", 1, "motif") - 0.1
-    for k in range(6):
-        add(tick(), tm + k * 0.1, 0.5, 0.2)
-    add(pop(500, 750, 0.35), wordT("conges", 1, "justificatif") - 0.05, 0.8, 0.2)
-    flowT = segT("conges", 2) - 0.25
-    add(tap(), flowT - 0.35, 0.9, 0.2)
-    for k in range(3):
-        add(chime((1318.5 * 2 ** (k / 12 * 2), 1975.5 * 2 ** (k / 12 * 2)), 0.09, 0.9), flowT + 0.5 + k * 0.85, 1, 0.4)
-    add(pop(700, 520, 0.25), segT("conges", 3) + 0.6, 1, 0.4)
-    # 7. documents
-    add(swoosh(0.7, 300, 1500, 0.2), S0("documents") + 0.05)
-    tp, tdl, tc = (partT("documents", 1, k) for k in range(3))
-    add(swoosh(0.5, 600, 2400, 0.2), tp - 0.15, 1, 0.4)
-    add(tap(), tdl - 0.05, 0.9, 0.4)
-    add(pop(800, 1100, 0.25), tdl + 0.7, 1, 0.4)
-    for k in range(7):
-        add(tick(), tc + 0.2 + k * 0.1, 0.45, -0.3)
-    # 8. annonces
-    add(swoosh(0.7, 300, 1500, 0.2), segT("annonces", 0) - 0.3)
-    tcl = wordT("annonces", 1, "clic") - 0.05
-    add(tap(), tcl, 1.0, -0.2)
-    add(chime((1568.0, 2093.0), 0.1, 1.0), tcl + 0.05, 1, -0.2)
-    # 9. devis
-    send = wordT("devis", 0, "arrive") - 0.6
-    add(tap(), send, 0.9, -0.5)
-    add(swoosh(1.0, 500, 2800, 0.28), send + 0.05, 1, 0.0)
-    add(pop(520, 820, 0.4), send + 1.0, 1, 0.5)
-    for k in (1, 2, 3):
-        add(tick(), segT("devis", k), 1.0, 0.4)
-    add(chime((1318.5, 1975.5), 0.1, 1.0), segT("devis", 3) + 0.05, 1, 0.4)
-    # 10. réglages
-    add(swoosh(0.9, 300, 1500, 0.2), S0("reglages") - 0.4)
-    k0 = segT("reglages", 1) + 0.45
-    for k in range(3):
-        add(tap(), k0 + k * 0.85, 0.8, 0.3)
-    sess = segT("reglages", 2) - 0.2
-    add(swoosh(0.9, 2000, 400, 0.18), sess)
-    add(thump(0.35), sess + 2.65)
-    add(tap(), sess + 2.65, 0.9)
-    # 11. partout
-    for w, pan in (("ordinateur", 0.0), ("tablette", -0.6), ("smartphone", 0.6)):
-        tw = wordT("partout", 0, w) - 0.25
-        add(swoosh(0.6, 400, 2000, 0.2), min(tw, S0("partout") + 0.05) if w == "ordinateur" else tw, 1, pan)
-    # 12. signature
-    logo2 = segT("signature", 0)
-    add(air(1.6, 0.16), logo2 - 1.6)
-    add(thump(0.5), logo2)
-    add(chime((1174.7, 1760.0), 0.12, 1.8), logo2 + 0.05)
+    add(thump(0.55), T["logo"])
+    add(chime((1174.7, 1760.0), 0.12, 1.6), T["logo"] + 0.05)
+    add(swoosh(0.6, 2200, 700, 0.12), T["tag"] - 0.1)
+    add(swoosh(1.2, 300, 1600, 0.24), T["winIn"])                   # la fenêtre monte
+    # 3. connexion : frappe du matricule et du mot de passe
+    keys(T["typeId"], T["typeId"] + 0.65, 9)
+    keys(T["typeId"] + 1.1, T["typeId"] + 1.7, 10)
+    # 4. clics (tous les clics du curseur) et changements de page
+    for t in C["clicks"]:
+        add(tap(), t - 0.02, 0.85, 0.15)
+    for t in C["nav"]:
+        add(swoosh(0.55, 500, 2200, 0.14), t - 0.1, 1, -0.2)
+    # 5. pointage : confirmations, heure qui défile, réseau
+    add(chime((1318.5, 1975.5), 0.1, 1.0), T["act"] + 0.45, 1, 0.1)
+    add(pop(700, 1000, 0.18), T["minute"] - 0.1, 1, -0.2)
+    add(swoosh(0.9, 400, 2000, 0.2), T["net"], 1, 0.5)
+    add(swoosh(0.8, 2000, 500, 0.16), T["netEnd"], 1, 0.5)
+    for t in (T["noon"], T["ret"], T["eve"]):
+        roll(t)
+    add(pop(600, 820, 0.22), T["pause"] + 0.05, 1, 0.1)
+    add(pop(820, 600, 0.2), T["resume"] + 0.05, 1, 0.1)
+    add(chime((1174.7, 1568.0), 0.11, 1.2), T["end"] + 0.05, 1, 0.1)
+    # 6. justification
+    add(swoosh(0.45, 600, 2600, 0.14), T["jus"] + 0.1)              # la fenêtre de saisie s'ouvre
+    keys(T["motif"] + 0.35, T["motif"] + 1.35, 14, 0.4)
+    add(pop(500, 750, 0.3), T["pj"] + 0.05, 0.8)
+    add(chime((1568.0, 2093.0), 0.08, 0.9), T["jsend"] + 0.25)
+    # 7. absences
+    add(pop(560, 900, 0.25), T["dem"] + 0.4, 1, 0.4)
+    add(pop(500, 750, 0.3), T["ajus"] + 0.05, 0.8, -0.2)
+    # 8. tickets
+    keys(T["tobj"], T["tobj"] + 0.8, 11, 0.4, -0.2)
+    keys(T["tobj"] + 0.95, T["tcreate"] - 0.35, 20, 0.4, -0.2)
+    add(pop(560, 900, 0.25), T["tcreate"] + 0.3, 1, 0.4)
+    add(chime((1318.5, 1760.0), 0.08, 0.9), T["tcharge"] + 0.1, 1, 0.4)
+    # 9. documents RH et documents
+    add(swoosh(0.5, 700, 2400, 0.14), T["payslip"] + 0.1, 1, 0.4)
+    add(pop(800, 1100, 0.22), T["dlT"] + 0.85, 1, 0.3)
+    add(thump(0.22), T["seul"] - 0.05)
+    add(tap(), T["seul"] - 0.05, 0.6)
+    for k, t in enumerate(C["docs"]):
+        add(pop(650 + 40 * k, 950 + 40 * k, 0.14), t, 1, -0.5 + 0.2 * k)
+    # 10. signature
+    add(air(1.4, 0.16), T["out"])
+    add(thump(0.5), T["final"])
+    add(chime((1174.7, 1760.0), 0.12, 1.8), T["final"] + 0.05)
 
 
 # ------------------------------------------------------------------ mixage

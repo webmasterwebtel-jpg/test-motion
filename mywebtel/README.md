@@ -1,6 +1,8 @@
 # MyWebtel : film de présentation
 
-Film de 2 min 05 (1920×1080, 30 i/s) qui présente l'intranet MyWebtel et ses fonctions, à partir du dossier fonctionnel.
+Film de 1 min 17 (1920×1080, 30 i/s) qui présente MyWebtel, l'espace collaborateur de Webtel, et ses fonctions de base :
+connexion, pointage (arrivée, pause, retour, fin de journée), justification d'un pointage, absences, tickets, documents RH
+et documents de l'entreprise.
 Voix off française, musique originale, bruitages d'interface discrets, sans sous-titres. Direction : `DIRECTION.md`.
 
 Rendu final : `output/mywebtel_presentation.mp4`. Regénération complète : `mywebtel/make.sh <dossier des modèles>`.
@@ -9,30 +11,31 @@ Rendu final : `output/mywebtel_presentation.mp4`. Regénération complète : `my
 | Étape | Fichier | Sortie (`build/mywebtel/`) |
 |---|---|---|
 | Texte de la voix, découpage en scènes, prononciations forcées | `script.py` | |
-| Voix off (Kokoro, voix `ff_siwis`), traitement studio, placement sur la grille 100 BPM | `vo.py` | `vo.wav`, `timeline.json` |
-| Contrôle de la diction par transcription (Whisper small) | `asr.py` | |
+| Voix off (Kokoro, mélange `ff_siwis` + `af_heart`), rognage, mots datés par transcription (Parakeet), traitement studio | `vo.py` | `vo.wav`, `timeline.json` |
+| Logo Webtel vectorisé depuis l'image fournie (potrace) | `vectorize_logo.py` | `film/brand/webtel-logo.svg` |
 | Musique composée en MIDI, rendue piste par piste (FluidSynth + MuseScore General) | `music.py` | `music.wav`, `music/` |
-| Bruitages synthétisés calés sur les gestes, ducking, loudness -16 LUFS | `sfx_mix.py` | `sfx.wav`, `mix.wav` |
+| Bruitages synthétisés calés sur les gestes du film, ducking, loudness -16 LUFS | `sfx_mix.py` | `sfx.wav`, `mix.wav` |
 | Film HTML piloté par le temps (`renderAt(t)`), lit `timeline.json` | `film/index.html`, `film/film.js` | |
-| Rendu image par image (Chromium + ffmpeg) | `render.js` | `video_silent.mp4` |
+| Rendu image par image (Chromium + ffmpeg) ; exporte aussi les repères des gestes | `render.js` | `video_silent.mp4`, `cues.json` |
 
-`timeline.json` est la seule source des temps : l'image (`film.js`) et les bruitages (`sfx_mix.py`) en dérivent.
+`timeline.json` (mots datés) est la seule source des temps : le film (`film.js`) en dérive ses gestes, et les bruitages
+(`sfx_mix.py`) lisent les gestes exportés par le film dans `cues.json`.
 Changer un texte dans `script.py` puis relancer `make.sh` recale tout.
 
 ## Dépendances
 - Python : `pip install numpy scipy soundfile pillow mido kokoro-onnx sherpa-onnx`
-- Système : `ffmpeg`, `fluidsynth`, `musescore-general-soundfont` (fichier `/usr/share/sounds/sf3/MuseScore_General_Full.sf3`)
+- Système : `ffmpeg`, `fluidsynth`, `musescore-general-soundfont` (fichier `/usr/share/sounds/sf3/MuseScore_General_Full.sf3`), `potrace`
 - Node : `npm ci` dans `mywebtel/` (playwright-core) et un Chromium (`CHROMIUM=/chemin/vers/chrome` si besoin)
 - Modèles (hors dépôt) :
   - voix : [kokoro-v1.0.onnx](https://github.com/thewh1teagle/kokoro-onnx/releases/download/model-files-v1.0/kokoro-v1.0.onnx) et [voices-v1.0.bin](https://github.com/thewh1teagle/kokoro-onnx/releases/download/model-files-v1.0/voices-v1.0.bin)
-  - transcription : [sherpa-onnx-whisper-small](https://github.com/k2-fsa/sherpa-onnx/releases/download/asr-models/sherpa-onnx-whisper-small.tar.bz2)
+  - transcription horodatée : [sherpa-onnx-nemo-parakeet-tdt-0.6b-v3-int8](https://github.com/k2-fsa/sherpa-onnx/releases/download/asr-models/sherpa-onnx-nemo-parakeet-tdt-0.6b-v3-int8.tar.bz2)
+  - voix Piper (option `ENGINE = "piper:<voix>"` dans `script.py`) : `vits-piper-fr_FR-*` des mêmes releases (`tts-models`), dans `<modèles>/tts/`
 
 ## Vérifier un passage
 ```bash
 node mywebtel/render.js --stills 42.8,61,93.6        # images fixes -> build/mywebtel/stills/
 python3 mywebtel/stills_sheet.py                     # planche des images fixes
 node mywebtel/render.js --range 39 54                # passage -> build/mywebtel/preview_39_54.mp4
-python3 mywebtel/asr.py <modèles>/sherpa-onnx-whisper-small build/mywebtel/vo_segs/*.wav
 ```
 
 ## Remplacer la voix
@@ -41,7 +44,9 @@ déposer les fichiers dans `build/mywebtel/vo_segs/` sous les mêmes noms, puis 
 de les synthétiser. Le placement, le film et le mixage suivent sans autre changement.
 
 ## À valider avant diffusion
-Le film montre les fonctions décrites dans le dossier fonctionnel. Dans le code actuel de l'application, seuls la connexion et
-le pointage sont en place : faire valider le contenu avant toute diffusion hors de l'équipe projet.
+La connexion et le pointage reprennent le code réel (`webtel-intra-clean`). Les écrans de pause, justification, absences,
+tickets et documents sont recréés dans la même charte, sans capture de la plateforme en ligne : faire valider leur
+ressemblance avant toute diffusion hors de l'équipe projet.
 
-Polices : Inter et Inter Display (SIL Open Font License, `film/fonts/COPYRIGHT-Inter.txt`).
+Polices : Inter et Inter Display (`film/fonts/COPYRIGHT-Inter.txt`), Liberation Sans, aux chasses d'Arial comme l'application
+(`film/fonts/COPYRIGHT-Liberation.txt`) ; toutes sous SIL Open Font License.

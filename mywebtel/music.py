@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """Musique de fond MyWebtel : composée en MIDI, rendue piste par piste avec FluidSynth (banque libre MuseScore General).
 
-100 BPM, une mesure = 2,4 s, ré majeur, un accord par mesure. L'arrangement suit les scènes de build/mywebtel/timeline.json :
-intro au piano seul, respiration sur la question, accord lumineux sur le logo (mesure 8), groove discret pendant les
-fonctions, respiration sur documents/annonces, montée vers le logo final (mesure 50), résolution plagale.
+100 BPM, une mesure = 2,4 s, ré majeur, un accord par mesure. L'arrangement suit les scènes de build/mywebtel/timeline.json
+(voir setup) : intro au piano seul sur la nuit, accord lumineux sur le logo, groove discret qui s'étoffe au fil des
+fonctions, montée, logo final et résolution.
 
 Sorties : build/mywebtel/music/<piste>.wav (48 kHz stéréo) et build/mywebtel/music.wav (mixage des pistes, sans ducking).
 Usage : python3 mywebtel/music.py
@@ -36,26 +36,37 @@ CH = {
     "A":     (45, [61, 64, 69, 71, 76]),
 }
 LOOP = ["Gmaj7", "D/F#", "Bm7", "Asus"]
-PLAN = {}                                    # mesure (1..52) -> accord
-for b, c in zip(range(1, 6), ["Bm7", "Gmaj7", "D/F#", "Asus", "Gmaj7"]):
-    PLAN[b] = c
-PLAN.update({6: "Em9", 7: "Asus", 8: "D", 9: "Bm7"})
-for b in range(10, 49):
-    PLAN[b] = LOOP[(b - 10) % 4]
-PLAN.update({48: "Gmaj9", 49: "Asus", 50: "D", 51: "Gmaj9", 52: "D"})
-NBARS = 52
+PLAN, SECTION = {}, {}                       # mesure (1..N) -> accord, section ; calculés depuis la timeline
+NBARS = 0
 
-# sections : quels instruments jouent
+
+def setup(tl):
+    """Arrangement calé sur la timeline V2 : intro (nuit) -> logo -> fonctions (A, A+, B) -> montée -> logo final."""
+    global NBARS
+    NBARS = int(round(tl["duration"] / BAR))
+    sc = {s["id"]: s for s in tl["scenes"]}
+    bar_of = lambda t: int(t // BAR) + 1
+    logo = bar_of(sc["reveal"]["start"] + 0.05)              # le logo tombe sur le premier temps de cette mesure
+    a_plus, b_sec = bar_of(sc["pause"]["start"]), bar_of(sc["ticket"]["start"])
+    final = bar_of(sc["signature"]["segs"][0]["words"][0][1] - 0.5 + BAR / 2)   # mesure la plus proche du « MyWebtel » final
+    intro = ["Bm7", "Gmaj7", "Asus", "Em9", "Asus"]
+    for b in range(1, NBARS + 1):
+        if b < logo:
+            PLAN[b], SECTION[b] = intro[(b - 1) % len(intro)] if b < logo - 1 else "Asus", "intro"
+        elif b < logo + 2:
+            PLAN[b], SECTION[b] = ("D" if b == logo else "Bm7"), "logo"
+        elif b < final - 1:
+            PLAN[b] = LOOP[(b - logo - 2) % 4]
+            SECTION[b] = "A" if b < a_plus else ("A+" if b < b_sec else "B")
+        elif b == final - 1:
+            PLAN[b], SECTION[b] = "Asus", "lift"
+        else:
+            PLAN[b], SECTION[b] = ["D", "Gmaj9", "D"][min(b - final, 2)], "end"
+    return logo, final
+
+
 def section(b):
-    if b <= 5: return "intro"
-    if b <= 7: return "question"
-    if b <= 9: return "logo"
-    if b <= 17: return "A"          # vision, rôles
-    if b <= 28: return "A+"         # pointage, congés
-    if b <= 36: return "breath"     # documents, annonces
-    if b <= 46: return "B"          # devis, réglages
-    if b <= 49: return "lift"       # partout
-    return "end"
+    return SECTION[b]
 
 
 class Track:
@@ -106,7 +117,7 @@ def compose():
             piano.note(B0, 3.5, voic[4] + 12, 30)
             piano.note(B0 + 2, 1.8, voic[2] + 12, 26)
         elif sec == "logo":
-            if b == 8:
+            if b == BELLS[0]:
                 for p in voic:
                     piano.note(B0, 7.5, p, 52)
                 piano.note(B0, 7.5, root, 46)
@@ -121,9 +132,9 @@ def compose():
                 for off, p in motif:
                     piano.note(B0 + off, 1.0, p, 44)
         elif sec == "end":
-            if b in (50, 52):
+            if b in (BELLS[1], NBARS):
                 for p in voic:
-                    piano.note(B0, 7.5 if b == 52 else 3.8, p, 48 if b == 50 else 38)
+                    piano.note(B0, 7.5 if b == NBARS else 3.8, p, 48 if b == BELLS[1] else 38)
             else:
                 for i, p in enumerate([voic[0], voic[2], voic[4], voic[2] + 12]):
                     piano.note(B0 + i * 0.5, 2.5, p, 34)
@@ -144,7 +155,7 @@ def compose():
                 for k, d in ((0, 1.4), (1.5, 0.45), (2, 1.4), (3.5, 0.45)):
                     bass.note(B0 + k, d, root + (12 if k == 3.5 else 0), 70)
         # --- cloche (célesta) : logo et fin
-        if b in (8, 50):
+        if b in BELLS:
             for i, p in enumerate([74, 78, 81, 85, 86]):
                 bell.note(B0 + i * 0.25, 2.5, p, 50)
         # --- batterie (canal 10) : discrète
@@ -184,6 +195,9 @@ def main():
     tl = json.load(open(os.path.join(OUT, "timeline.json")))
     total = tl["duration"]
     os.makedirs(os.path.join(OUT, "music"), exist_ok=True)
+    global BELLS
+    BELLS = setup(tl)
+    print("logo mesure %d, logo final mesure %d, %d mesures" % (BELLS[0], BELLS[1], NBARS))
     tracks = compose()
     # niveau relatif et égalisation par piste : rien ne doit occuper la zone 1–4 kHz de la voix
     shape = {
