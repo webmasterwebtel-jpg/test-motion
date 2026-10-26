@@ -27,8 +27,10 @@ mes réflexes** : je les applique sans qu'on me les redemande. Le détail daté 
 Exprimées le 2026-10-22 pour le film MyWebtel, à appliquer par défaut à toute vidéo :
 - **voix off naturelle**, bon timbre et bon rythme, qui « ne fasse pas IA » : vérifier chaque segment par transcription
   (`mywebtel/vo.py` le fait) et corriger la phonétique plutôt que d'accepter une diction douteuse ;
-- **cadence normale, jamais lente** (retour du 2026-10-23) : ~190 mots/min pendant la parole, ~150 sur la durée
-  parlée, respirations de 0,1 à 0,7 s ; une voix à 115 mots/min a été jugée « trop lente, IA » ;
+- **cadence normale** : ni lente (115 mots/min jugé « trop lent, IA » le 2026-10-23) ni précipitée (un film de 70 s
+  pour 8 fonctions jugé « trop rapide » le 2026-10-27) : ~135-150 mots/min sur la durée parlée, et pour une démo
+  produit ~10 s par fonction avec une respiration après chaque résultat ;
+- **accent français naturel** : ne jamais mélanger le timbre avec une voix d'une autre langue ;
 - **montrer le vrai produit, avec le vrai logo, sans rien inventer** : partir du code et des visuels réels, et ne
   montrer que les fonctions que l'utilisateur cite ;
 - **musique de fond jamais plus forte que la voix** (ducking automatique sous la voix) ;

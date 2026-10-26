@@ -146,6 +146,9 @@ def cues():
         add(tap(), t - 0.02, 0.85, 0.15)
     for t in C["nav"]:
         add(swoosh(0.4, 600, 2400, 0.1), t - 0.05, 1, -0.2)
+    # 3 bis. Mon espace : chaque carte mise en valeur
+    for k in ("dPoint", "dSolde", "dDocs", "dNote"):
+        add(pop(700, 960, 0.12), T[k] - 0.1, 1, 0.2)
     # 4. pointage : chaque état confirmé, l'heure qui défile
     for t in (T["in"], T["pause"], T["ret"], T["out"]):
         add(pop(700, 1000, 0.2), t + 0.06, 1, 0.1)
@@ -153,6 +156,7 @@ def cues():
     add(chime((1174.7, 1568.0), 0.1, 1.2), T["out"] + 0.1, 1, 0.1)
     add(pop(650, 900, 0.16), T["minute"] - 0.1, 1, 0.3)
     # 5. congés : la règle d'ancienneté mise en valeur
+    add(pop(700, 960, 0.12), T["solde"] - 0.1, 1, 0.2)
     add(chime((1318.5, 1760.0), 0.07, 1.0), T["rights"] - 0.15, 1, 0.3)
     # 6. absences : dates, justificatif, envoi, vérification
     add(tick(), T["declare"] + 0.15, 0.6); add(tick(), T["declare"] + 0.45, 0.6)
@@ -161,20 +165,23 @@ def cues():
     add(chime((1318.5, 1975.5), 0.07, 0.9), T["verif"], 1, 0.4)
     # 7. documents : un document arrive, filtre « Contrats »
     add(chime((1568.0, 2093.0), 0.08, 0.9), T["receive"] - 0.1, 1, 0.2)
+    add(pop(800, 1100, 0.18), T["dl"] + 0.6, 1, 0.3)                   # téléchargement
     # 8. demandes RH : frappe, envoi, suivi
     keys(T["fill"] - 0.2, T["fill"] + 0.4, 9, 0.4, -0.2)
     keys(T["fill"] + 0.5, T["reqSend"] - 0.2, 12, 0.4, -0.2)
     add(pop(560, 900, 0.25), T["reqSend"] + 0.2, 1, 0.4)
     add(pop(700, 1000, 0.16), T["process"], 1, 0.4)
+    for k, t in enumerate(T["steps"]):                                   # « étape par étape »
+        add(tick(), t - 0.05, 0.7, 0.2 + 0.15 * k)
     # 9. contenu : lecture confirmée
     add(chime((1568.0, 2093.0), 0.08, 0.9), T["confirm"] + 0.7, 1, 0.3)
     # 10. mail : frappe et envoi
-    keys(T["chat"] - 0.3, T["mailSend"] - 0.15, 22, 0.38, 0.2)
+    keys(T["chat"] - 0.3, T["mailSend"] - 0.15, 26, 0.38, 0.2)
     add(swoosh(0.35, 900, 3000, 0.12), T["mailSend"] + 0.05, 1, 0.3)
     add(pop(600, 880, 0.2), T["mailSend"] + 0.15, 1, 0.3)
     # 11. support IT : frappe, ticket envoyé, pris en charge
-    keys(T["ticket"] - 1.15, T["ticket"] - 0.75, 8, 0.4, -0.2)
-    keys(T["ticket"] - 0.7, T["ticket"] - 0.15, 12, 0.4, -0.2)
+    keys(T["tickType"] + 0.05, T["tickType"] + 0.7, 10, 0.4, -0.2)
+    keys(T["tickType"] + 0.8, T["ticket"] - 0.2, 16, 0.4, -0.2)
     add(pop(560, 900, 0.25), T["ticket"] + 0.2, 1, 0.4)
     add(chime((1318.5, 1760.0), 0.09, 1.0), T["charge"], 1, 0.4)
     # 12. signature

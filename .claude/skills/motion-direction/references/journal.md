@@ -5,6 +5,13 @@ Les entrées de 2026-10-01 ont été reconstituées à partir de l'historique Gi
 
 ---
 
+**2026-10-27** — « C'est bien, mais c'est trop rapide, on n'a pas le temps de bien voir » ; « l'accent doit être normal,
+voix normale, vitesse normale » ; « la voix doit être synchronisée à la vidéo ». → Règles : pour une démo produit, ~10 s
+par fonction et une respiration après chaque résultat ; ne jamais mélanger une voix d'une autre langue au timbre (accent) ;
+ouvrir chaque écran sur le mot qui le nomme. → V4 de 1 min 53, voix `ff_siwis` pure à 1,0.
+
+---
+
 **2026-10-26** — « Il faut la vraie interface » ; modules : Pointage, congés après 1 an d'ancienneté, Mes absences,
 Mes documents, Démarches RH, Contenu, Mail, Support IT ; voix naturelle, sans faute de prononciation. → Règle : ne jamais
 recréer une interface quand le client peut fournir la vraie ; la demander d'abord (captures, export HTML, accès). L'archive

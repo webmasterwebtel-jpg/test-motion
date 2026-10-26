@@ -1,6 +1,6 @@
 # MyWebtel : film de présentation
 
-Film de 1 min 10 (1920×1080, 30 i/s) qui présente MyWebtel, l'espace collaborateur de Webtel, **sur sa vraie interface** :
+Film de 1 min 53 (1920×1080, 30 i/s) qui présente MyWebtel, l'espace collaborateur de Webtel, **sur sa vraie interface** :
 pointage (arrivée, pause, retour, fin de journée), congés (droits ouverts après 1 an d'ancienneté), Mes absences,
 Mes documents, Mes demandes RH, Contenu, Mail et Support IT. Voix off française, musique originale, bruitages discrets,
 sans sous-titres. Direction : `DIRECTION.md`.
@@ -19,7 +19,7 @@ une iframe et ne fait que remplir les champs, cliquer et changer les états avec
 | Étape | Fichier | Sortie (`build/mywebtel/`) |
 |---|---|---|
 | Texte de la voix, découpage en scènes, prononciations forcées | `script.py` | |
-| Voix off (Kokoro, mélange `ff_siwis` + `af_heart`), rognage, mots datés par transcription (Parakeet), traitement studio | `vo.py` | `vo.wav`, `timeline.json` |
+| Voix off (Kokoro `ff_siwis`), rognage, mots datés par transcription (Parakeet), traitement studio | `vo.py` | `vo.wav`, `timeline.json` |
 | Logo Webtel vectorisé depuis l'image fournie (potrace) | `vectorize_logo.py` | `film/brand/webtel-logo.svg` |
 | Musique composée en MIDI, rendue piste par piste (FluidSynth + MuseScore General) | `music.py` | `music.wav`, `music/` |
 | Bruitages synthétisés calés sur les gestes du film, ducking, loudness -16 LUFS | `sfx_mix.py` | `sfx.wav`, `mix.wav` |

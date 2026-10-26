@@ -30,7 +30,7 @@ SR = 48000
 # ----------------------------------------------------------------------------- phonétique
 def phonemize(k, text):
     """Phonèmes espeak français, avec les corrections de OVERRIDES et sans marqueurs de langue « (en) »."""
-    pat = re.compile("|".join("(%s)" % p for p, _ in S.OVERRIDES))
+    pat = re.compile("|".join("(%s)" % p for p, _ in S.OVERRIDES), re.I)   # « Vous ouvrez » comme « vous ouvrez »
     parts, pos = [], 0
     for m in pat.finditer(text):
         if m.start() > pos:

@@ -16,6 +16,19 @@
   interne), Support IT (tickets). Voix naturelle, bonne prononciation, sans faute. L'utilisateur a fourni l'archive
   « MYWEBTEL_fichiers_retrouves_PARTIEL » : son aperçu HTML issu du PHP est la vraie interface utilisée par le film.
 
+- **27 octobre 2026 (V4) :** « c'est bien, mais trop rapide, on n'a pas le temps de bien voir ; présente bien les
+  fonctionnalités ; la voix et l'accent ne sont pas bons : accent normal, voix normale, vitesse normale, pas IA ; la voix
+  doit être synchronisée à la vidéo ».
+
+## Parti pris V4
+- **Le temps de voir** : 1 min 53 au lieu de 1 min 10 ; chaque fonction a sa phrase d'introduction, ses gestes un par un,
+  puis une respiration de 0,9 s où l'image se pose sur le résultat. Avant chaque changement d'écran, la caméra recule
+  pour montrer la barre latérale et le clic.
+- **Synchronisation** : chaque écran s'ouvre quand la voix prononce son nom (« Dans « Mes congés »… » → clic sur
+  « Mes congés »), chaque bouton est cliqué sur son verbe (« commencez », « pause », « revenez », « terminez »…).
+- **Voix** : Kokoro `ff_siwis` pure (le mélange avec une voix anglaise donnait l'accent jugé « pas normal »),
+  vitesse 1,0 (~135 mots/min sur la durée parlée), liaisons fautives corrigées par phonèmes.
+
 ## Parti pris V3
 - **La vraie interface, telle quelle** (barre latérale bleu nuit, logo, cartes, badges, libellés du PHP), chargée dans
   le film ; seuls changent les données de démonstration et les états qu'un utilisateur ferait changer.
