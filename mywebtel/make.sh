@@ -1,10 +1,12 @@
 #!/usr/bin/env bash
 # Film de présentation MyWebtel (1920x1080, voix off, musique, bruitages, sans sous-titres).
 # voix off -> musique -> bruitages + mixage -> rendu image (Chromium) -> mux final.
-# Usage : mywebtel/make.sh <dossier des modèles Kokoro>   (voir mywebtel/README.md)
+# Usage : mywebtel/make.sh <dossier des modèles> <APERCU-MYWEBTEL.html>   (voir mywebtel/README.md)
 set -euo pipefail
 cd "$(dirname "$0")/.."
-MODELS="${1:?dossier contenant kokoro-v1.0.onnx et voices-v1.0.bin}"
+MODELS="${1:?dossier des modèles (Kokoro, Parakeet)}"
+APERCU="${2:?aperçu HTML réel de MyWebtel (APERCU-MYWEBTEL.html)}"
+python3 mywebtel/prep_ui.py "$APERCU"
 python3 mywebtel/vo.py "$MODELS"
 python3 mywebtel/music.py
 python3 mywebtel/sfx_mix.py

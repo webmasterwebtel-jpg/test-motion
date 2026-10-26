@@ -11,7 +11,20 @@
   Sans captures de la plateforme en ligne (inaccessible depuis l'environnement), l'utilisateur a choisi de recréer les
   écrans dans la charte, limités à ces fonctions.
 
-## Parti pris V2
+- **26 octobre 2026 (V3) :** « il faut la vraie interface ». Modules à montrer : Pointage, congés (droit après 1 an
+  d'ancienneté), Mes absences, Mes documents (documents liés au contrat), Démarches RH, Contenu, Mail (discussion
+  interne), Support IT (tickets). Voix naturelle, bonne prononciation, sans faute. L'utilisateur a fourni l'archive
+  « MYWEBTEL_fichiers_retrouves_PARTIEL » : son aperçu HTML issu du PHP est la vraie interface utilisée par le film.
+
+## Parti pris V3
+- **La vraie interface, telle quelle** (barre latérale bleu nuit, logo, cartes, badges, libellés du PHP), chargée dans
+  le film ; seuls changent les données de démonstration et les états qu'un utilisateur ferait changer.
+- **Mail et Support IT** n'existent pas dans l'archive : écrans composés avec les composants de la plateforme, à
+  remplacer par les vrais dès qu'ils sont disponibles.
+- **Prononciation** : liaisons fautives corrigées une à une (« demandes-z-RH », « s'ouvrent-t », « l'IT » épelé…),
+  chaque phrase contrôlée par transcription.
+
+## Parti pris V2 (toujours valable pour la caméra, le logo et le son)
 - **Un seul objet, une seule caméra.** La fenêtre de l'application reste à l'écran du début à la fin ; une caméra 3D
   la suit (plans larges inclinés, gros plans sur le bouton cliqué) au lieu d'enchaîner des cartes. Chaque geste tombe
   sur le mot que dit la voix (mots datés par transcription).

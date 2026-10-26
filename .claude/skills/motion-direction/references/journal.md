@@ -5,6 +5,15 @@ Les entrées de 2026-10-01 ont été reconstituées à partir de l'historique Gi
 
 ---
 
+**2026-10-26** — « Il faut la vraie interface » ; modules : Pointage, congés après 1 an d'ancienneté, Mes absences,
+Mes documents, Démarches RH, Contenu, Mail, Support IT ; voix naturelle, sans faute de prononciation. → Règle : ne jamais
+recréer une interface quand le client peut fournir la vraie ; la demander d'abord (captures, export HTML, accès). L'archive
+fournie contenait l'aperçu HTML du PHP : le film V3 charge ces écrans réels dans des iframes et n'anime que les états
+(libellés exacts du PHP). Mail et Support IT, absents de l'archive, sont composés avec les composants de la plateforme.
+Liaisons fautives d'espeak corrigées par phonèmes (pluriel + sigle, verbe en -ent, « l'IT »).
+
+---
+
 **2026-10-23** — Retour sur le film MyWebtel V1 : « la voix a un rythme trop lent et fait encore IA » ; « c'est
 exactement la plateforme que tu dois mettre, sans inventer », « mettre le bon logo » (Webtel, cercle bleu et combiné),
 montrer les fonctions de base (pointer, pause, finir la journée, ticket, justifier un pointage, absences, documents RH,

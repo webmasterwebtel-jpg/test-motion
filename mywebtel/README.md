@@ -1,11 +1,19 @@
 # MyWebtel : film de présentation
 
-Film de 1 min 17 (1920×1080, 30 i/s) qui présente MyWebtel, l'espace collaborateur de Webtel, et ses fonctions de base :
-connexion, pointage (arrivée, pause, retour, fin de journée), justification d'un pointage, absences, tickets, documents RH
-et documents de l'entreprise.
-Voix off française, musique originale, bruitages d'interface discrets, sans sous-titres. Direction : `DIRECTION.md`.
+Film de 1 min 10 (1920×1080, 30 i/s) qui présente MyWebtel, l'espace collaborateur de Webtel, **sur sa vraie interface** :
+pointage (arrivée, pause, retour, fin de journée), congés (droits ouverts après 1 an d'ancienneté), Mes absences,
+Mes documents, Mes demandes RH, Contenu, Mail et Support IT. Voix off française, musique originale, bruitages discrets,
+sans sous-titres. Direction : `DIRECTION.md`.
 
-Rendu final : `output/mywebtel_presentation.mp4`. Regénération complète : `mywebtel/make.sh <dossier des modèles>`.
+Rendu final : `output/mywebtel_presentation.mp4`. Regénération complète : `mywebtel/make.sh <modèles> <APERCU-MYWEBTEL.html>`.
+
+## Vraie interface
+Les écrans viennent de l'aperçu HTML généré par le PHP de la plateforme (archive « MYWEBTEL_fichiers_retrouves_PARTIEL »,
+14/10/2026). `prep_ui.py` en extrait les neuf écrans, coupe scripts et transitions, remplace les données de test par des
+données de démonstration, et ajoute « Mail » et « Support IT » (absents de l'archive) avec les composants de la plateforme.
+Le résultat (`build/mywebtel/ui.json`) n'est **jamais versionné** : ce dépôt est public. Le film charge chaque écran dans
+une iframe et ne fait que remplir les champs, cliquer et changer les états avec les libellés réels du PHP
+(« Commencer ma journée », « Je pars en pause », « Je reviens de pause », « Terminer ma journée »…).
 
 ## Chaîne
 | Étape | Fichier | Sortie (`build/mywebtel/`) |
@@ -15,6 +23,7 @@ Rendu final : `output/mywebtel_presentation.mp4`. Regénération complète : `my
 | Logo Webtel vectorisé depuis l'image fournie (potrace) | `vectorize_logo.py` | `film/brand/webtel-logo.svg` |
 | Musique composée en MIDI, rendue piste par piste (FluidSynth + MuseScore General) | `music.py` | `music.wav`, `music/` |
 | Bruitages synthétisés calés sur les gestes du film, ducking, loudness -16 LUFS | `sfx_mix.py` | `sfx.wav`, `mix.wav` |
+| Vraie interface : écrans de l'aperçu PHP préparés pour le film | `prep_ui.py` | `ui.json` (non versionné) |
 | Film HTML piloté par le temps (`renderAt(t)`), lit `timeline.json` | `film/index.html`, `film/film.js` | |
 | Rendu image par image (Chromium + ffmpeg) ; exporte aussi les repères des gestes | `render.js` | `video_silent.mp4`, `cues.json` |
 
@@ -44,9 +53,8 @@ déposer les fichiers dans `build/mywebtel/vo_segs/` sous les mêmes noms, puis 
 de les synthétiser. Le placement, le film et le mixage suivent sans autre changement.
 
 ## À valider avant diffusion
-La connexion et le pointage reprennent le code réel (`webtel-intra-clean`). Les écrans de pause, justification, absences,
-tickets et documents sont recréés dans la même charte, sans capture de la plateforme en ligne : faire valider leur
-ressemblance avant toute diffusion hors de l'équipe projet.
+Les écrans « Mail » et « Support IT » sont composés avec les composants de la plateforme (ils ne figurent pas dans
+l'archive du 14/10) : remplacer par les vrais écrans dès qu'ils sont disponibles. Les données affichées sont fictives.
 
 Polices : Inter et Inter Display (`film/fonts/COPYRIGHT-Inter.txt`), Liberation Sans, aux chasses d'Arial comme l'application
 (`film/fonts/COPYRIGHT-Liberation.txt`) ; toutes sous SIL Open Font License.

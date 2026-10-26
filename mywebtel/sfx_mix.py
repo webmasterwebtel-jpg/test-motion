@@ -128,64 +128,57 @@ def roll(t0, d=0.7, gain=0.35):
 
 
 def cues():
-    """Bruitages V2 : les instants viennent de build/mywebtel/cues.json, exporté par le film lui-même (render.js)."""
+    """Bruitages V3 : les instants viennent de build/mywebtel/cues.json, exporté par le film lui-même (render.js)."""
     C = json.load(open(os.path.join(OUT, "cues.json")))
     T = C["T"]
-    # 1. ouverture : une démarche = un petit « pop », puis l'horloge qui s'emballe
+    # 1. ouverture : une démarche = un petit « pop », puis montée vers le logo
     for k, t in enumerate(C["tasks"]):
         add(pop(480, 760, 0.45), t, 0.8, (-0.5, 0.5, -0.4, 0.4)[k])
-    r0 = segT("hook", 1)
-    tt, k = r0, 0
-    while tt < T["logo"] - 0.6:
-        add(tick(), tt, 0.55, 0.15 * (-1) ** k)
-        tt += max(0.07, 0.3 * (1 - (tt - r0) / (T["logo"] - r0)) ** 1.5)
-        k += 1
-    add(air(1.6, 0.2), T["logo"] - 1.6)
-    # 2. logo
+    add(swoosh(1.4, 1800, 400, 0.14), C["tasks"][-1] + 1.4)            # les démarches convergent
+    add(air(1.8, 0.2), T["logo"] - 1.8)
+    # 2. logo, puis la fenêtre qui monte
     add(thump(0.55), T["logo"])
     add(chime((1174.7, 1760.0), 0.12, 1.6), T["logo"] + 0.05)
     add(swoosh(0.6, 2200, 700, 0.12), T["tag"] - 0.1)
-    add(swoosh(1.2, 300, 1600, 0.24), T["winIn"])                   # la fenêtre monte
-    # 3. connexion : frappe du matricule et du mot de passe
-    keys(T["typeId"], T["typeId"] + 0.65, 9)
-    keys(T["typeId"] + 1.1, T["typeId"] + 1.7, 10)
-    # 4. clics (tous les clics du curseur) et changements de page
+    add(swoosh(1.2, 300, 1600, 0.24), T["winIn"])
+    # 3. tous les clics et changements d'écran
     for t in C["clicks"]:
         add(tap(), t - 0.02, 0.85, 0.15)
     for t in C["nav"]:
-        add(swoosh(0.55, 500, 2200, 0.14), t - 0.1, 1, -0.2)
-    # 5. pointage : confirmations, heure qui défile, réseau
-    add(chime((1318.5, 1975.5), 0.1, 1.0), T["act"] + 0.45, 1, 0.1)
-    add(pop(700, 1000, 0.18), T["minute"] - 0.1, 1, -0.2)
-    add(swoosh(0.9, 400, 2000, 0.2), T["net"], 1, 0.5)
-    add(swoosh(0.8, 2000, 500, 0.16), T["netEnd"], 1, 0.5)
-    for t in (T["noon"], T["ret"], T["eve"]):
-        roll(t)
-    add(pop(600, 820, 0.22), T["pause"] + 0.05, 1, 0.1)
-    add(pop(820, 600, 0.2), T["resume"] + 0.05, 1, 0.1)
-    add(chime((1174.7, 1568.0), 0.11, 1.2), T["end"] + 0.05, 1, 0.1)
-    # 6. justification
-    add(swoosh(0.45, 600, 2600, 0.14), T["jus"] + 0.1)              # la fenêtre de saisie s'ouvre
-    keys(T["motif"] + 0.35, T["motif"] + 1.35, 14, 0.4)
-    add(pop(500, 750, 0.3), T["pj"] + 0.05, 0.8)
-    add(chime((1568.0, 2093.0), 0.08, 0.9), T["jsend"] + 0.25)
-    # 7. absences
-    add(pop(560, 900, 0.25), T["dem"] + 0.4, 1, 0.4)
-    add(pop(500, 750, 0.3), T["ajus"] + 0.05, 0.8, -0.2)
-    # 8. tickets
-    keys(T["tobj"], T["tobj"] + 0.8, 11, 0.4, -0.2)
-    keys(T["tobj"] + 0.95, T["tcreate"] - 0.35, 20, 0.4, -0.2)
-    add(pop(560, 900, 0.25), T["tcreate"] + 0.3, 1, 0.4)
-    add(chime((1318.5, 1760.0), 0.08, 0.9), T["tcharge"] + 0.1, 1, 0.4)
-    # 9. documents RH et documents
-    add(swoosh(0.5, 700, 2400, 0.14), T["payslip"] + 0.1, 1, 0.4)
-    add(pop(800, 1100, 0.22), T["dlT"] + 0.85, 1, 0.3)
-    add(thump(0.22), T["seul"] - 0.05)
-    add(tap(), T["seul"] - 0.05, 0.6)
-    for k, t in enumerate(C["docs"]):
-        add(pop(650 + 40 * k, 950 + 40 * k, 0.14), t, 1, -0.5 + 0.2 * k)
-    # 10. signature
-    add(air(1.4, 0.16), T["out"])
+        add(swoosh(0.4, 600, 2400, 0.1), t - 0.05, 1, -0.2)
+    # 4. pointage : chaque état confirmé, l'heure qui défile
+    for t in (T["in"], T["pause"], T["ret"], T["out"]):
+        add(pop(700, 1000, 0.2), t + 0.06, 1, 0.1)
+        roll(t - 0.05, 0.4, 0.25)
+    add(chime((1174.7, 1568.0), 0.1, 1.2), T["out"] + 0.1, 1, 0.1)
+    add(pop(650, 900, 0.16), T["minute"] - 0.1, 1, 0.3)
+    # 5. congés : la règle d'ancienneté mise en valeur
+    add(chime((1318.5, 1760.0), 0.07, 1.0), T["rights"] - 0.15, 1, 0.3)
+    # 6. absences : dates, justificatif, envoi, vérification
+    add(tick(), T["declare"] + 0.15, 0.6); add(tick(), T["declare"] + 0.45, 0.6)
+    add(pop(500, 750, 0.3), T["proof"] + 0.15, 0.8, -0.2)
+    add(pop(560, 900, 0.25), T["absSend"] + 0.25, 1, 0.4)
+    add(chime((1318.5, 1975.5), 0.07, 0.9), T["verif"], 1, 0.4)
+    # 7. documents : un document arrive, filtre « Contrats »
+    add(chime((1568.0, 2093.0), 0.08, 0.9), T["receive"] - 0.1, 1, 0.2)
+    # 8. demandes RH : frappe, envoi, suivi
+    keys(T["fill"] - 0.2, T["fill"] + 0.4, 9, 0.4, -0.2)
+    keys(T["fill"] + 0.5, T["reqSend"] - 0.2, 12, 0.4, -0.2)
+    add(pop(560, 900, 0.25), T["reqSend"] + 0.2, 1, 0.4)
+    add(pop(700, 1000, 0.16), T["process"], 1, 0.4)
+    # 9. contenu : lecture confirmée
+    add(chime((1568.0, 2093.0), 0.08, 0.9), T["confirm"] + 0.7, 1, 0.3)
+    # 10. mail : frappe et envoi
+    keys(T["chat"] - 0.3, T["mailSend"] - 0.15, 22, 0.38, 0.2)
+    add(swoosh(0.35, 900, 3000, 0.12), T["mailSend"] + 0.05, 1, 0.3)
+    add(pop(600, 880, 0.2), T["mailSend"] + 0.15, 1, 0.3)
+    # 11. support IT : frappe, ticket envoyé, pris en charge
+    keys(T["ticket"] - 1.15, T["ticket"] - 0.75, 8, 0.4, -0.2)
+    keys(T["ticket"] - 0.7, T["ticket"] - 0.15, 12, 0.4, -0.2)
+    add(pop(560, 900, 0.25), T["ticket"] + 0.2, 1, 0.4)
+    add(chime((1318.5, 1760.0), 0.09, 1.0), T["charge"], 1, 0.4)
+    # 12. signature
+    add(air(1.4, 0.16), T["end"])
     add(thump(0.5), T["final"])
     add(chime((1174.7, 1760.0), 0.12, 1.8), T["final"] + 0.05)
 

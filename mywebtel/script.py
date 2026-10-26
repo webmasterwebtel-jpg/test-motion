@@ -19,7 +19,7 @@ SPEED = 1.08
 TAIL = 3.0
 
 # (texte, gap après en secondes[, vitesse ou None[, inutilisé[, calage "beat" ou "bar"]]])
-# V3 (26/10) : les modules demandés par l'utilisateur, avec les noms de menus de la plateforme.
+# V3 (26/10) : les modules demandés par l'utilisateur, avec les libellés réels de la plateforme (aperçu PHP du 14/10).
 SCENES = [
     dict(id="hook", lead=0.9, segs=[
         ("Votre journée, vos démarches, vos échanges…", 0.25),
@@ -29,27 +29,29 @@ SCENES = [
         ("MyWebtel, votre espace collaborateur.", 0.6, None, 1, "bar"),
     ]),
     dict(id="pointage", lead=0.3, segs=[
-        ("Le matin, vous pointez votre arrivée en un clic.", 0.2),
+        ("Le matin, vous commencez votre journée en un clic.", 0.2),
         ("Votre pause, votre retour, votre départ :", 0.1),
-        ("votre journée est enregistrée, à la minute près.", 0.5),
+        ("tout est enregistré, à la minute près.", 0.5),
     ]),
     dict(id="conges", lead=0.2, segs=[
         ("Côté congés, la règle est simple :", 0.1),
-        ("vous y avez droit après un an d'ancienneté.", 0.5),
+        ("vos droits s'ouvrent après un an d'ancienneté.", 0.5),
     ]),
     dict(id="absences", lead=0.2, segs=[
-        ("Dans « Mes absences », vous retrouvez chacune de vos absences, et son statut.", 0.5),
+        ("Dans « Mes absences », vous déclarez une absence avec son justificatif,", 0.1),
+        ("et vous suivez sa vérification par les RH.", 0.5),
     ]),
     dict(id="documents", lead=0.2, segs=[
         ("« Mes documents », c'est l'endroit où vous recevez tous les documents liés à votre contrat.", 0.5),
     ]),
     dict(id="demarches", lead=0.2, segs=[
-        ("Une demande pour les RH ?", 0.15),
-        ("Dans « Démarches RH », vous choisissez la démarche, vous remplissez le formulaire,", 0.1),
-        ("et vous suivez la réponse au même endroit.", 0.5),
+        ("Une démarche RH ?", 0.15),
+        ("Dans « Mes demandes RH », vous choisissez le type de demande, vous remplissez le formulaire,", 0.1),
+        ("et vous suivez son traitement au même endroit.", 0.5),
     ]),
     dict(id="contenu", lead=0.2, segs=[
-        ("Dans « Contenu », vous lisez les notes et les actualités de l'entreprise.", 0.45),
+        ("Dans « Contenu », vous lisez les notes de la Direction, des RH et de l'IT,", 0.1),
+        ("et vous confirmez votre lecture.", 0.45),
     ]),
     dict(id="mail", lead=0.2, segs=[
         ("Avec « Mail », vous échangez avec vos collègues, en interne.", 0.45),
@@ -71,6 +73,11 @@ OVERRIDES = [
     (r"\bmanagers?\b", "manadʒˈœʁ"),       # le nom, pas le verbe « manager »
     (r"\brôles?\b", "ʁˈol"),               # o bref (sinon entendu « roule »)
     (r"\bDémarches RH\b", "demˈaʁʃ ɛʁˈaʃ"), # sans liaison fautive « démarches-z-RH »
+    (r"\bMes demandes RH\b", "me dəmˈɑ̃d ɛʁˈaʃ"),  # idem « demandes-z-RH »
+    (r"\bs'ouvrent\b", "sˈuvʁ"),            # le t final ne se prononce pas
+    (r"\bl'IT\b", "lajtˈi"),               # sinon « l » épelé
+    (r"\bdéclarez une\b", "deklaʁˈe yn"),  # liaisons facultatives, plus naturelles sans
+    (r"\baprès un an\b", "apʁˈɛ ɛ̃n ˈɑ̃"),
     (r"\bnotes\b", "nˈɔt"),                # sinon « notz »
     (r"\bliés à\b", "ljˈe a"),             # liaison facultative, plus naturelle sans
     (r"\bvous ouvrez un\b", "vuz uvʁˈe ɛ̃"), # liaison obligatoire après « vous », pas après « ouvrez »

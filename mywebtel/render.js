@@ -16,13 +16,15 @@ const args = process.argv.slice(2);
 const opt = (k, d) => { const i = args.indexOf(k); return i >= 0 ? args[i + 1] : d; };
 const FPS = +opt("--fps", 30), WORKERS = +opt("--workers", 3);
 const TL = JSON.parse(fs.readFileSync(path.join(OUT, "timeline.json"), "utf8"));
+// vraie interface MyWebtel (prep_ui.py) ; jamais versionnée
+const UI = fs.existsSync(path.join(OUT, "ui.json")) ? fs.readFileSync(path.join(OUT, "ui.json"), "utf8") : "{}";
 const EXE = process.env.CHROMIUM || "/opt/pw-browsers/chromium-1194/chrome-linux/chrome";
 
 async function openPage(browser) {
-  const ctx = await browser.newContext({ viewport: { width: 1920, height: 1080 }, deviceScaleFactor: 1 });
+  const ctx = await browser.newContext({ viewport: { width: 1920, height: 1080 }, deviceScaleFactor: 1, locale: "fr-FR" });
   const page = await ctx.newPage();
   page.on("pageerror", e => { console.error("erreur dans la page :", e.message); process.exitCode = 1; });
-  await page.addInitScript(`window.TL = ${JSON.stringify(TL)};`);
+  await page.addInitScript(`window.TL = ${JSON.stringify(TL)}; window.UI = ${UI};`);
   await page.goto("file://" + path.join(ROOT, "mywebtel", "film", "index.html"));
   await page.waitForFunction(() => window.READY === true, null, { timeout: 30000 });
   return page;
@@ -43,7 +45,8 @@ async function renderRange(browser, n0, n1, file) {
 }
 
 (async () => {
-  const browser = await chromium.launch({ executablePath: EXE, args: ["--no-sandbox", "--force-color-profile=srgb", "--disable-lcd-text", "--font-render-hinting=none"] });
+  const browser = await chromium.launch({ executablePath: EXE, args: ["--no-sandbox", "--force-color-profile=srgb", "--disable-lcd-text", "--font-render-hinting=none", "--lang=fr-FR"],
+    env: { ...process.env, LANG: "fr_FR.UTF-8", LANGUAGE: "fr_FR:fr", LC_ALL: "fr_FR.UTF-8" } });   // dates des formulaires en jj/mm/aaaa
   const t0 = Date.now();
   {                                                     // repères du film pour les bruitages (sfx_mix.py)
     const page = await openPage(browser);

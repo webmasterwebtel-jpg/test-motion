@@ -46,8 +46,9 @@ def setup(tl):
     NBARS = int(round(tl["duration"] / BAR))
     sc = {s["id"]: s for s in tl["scenes"]}
     bar_of = lambda t: int(t // BAR) + 1
-    logo = bar_of(sc["reveal"]["start"] + 0.05)              # le logo tombe sur le premier temps de cette mesure
-    a_plus, b_sec = bar_of(sc["pause"]["start"]), bar_of(sc["ticket"]["start"])
+    logo = int(round((sc["reveal"]["segs"][0]["words"][0][1] - 0.4) / BAR)) + 1   # même calcul que le film (onBar)
+    ids = [s["id"] for s in tl["scenes"]]
+    a_plus, b_sec = bar_of(sc[ids[3]]["start"]), bar_of(sc[ids[len(ids) * 2 // 3]]["start"])   # le groove s'étoffe par tiers
     final = bar_of(sc["signature"]["segs"][0]["words"][0][1] - 0.5 + BAR / 2)   # mesure la plus proche du « MyWebtel » final
     intro = ["Bm7", "Gmaj7", "Asus", "Em9", "Asus"]
     for b in range(1, NBARS + 1):
