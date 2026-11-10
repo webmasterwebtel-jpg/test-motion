@@ -3,6 +3,7 @@
 
 L'aperçu (archive « MYWEBTEL_fichiers_retrouves_PARTIEL », PHP du 14/10/2026) contient le rendu réel de 9 écrans :
 Mon espace, Pointage, Mes congés, Mes absences, Mes documents, Signature, Mes demandes RH, Contenu, Mon profil.
+L'écran « Signature » (document à signer et boîte de signature) est complété par le parcours IT11 (signatures.php).
 On garde leur HTML et leur CSS tels quels, avec seulement :
   - les scripts retirés et les transitions CSS coupées (rendu image par image reproductible) ;
   - des données de démonstration plus parlantes que « Compte TEST » (noms, textes de notes, documents, demandes) ;
@@ -19,8 +20,9 @@ import json, os, re, sys
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT = os.path.join(ROOT, "build", "mywebtel")
 SVG = '<svg class="mw-icon " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">{}</svg>'
-ICON_MAIL = SVG.format('<rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/>')
-ICON_SUPPORT = SVG.format('<path d="M4 14v-2a8 8 0 0 1 16 0v2"/><rect x="3" y="14" width="4" height="6" rx="1.5"/><rect x="17" y="14" width="4" height="6" rx="1.5"/><path d="M19 20a4 4 0 0 1-4 2h-2"/>')
+# icônes réelles du menu IT11 (interface.php : 'message' pour Mail, 'shield' pour Support IT)
+ICON_MAIL = SVG.format('<path d="M3 4h18v13H8l-5 4zM7 8h10m-10 5h6"/>')
+ICON_SUPPORT = SVG.format('<path d="m12 2 9 4v6c0 5-9 10-9 10S3 17 3 12V6zm-4 9 3 3 5-5"/>')
 ICON_DOC = SVG.format('<path d="M14 3H5v18h14V8zM14 3v5h5M8 12h8m-8 4h8"/>')
 ICON_SEND = SVG.format('<path d="M21 3 10 14M21 3l-7 18-4-7-7-4z"/>')
 ICON_CHEV = SVG.format('<path d="m9 6 6 6-6 6"/>')
@@ -48,8 +50,9 @@ def common(h, active=None):
     h = h.replace("transmise à au service RH", "transmise au service RH")
     h = h.replace("RH-TEST-001", "RH-2026-011")
     # menu : Mail et Support IT après Contenu
-    extra = (f'<a href="/mail" data-film="nav-mail">{ICON_MAIL}<span>Mail</span></a>'
-             f'<a href="/support" data-film="nav-support">{ICON_SUPPORT}<span>Support IT</span></a>')
+    # menu IT11 (interface.php, mw_navigation) : « Mail » (/discussions) et « Support IT » (/tickets) après « Contenu »
+    extra = (f'<a href="/discussions" data-film="nav-mail">{ICON_MAIL}<span>Mail</span></a>'
+             f'<a href="/tickets" data-film="nav-support">{ICON_SUPPORT}<span>Support IT</span></a>')
     h = re.sub(r'(<a href="/content"[^>]*>.*?</a>)', lambda m: m.group(1) + extra, h, count=1, flags=re.S)
     for href, key in (("/dashboard?personal=1", "dashboard"), ("/attendance", "attendance"), ("/leaves", "leaves"), ("/absences", "absences"),
                       ("/documents", "documents"), ("/hr-requests", "requests"), ("/content", "content")):
@@ -57,8 +60,8 @@ def common(h, active=None):
     if active:                                       # page composée : déplacer l'état actif du menu
         h = re.sub(r'(<a data-film="nav-[a-z]+" href="[^"]+") class="active" aria-current="page">(.*?)<span class="mw-nav-glow"></span></a>',
                    r'\1>\2</a>', h, count=1, flags=re.S)
-        h = h.replace(f'<a href="/{active}" data-film="nav-{"mail" if active == "mail" else "support"}">',
-                      f'<a href="/{active}" data-film="nav-{"mail" if active == "mail" else "support"}" class="active" aria-current="page">')
+        route = {"mail": "/discussions", "support": "/tickets"}[active]
+        h = h.replace(f'<a href="{route}" data-film="nav-{active}">', f'<a href="{route}" data-film="nav-{active}" class="active" aria-current="page">')
         h = re.sub(rf'(data-film="nav-{"mail" if active == "mail" else "support"}" class="active" aria-current="page">.*?</span>)</a>',
                    r'\1<span class="mw-nav-glow"></span></a>', h, count=1, flags=re.S)
     return h
@@ -167,7 +170,7 @@ def build(pages):
     h = set_title(h, "Mail", "Mail")
     convs = [("Moussa Diallo", "ÉQUIPE COMMERCIALE", "Réunion client de jeudi", "09:42", True), ("Service RH", "RH", "Votre attestation est prête", "Hier", False),
              ("Fatou Sarr", "SUPPORT", "Planning de la semaine", "Lundi", False)]
-    lst = "".join(f'<a href="/mail" class="{"selected" if sel else ""}"><span>{tag}<small>{"● 1 nouveau" if sel else ""}</small></span><h3>{subj}</h3><p>{who} · {when}</p></a>'
+    lst = "".join(f'<a href="/discussions" class="{"selected" if sel else ""}"><span>{tag}<small>{"● 1 nouveau" if sel else ""}</small></span><h3>{subj}</h3><p>{who} · {when}</p></a>'
                   for who, tag, subj, when, sel in convs)
     msgs = (f'<article class="mw-comment"><span class="mw-avatar">MD</span><div><b>Moussa Diallo</b><time>09:42</time><p>Bonjour Aïssatou, tu peux me confirmer l’heure de la réunion de jeudi ?</p></div></article>'
             f'<article class="mw-comment" data-film="mail-reply" style="flex-direction:row-reverse;text-align:right"><span class="mw-avatar">AN</span><div><b>Aïssatou Ndiaye</b><time>09:44</time><p data-film="mail-reply-text">C’est confirmé : jeudi à 10 h, en salle de réunion à Ouakam.</p></div></article>')
@@ -207,8 +210,74 @@ def build(pages):
     return ui
 
 
+def build_signature(pages):
+    """« Mes documents » avec un document à signer et la boîte de signature réelle de l'aperçu (octobre), complétée par
+    le parcours IT11 de signatures.php : onglets « Nom manuscrit » / « Dessiner », code à 6 chiffres reçu par e-mail
+    (valable 10 minutes par défaut), consentement et bouton « Confirmer et signer le document »."""
+    h = common(pages["signature"])
+    h = h.replace("Décompte de prestation — Septembre 2026", "Avenant au contrat de travail").replace(">Décompte de prestation<", ">Contrat<")
+    h = h.replace("Émis le 15/10/2026", "Émis le 10/11/2026")
+    h = h.replace('<span class="mw-badge amber">À signer</span>', '<span class="mw-badge amber" data-film="sign-badge">À signer</span>')
+    h = re.sub(r'<b>DOCUMENT DE DÉMONSTRATION</b><hr>.*?</div>',
+               '<b>AVENANT AU CONTRAT DE TRAVAIL</b><hr><p style="color:#5d7898">Webtel · Aïssatou Ndiaye</p>'
+               + "".join(f'<i style="display:block;height:7px;margin:9px 0;border-radius:4px;background:#e3eaf3;width:{w}%"></i>' for w in (92, 84, 96, 70, 88, 64))
+               + '<div style="display:flex;justify-content:space-between;margin-top:16px;font-size:9px;color:#5d7898"><span>Pour WEBTEL<br><b style="font:italic 15px Z003,cursive;color:#173a63">Direction</b></span>'
+               + '<span>Le collaborateur<br><b data-film="sign-on-doc" style="font:italic 15px Z003,cursive;color:#173a63;opacity:0">Aïssatou Ndiaye</b></span></div></div>', h, count=1, flags=re.S)
+    h = h.replace('<button class="mw-button mw-wide mw-sign-open" type="button">', '<button class="mw-button mw-wide mw-sign-open" type="button" data-film="sign-open">')
+    h = h.replace('<dialog class="mw-sign-dialog"', '<dialog class="mw-sign-dialog" data-film="sign-dialog" style="max-height:880px"')
+    h = h.replace('value="Aïssatou Ndiaye" minlength="3"', 'value="Aïssatou Ndiaye" readonly minlength="3"')
+    tabs = ('<div class="mw-tabs" data-film="sign-tabs" style="margin:14px 0 4px"><button type="button" class="mw-tab selected" data-sign-mode="name">Nom manuscrit</button>'
+            '<button type="button" class="mw-tab" data-sign-mode="draw">Dessiner</button></div>')
+    h = h.replace('<h3>Choisissez votre signature</h3>', tabs + '<div data-film="sign-name-mode"><h3>Choisissez votre signature</h3>', 1)
+    draw = ('<div data-film="sign-draw-mode" hidden><canvas data-film="sign-canvas" width="900" height="260" aria-label="Aperçu et dessin de votre signature" '
+            'style="display:block;width:100%;height:150px;border:1px dashed #b9cde3;border-radius:12px;background:#fbfdff;margin-top:12px"></canvas>'
+            '<button type="button" class="mw-text-link" style="background:none;border:0;margin-top:6px">Effacer / recommencer</button></div>')
+    code = ('<div data-film="sign-code-block" style="margin:14px 0 6px"><p class="mw-muted" style="margin-bottom:8px">Cliquez pour recevoir un code à <b>a.ndiaye@mywebtel.com</b>. Le code sera valable 10 minutes.</p>'
+            '<div style="display:flex;gap:12px;align-items:flex-end"><button type="button" class="mw-outline" data-film="sign-code-btn">Recevoir mon code par e-mail</button>'
+            '<label style="flex:1;margin:0">Code reçu par e-mail<input data-film="sign-code" inputmode="numeric" maxlength="6" style="letter-spacing:.35em;font-weight:700"></label></div></div>')
+    h = re.sub(r'(<h3>Aperçu de votre signature</h3><div class="mw-sign-preview[^"]*"[^>]*>.*?</div>)', lambda m: m.group(1) + '</div>' + draw + code, h, count=1, flags=re.S)
+    h = h.replace('<div class="mw-sign-preview', '<div data-film="sign-preview" class="mw-sign-preview', 1)
+    h = h.replace('<input type="checkbox" name="consent" value="1" required> Je confirme avoir lu et accepté ce document.',
+                  '<input type="checkbox" name="consent" value="1" required data-film="sign-consent"> Je confirme avoir lu et accepté ce document et souhaite le signer.')
+    h = re.sub(r'<p class="mw-muted">(<svg.*?</svg>)Votre identité, la date, l’heure et l’empreinte du document seront enregistrées dans une preuve de signature distincte.</p>',
+               r'<p class="mw-muted">\1La date, l’heure, le compte et la vérification par e-mail sont conservés dans la preuve.</p>', h, count=1, flags=re.S)
+    h = re.sub(r'<button class="mw-button">(<svg.*?</svg>)Confirmer et signer</button>', r'<button class="mw-button" data-film="sign-confirm">\1Confirmer et signer le document</button>', h, count=1, flags=re.S)
+    for k in (1, 2, 3):
+        h = h.replace(f'<input type="radio" name="signature_style" value="{k}"', f'<input type="radio" name="signature_style" value="{k}" data-film="sign-style-{k}"', 1)
+    return h
+
+
+def build_agent(pages):
+    """« Mon espace » avec le panneau de l'agent MyWebtel. L'archive IT11 ne contient pas l'interface de l'agent
+    (agent-intranet/console.php absent) : le panneau est composé avec les composants de la plateforme (mw-card,
+    mw-comment, mw-button, mw-badge) et les libellés du code (« Agent MyWebtel », préparation puis confirmation)."""
+    h = common(pages["dashboard"])
+    h = h.replace("Bonjour <em>Compte.</em>", "Bonjour <em>Aïssatou.</em>")
+    h = h.replace("<time data-live-clock>18:08<small>:10</small></time>", "<time data-live-clock>10:42<small>:05</small></time>")
+    spark = SVG.format('<path d="M12 3l1.8 4.7L18.5 9.5l-4.7 1.8L12 16l-1.8-4.7L5.5 9.5l4.7-1.8z"/><path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8z"/>')
+    panel = (f'<button type="button" class="mw-button" data-film="agent-launcher" style="position:fixed;right:28px;bottom:26px;z-index:60;border-radius:999px;padding:14px 22px;box-shadow:0 14px 40px #0078f855">{spark}Agent MyWebtel</button>'
+             '<section class="mw-card" data-film="agent-panel" style="position:fixed;right:28px;bottom:26px;top:104px;width:470px;z-index:61;display:flex;flex-direction:column;padding:0;overflow:hidden;box-shadow:0 30px 80px #0b2a4d40">'
+             f'<div style="display:flex;align-items:center;gap:12px;padding:18px 20px;background:linear-gradient(115deg,#06213e,#0b3a66);color:#fff"><span class="mw-avatar" style="width:40px;height:40px;font-size:15px">{spark}</span>'
+             '<div style="flex:1"><b style="display:block;font-size:15px">Agent MyWebtel</b><small style="color:#a9c6e6;font-size:11px">Répond à partir de vos données · rien n’est envoyé sans votre confirmation</small></div></div>'
+             '<div data-film="agent-thread" style="flex:1;padding:18px;display:flex;flex-direction:column;gap:12px;overflow:hidden;background:#f6faff">'
+             '<article class="mw-comment" data-film="agent-hello"><span class="mw-avatar" style="font-size:12px">IA</span><div><b>Agent MyWebtel</b><p>Bonjour Aïssatou, comment puis-je vous aider ?</p></div></article>'
+             '<article class="mw-comment" data-film="agent-q" style="flex-direction:row-reverse;text-align:right"><span class="mw-avatar">AN</span><div><b>Aïssatou Ndiaye</b><p data-film="agent-q-text"></p></div></article>'
+             '<article class="mw-comment" data-film="agent-a"><span class="mw-avatar" style="font-size:12px">IA</span><div><b>Agent MyWebtel</b><p data-film="agent-a-text"></p></div></article>'
+             '<div class="mw-card" data-film="agent-prep" style="margin-left:52px;padding:14px 16px;border:1px solid #cfe3f7;border-radius:14px">'
+             '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><b style="font-size:13px">Demande de congé préparée</b><span class="mw-badge amber" data-film="agent-prep-badge">À confirmer</span></div>'
+             '<p class="mw-muted" style="font-size:12px;line-height:1.7">Congés payés · du 22/12/2026 au 24/12/2026<br>3 jours ouvrables · Validation : Manager → RH</p>'
+             '<div style="display:flex;gap:10px;margin-top:10px" data-film="agent-prep-actions"><button type="button" class="mw-outline" style="flex:1">Annuler</button><button type="button" class="mw-button" data-film="agent-confirm" style="flex:1">Confirmer</button></div></div>'
+             '</div>'
+             '<div style="padding:12px 14px;border-top:1px solid #e1ebf5;background:#fff"><div data-film="agent-chips" style="display:flex;gap:8px;margin-bottom:10px">'
+             '<span class="mw-badge blue">Mon solde de congés</span><span class="mw-badge blue">Une démarche RH</span><span class="mw-badge blue">Un souci technique</span></div>'
+             f'<div class="mw-comment-compose"><textarea data-film="agent-input" placeholder="Posez votre question…" aria-label="Question"></textarea><button class="mw-button" data-film="agent-send" aria-label="Envoyer">{ICON_SEND}</button></div></div></section>')
+    return h.replace("</main>", "</main>" + panel, 1)
+
+
 def main():
     ui = build(load_pages(sys.argv[1]))
+    ui["agent"] = build_agent(load_pages(sys.argv[1]))
+    ui["sign"] = build_signature(load_pages(sys.argv[1]))
     os.makedirs(OUT, exist_ok=True)
     with open(os.path.join(OUT, "ui.json"), "w", encoding="utf-8") as f:
         json.dump(ui, f, ensure_ascii=False)

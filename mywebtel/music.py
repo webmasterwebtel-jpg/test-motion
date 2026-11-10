@@ -49,7 +49,7 @@ def setup(tl):
     logo = int(round((sc["reveal"]["segs"][0]["words"][0][1] - 0.4) / BAR)) + 1   # même calcul que le film (onBar)
     ids = [s["id"] for s in tl["scenes"]]
     a_plus, b_sec = bar_of(sc[ids[3]]["start"]), bar_of(sc[ids[len(ids) * 2 // 3]]["start"])   # le groove s'étoffe par tiers
-    final = bar_of(sc["signature"]["segs"][0]["words"][0][1] - 0.5 + BAR / 2)   # mesure la plus proche du « MyWebtel » final
+    final = bar_of(tl["scenes"][-1]["segs"][0]["words"][0][1] - 0.5 + BAR / 2)   # mesure la plus proche du « MyWebtel » final
     intro = ["Bm7", "Gmaj7", "Asus", "Em9", "Asus"]
     for b in range(1, NBARS + 1):
         if b < logo:

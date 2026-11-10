@@ -5,6 +5,16 @@ Les entrées de 2026-10-01 ont été reconstituées à partir de l'historique Gi
 
 ---
 
+**2026-11-10** — Nouvelle archive IT11 : présenter l'agent IA et la signature de documents (code de validation par
+e-mail). Voix ElevenLabs « Simon » choisie, mais « il dit plus avec le s » et « scannère » ; « la voix doit être
+complètement calée à la vidéo » ; refaire la vidéo dans le style des trois vidéos envoyées (pub Drive Academy, reportage
+Binance, bande-annonce GTA 6) ; vraies interfaces, bruitages et effets sans exagérer, pro, premium, impressionnant ;
+l'accent ne doit jamais basculer vers l'anglais ; « aux couleurs du logiciel, sans exagérer ». → Règles : forcer la
+prononciation par l'orthographe envoyée à la voix (« plu », « scanné ») et contrôler chaque prise par transcription ;
+éviter les sigles anglais à l'oral (« IT » → « support informatique ») ; une référence de style se traduit en grammaire
+(mots-clés ponctuels, badges ✓, traits de lumière) dans la palette du produit, pas en copie ; ce qui n'a pas de rendu
+réel est signalé comme composé. → V5 de 1 min 50 (`mywebtel/`, voix `vo_eleven.py`, film `film/film.js`).
+
 **2026-10-27** — « C'est bien, mais c'est trop rapide, on n'a pas le temps de bien voir » ; « l'accent doit être normal,
 voix normale, vitesse normale » ; « la voix doit être synchronisée à la vidéo ». → Règles : pour une démo produit, ~10 s
 par fonction et une respiration après chaque résultat ; ne jamais mélanger une voix d'une autre langue au timbre (accent) ;

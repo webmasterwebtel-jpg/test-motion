@@ -18,7 +18,13 @@ const FPS = +opt("--fps", 30), WORKERS = +opt("--workers", 3);
 const TL = JSON.parse(fs.readFileSync(path.join(OUT, "timeline.json"), "utf8"));
 // vraie interface MyWebtel (prep_ui.py) ; jamais versionnée
 const UI = fs.existsSync(path.join(OUT, "ui.json")) ? fs.readFileSync(path.join(OUT, "ui.json"), "utf8") : "{}";
-const EXE = process.env.CHROMIUM || "/opt/pw-browsers/chromium-1194/chrome-linux/chrome";
+// Chromium : variable CHROMIUM, sinon le Chromium préinstallé du conteneur (son dossier change avec les versions)
+const EXE = process.env.CHROMIUM || (() => {
+  const base = "/opt/pw-browsers";
+  for (const d of (fs.existsSync(base) ? fs.readdirSync(base) : []).filter(d => /^chromium-\d+$/.test(d)).sort().reverse())
+    for (const sub of ["chrome-linux64", "chrome-linux"]) { const p = path.join(base, d, sub, "chrome"); if (fs.existsSync(p)) return p; }
+  return "chromium";
+})();
 
 async function openPage(browser) {
   const ctx = await browser.newContext({ viewport: { width: 1920, height: 1080 }, deviceScaleFactor: 1, locale: "fr-FR" });

@@ -1,17 +1,18 @@
 #!/usr/bin/env bash
-# Film de présentation MyWebtel (1920x1080, voix off, musique, bruitages, sans sous-titres).
-# voix off -> musique -> bruitages + mixage -> rendu image (Chromium) -> mux final.
-# Usage : mywebtel/make.sh <dossier des modèles> <APERCU-MYWEBTEL.html>   (voir mywebtel/README.md)
+# Film de présentation MyWebtel V5 (1920x1080, voix off, musique, bruitages, mots-clés ponctuels).
+# vraie interface -> voix (ElevenLabs « Simon », segments en cache) -> timeline -> musique -> rendu image (Chromium,
+# exporte aussi les repères des gestes) -> bruitages + mixage -> mux final.
+# Usage : mywebtel/make.sh <APERCU-MYWEBTEL.html>   (voir mywebtel/README.md)
 set -euo pipefail
 cd "$(dirname "$0")/.."
-MODELS="${1:?dossier des modèles (Kokoro, Parakeet)}"
-APERCU="${2:?aperçu HTML réel de MyWebtel (APERCU-MYWEBTEL.html)}"
+APERCU="${1:?aperçu HTML réel de MyWebtel (APERCU-MYWEBTEL.html)}"
 python3 mywebtel/prep_ui.py "$APERCU"
-python3 mywebtel/vo.py "$MODELS"
+python3 mywebtel/voice/eleven_gen.py          # ne génère que les segments absents de build/mywebtel/voice/
+python3 mywebtel/vo_eleven.py
 python3 mywebtel/music.py
-python3 mywebtel/sfx_mix.py
 (cd mywebtel && [ -d node_modules ] || npm ci --silent)
 node mywebtel/render.js --workers "${WORKERS:-4}"
+python3 mywebtel/sfx_mix.py                   # lit cues.json, écrit par render.js
 mkdir -p output
 ffmpeg -y -loglevel error -i build/mywebtel/video_silent.mp4 -i build/mywebtel/mix.wav -map 0:v -map 1:a \
   -c:v copy -c:a aac -b:a 256k -ar 48000 -shortest -movflags +faststart output/mywebtel_presentation.mp4

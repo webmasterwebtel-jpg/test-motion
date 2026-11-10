@@ -1,0 +1,14 @@
+[
+ ["hook", "Pointer, poser un congé, retrouver ta fiche de paie, signer un document… Au boulot, tout ça prend un temps fou.", "Pointer, poser un congé, retrouver ta fiche de paie, signer un document… Au boulot, tout ça prend un temps fou."],
+ ["hook2", "Et si tout se faisait au même endroit ?", "Et si tout se faisait au même endroit ?"],
+ ["reveal", "MyWebtel. Ton espace collaborateur.", "MyWebtel. Ton espace collaborateur."],
+ ["pointage", "Le matin, tu arrives : un clic, et ta journée commence. La pause, le retour, le départ : tout est enregistré, à la minute près.", "Le matin, tu arrives : un clic, et ta journée commence. La pause, le retour, le départ : tout est enregistré, à la minute près."],
+ ["conges", "Tes congés ? Ton solde est là. Et la règle est simple : tes droits s'ouvrent après un an d'ancienneté.", "Tes congés ? Ton solde est là. Et la règle est simple : tes droits s'ouvrent après un an d'ancienneté."],
+ ["absences", "Une absence ? Tu la déclares avec ton justificatif, et les RH s'occupent du reste.", "Une absence ? Tu la déclares avec ton justificatif, et les RH s'occupent du reste."],
+ ["signature", "Un document à signer, c'est encore l'imprimer, le signer, le scanner ? Sauf que non. Tu le reçois direct dans « Mes documents ». Tu signes avec ton nom… ou tu dessines ta signature. Un code arrive par mail, tu le tapes, et c'est signé.", "Un document à signer, c'est encore l'imprimer, le signer, le scanné ? Sauf que non. Tu le reçois direct dans « Mes documents ». Tu signes avec ton nom… ou tu dessines ta signature. Un code arrive par mail, tu le tapes, et c'est signé."],
+ ["demandes", "Une attestation, une question pour les RH ? Tu fais ta demande en deux clics, et tu suis son traitement.", "Une attestation, une question pour les RH ? Tu fais ta demande en deux clics, et tu suis son traitement."],
+ ["contenu", "Les notes de la Direction et des RH ? Tu les lis, et tu confirmes ta lecture en un clic.", "Les notes de la Direction et des RH ? Tu les lis, et tu confirmes ta lecture en un clic."],
+ ["mail", "Avec tes collègues, tu échanges dans « Mail ». Et pour un souci technique, le support informatique prend ton ticket en charge.", "Avec tes collègues, tu échanges dans « Mail ». Et pour un souci technique, le support informatique prend ton ticket en charge."],
+ ["agent", "Et si t'as une question ? Tu la poses à l'agent MyWebtel. Ton solde de congés, une démarche, un souci technique : il te répond, et il prépare même ta demande. Toi, t'as plus qu'à confirmer.", "Et si t'as une question ? Tu la poses à l'agent MyWebtel. Ton solde de congés, une démarche, un souci technique : il te répond, et il prépare même ta demande. Toi, t'as plu qu'à confirmer."],
+ ["fin", "MyWebtel. Ton espace collaborateur.", "MyWebtel. Ton espace collaborateur."]
+]

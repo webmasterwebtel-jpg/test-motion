@@ -20,6 +20,31 @@
   fonctionnalités ; la voix et l'accent ne sont pas bons : accent normal, voix normale, vitesse normale, pas IA ; la voix
   doit être synchronisée à la vidéo ».
 
+- **10 novembre 2026 (V5) :** nouvelle archive IT11 : présenter **l'Agent MyWebtel** (agent IA) et la **signature de
+  documents** (décompte de prestation, contrats… signés avec son nom en manuscrit ou dessiné, validé par un code envoyé
+  par e-mail). Voix ElevenLabs « Simon » choisie par l'utilisateur, puis : « il dit plus avec le s » (« t'as plus qu'à »)
+  et « scannère » → prononciations forcées. « La voix doit être complètement calée à la vidéo » ; refaire la vidéo dans le
+  style des trois vidéos envoyées (pub Drive Academy, reportage Binance, bande-annonce GTA 6), plus de 30 s possible,
+  **vraies interfaces**, bruitages et effets **sans exagérer**, pro, premium et impressionnant ; l'accent ne doit jamais
+  basculer vers l'anglais ; **aux couleurs du logiciel, sans exagérer**.
+
+## Parti pris V5
+- **Trois références, une seule voix visuelle.** Ouverture façon reportage (nuit bleu marine de la barre latérale, démarches
+  qui flottent, l'heure qui file) ; corps façon pub produit (fond clair, vraie interface, curseur, mots-clés ponctuels et
+  badges ✓ en verre bleu nuit) ; touches de bande-annonce (traits de lumière cyan aux changements d'écran, montée vers le
+  logo final), toujours discrètes.
+- **Couleurs du logiciel uniquement** : `#06213e`/`#041b34` (barre latérale), bleu `#008ff1`, cyan `#05daf0`, fond `#f1f7fd`.
+- **Signature** : séquence pivot (« Imprimer, signer, scanner ? Sauf que non. ») puis le vrai parcours : « Mes documents »,
+  badge « À signer », fenêtre « Signer le document », nom manuscrit, signature dessinée en direct, e-mail du code,
+  saisie, consentement, « Signé » et signature posée sur l'aperçu du document.
+- **Agent en finale** : question tapée, réponse, demande de congé préparée, confirmée par l'utilisateur
+  (« Rien n'est envoyé sans ta confirmation »).
+- **Synchronisation** : la voix est placée sur une grille à 100 BPM ; chaque geste du film est calé sur le mot daté
+  (horodatage ElevenLabs au caractère près) ; les logos tombent sur un premier temps de mesure.
+- **Voix** : ElevenLabs « Simon », `eleven_multilingual_v2`, `language_code: fr`, texte voisin transmis pour une prosodie
+  continue ; « scanné » et « plu » écrits ainsi pour la prononciation ; « IT » évité à l'oral (« support informatique ») ;
+  chaque prise contrôlée par transcription (Parakeet), les prises fautives refaites.
+
 ## Parti pris V4
 - **Le temps de voir** : 1 min 53 au lieu de 1 min 10 ; chaque fonction a sa phrase d'introduction, ses gestes un par un,
   puis une respiration de 0,9 s où l'image se pose sur le résultat. Avant chaque changement d'écran, la caméra recule

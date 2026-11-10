@@ -127,64 +127,91 @@ def roll(t0, d=0.7, gain=0.35):
         add(tick(), t0 + d * (1 - (1 - k / 10) ** 2), gain)
 
 
+def pen(t0, d, gain=0.22, pan=0.1):
+    """Plume sur l'écran : souffle filtré, modulé par les gestes (signature dessinée)."""
+    n = noise(d)
+    x = bp(n, 2500, 7000)
+    t = tv(d)
+    am = (0.55 + 0.45 * np.abs(np.sin(2 * np.pi * 2.6 * t + 1.3 * np.sin(2 * np.pi * 0.9 * t)))) * np.minimum(1, t / 0.06) * np.minimum(1, (d - t) / 0.12)
+    add(x * am * 0.18, t0, gain, pan)
+
+
 def cues():
-    """Bruitages V3 : les instants viennent de build/mywebtel/cues.json, exporté par le film lui-même (render.js)."""
+    """Bruitages V5 : les instants viennent de build/mywebtel/cues.json, exporté par le film lui-même (render.js).
+    Sobres : un geste = un son, rien sur les mots seuls ; la voix reste au premier plan."""
     C = json.load(open(os.path.join(OUT, "cues.json")))
     T = C["T"]
-    # 1. ouverture : une démarche = un petit « pop », puis montée vers le logo
+    # 1. ouverture (nuit) : une démarche = un petit « pop », l'heure qui file, la question, la montée vers le logo
     for k, t in enumerate(C["tasks"]):
         add(pop(480, 760, 0.45), t, 0.8, (-0.5, 0.5, -0.4, 0.4)[k])
-    add(swoosh(1.4, 1800, 400, 0.14), C["tasks"][-1] + 1.4)            # les démarches convergent
+    roll(T["boulot"], 1.4, 0.22)
+    add(swoosh(0.5, 1800, 500, 0.12), T["fou"] - 0.05, 1, 0)
+    keys(T["ques"], T["endroit"] + 0.45, 18, 0.3, 0)
+    add(swoosh(1.4, 1800, 400, 0.14), T["endroit"] + 0.2)               # les démarches convergent
     add(air(1.8, 0.2), T["logo"] - 1.8)
     # 2. logo, puis la fenêtre qui monte
     add(thump(0.55), T["logo"])
     add(chime((1174.7, 1760.0), 0.12, 1.6), T["logo"] + 0.05)
     add(swoosh(0.6, 2200, 700, 0.12), T["tag"] - 0.1)
     add(swoosh(1.2, 300, 1600, 0.24), T["winIn"])
-    # 3. tous les clics et changements d'écran
+    # 3. tous les clics, et un trait de lumière à chaque changement d'écran
     for t in C["clicks"]:
         add(tap(), t - 0.02, 0.85, 0.15)
     for t in C["nav"]:
-        add(swoosh(0.4, 600, 2400, 0.1), t - 0.05, 1, -0.2)
-    # 3 bis. Mon espace : chaque carte mise en valeur
-    for k in ("dPoint", "dSolde", "dDocs", "dNote"):
-        add(pop(700, 960, 0.12), T[k] - 0.1, 1, 0.2)
+        add(swoosh(0.55, 600, 2600, 0.1), t - 0.2, 1, -0.2)
+    # badges ✓ : une note douce, toujours la même (signature sonore)
+    for t in C["checks"]:
+        add(chime((1568.0, 2349.3), 0.06, 0.8), t + 0.02, 1, 0.25)
     # 4. pointage : chaque état confirmé, l'heure qui défile
     for t in (T["in"], T["pause"], T["ret"], T["out"]):
         add(pop(700, 1000, 0.2), t + 0.06, 1, 0.1)
-        roll(t - 0.05, 0.4, 0.25)
-    add(chime((1174.7, 1568.0), 0.1, 1.2), T["out"] + 0.1, 1, 0.1)
-    add(pop(650, 900, 0.16), T["minute"] - 0.1, 1, 0.3)
-    # 5. congés : la règle d'ancienneté mise en valeur
+        roll(t - 0.05, 0.4, 0.2)
+    # 5. congés
     add(pop(700, 960, 0.12), T["solde"] - 0.1, 1, 0.2)
-    add(chime((1318.5, 1760.0), 0.07, 1.0), T["rights"] - 0.15, 1, 0.3)
-    # 6. absences : dates, justificatif, envoi, vérification
-    add(tick(), T["declare"] + 0.15, 0.6); add(tick(), T["declare"] + 0.45, 0.6)
+    add(pop(650, 900, 0.12), T["rights"] - 0.15, 1, 0.3)
+    # 6. absences : dates, justificatif, envoi, vérification RH
+    add(tick(), T["declare"] + 0.1, 0.6); add(tick(), T["declare"] + 0.35, 0.6)
     add(pop(500, 750, 0.3), T["proof"] + 0.15, 0.8, -0.2)
     add(pop(560, 900, 0.25), T["absSend"] + 0.25, 1, 0.4)
-    add(chime((1318.5, 1975.5), 0.07, 0.9), T["verif"], 1, 0.4)
-    # 7. documents : un document arrive, filtre « Contrats »
-    add(chime((1568.0, 2093.0), 0.08, 0.9), T["receive"] - 0.1, 1, 0.2)
-    add(pop(800, 1100, 0.18), T["dl"] + 0.6, 1, 0.3)                   # téléchargement
+    add(pop(700, 1000, 0.16), T["rh"], 1, 0.4)
+    # 7. signature : « Imprimer, signer, scanner » puis « Sauf que non. »
+    add(air(0.9, 0.12), T["kImp"] - 0.8)
+    for t in (T["kImp"], T["kSig"], T["kScan"]):
+        add(pop(420, 600, 0.22), t - 0.1, 0.8, 0)
+    add(swoosh(0.45, 900, 3600, 0.18), T["non"] + 0.12, 1, 0)           # le trait qui barre
+    add(swoosh(0.9, 2400, 500, 0.16), T["back"], 1, 0)                  # retour à l'écran
+    add(pop(640, 940, 0.2), T["open"] + 0.12, 1, 0.1)                   # la fenêtre de signature s'ouvre
+    add(pop(800, 1150, 0.12), T["nom"] - 0.15, 1, 0.2)
+    pen(T["draw"] + 0.15, T["code"] - 0.5 - T["draw"])
+    add(ping(), T["mail"] - 0.1, 0.8, 0.5)                              # l'e-mail du code arrive
+    keys(T["tape"] - 0.1, T["tape"] + 0.4, 6, 0.4, 0.1)
+    add(tick(), T["tape"] + 0.55, 0.7, 0.2)                             # case de consentement
+    add(chime((1318.5, 1975.5, 2637.0), 0.1, 1.6), T["signed"] + 0.3, 1, 0.1)
     # 8. demandes RH : frappe, envoi, suivi
-    keys(T["fill"] - 0.2, T["fill"] + 0.4, 9, 0.4, -0.2)
-    keys(T["fill"] + 0.5, T["reqSend"] - 0.2, 12, 0.4, -0.2)
-    add(pop(560, 900, 0.25), T["reqSend"] + 0.2, 1, 0.4)
+    keys(T["fill"], T["fill"] + 0.35, 8, 0.4, -0.2)
+    keys(T["fill"] + 0.4, T["clics"] - 0.15, 12, 0.4, -0.2)
+    add(pop(560, 900, 0.25), T["clics"] + 0.2, 1, 0.4)
     add(pop(700, 1000, 0.16), T["process"], 1, 0.4)
-    for k, t in enumerate(T["steps"]):                                   # « étape par étape »
-        add(tick(), t - 0.05, 0.7, 0.2 + 0.15 * k)
-    # 9. contenu : lecture confirmée
-    add(chime((1568.0, 2093.0), 0.08, 0.9), T["confirm"] + 0.7, 1, 0.3)
+    # 9. contenu : case cochée, lecture confirmée
+    add(tick(), T["confirm"] + 0.02, 0.7, 0.2)
     # 10. mail : frappe et envoi
-    keys(T["chat"] - 0.3, T["mailSend"] - 0.15, 26, 0.38, 0.2)
+    keys(C["nav"][6] + 0.5, T["mailSend"] - 0.15, 22, 0.36, 0.2)
     add(swoosh(0.35, 900, 3000, 0.12), T["mailSend"] + 0.05, 1, 0.3)
     add(pop(600, 880, 0.2), T["mailSend"] + 0.15, 1, 0.3)
-    # 11. support IT : frappe, ticket envoyé, pris en charge
-    keys(T["tickType"] + 0.05, T["tickType"] + 0.7, 10, 0.4, -0.2)
-    keys(T["tickType"] + 0.8, T["ticket"] - 0.2, 16, 0.4, -0.2)
-    add(pop(560, 900, 0.25), T["ticket"] + 0.2, 1, 0.4)
-    add(chime((1318.5, 1760.0), 0.09, 1.0), T["charge"], 1, 0.4)
-    # 12. signature
+    # 11. support informatique : frappe, ticket envoyé, pris en charge
+    keys(C["nav"][7] + 0.35, T["ticket"] - 0.2, 20, 0.36, -0.2)
+    add(pop(560, 900, 0.25), T["ticket"] + 0.15, 1, 0.4)
+    add(pop(700, 1000, 0.16), T["charge"], 1, 0.4)
+    # 12. agent : le panneau s'ouvre, la question, la réponse, la demande préparée, la confirmation
+    add(swoosh(0.5, 500, 2200, 0.14), T["launch"] + 0.05, 1, 0.3)
+    keys(T["ask"], T["askSend"] - 0.15, 26, 0.34, 0.3)
+    add(swoosh(0.3, 1000, 3200, 0.1), T["askSend"] + 0.05, 1, 0.3)
+    for k, t in enumerate(T["chips"]):
+        add(pop(760 + 80 * k, 1040 + 80 * k, 0.1), t - 0.05, 1, 0.3)
+    add(pop(620, 900, 0.14), T["answer"], 1, 0.3)
+    add(pop(560, 860, 0.22), T["prep"] + 0.02, 1, 0.3)
+    add(chime((1318.5, 1760.0), 0.09, 1.0), T["okAgent"] + 0.1, 1, 0.3)
+    # 13. fin
     add(air(1.4, 0.16), T["end"])
     add(thump(0.5), T["final"])
     add(chime((1174.7, 1760.0), 0.12, 1.8), T["final"] + 0.05)

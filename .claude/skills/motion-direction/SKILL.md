@@ -36,7 +36,12 @@ Exprimées le 2026-10-22 pour le film MyWebtel, à appliquer par défaut à tout
 - **musique de fond jamais plus forte que la voix** (ducking automatique sous la voix) ;
 - **effets et bruitages sans exagération** : au service du propos, jamais démonstratifs ;
 - quand une référence est donnée (ici « présentation Apple »), la suivre : une idée par plan, beaucoup d'air, sobriété ;
-- **pas de sous-titres** sauf demande explicite.
+- **pas de sous-titres** sauf demande explicite (des mots-clés ponctuels façon pub produit sont acceptés, V5) ;
+- **voix MyWebtel : ElevenLabs « Simon »** (choisie le 2026-11-10), prononciations forcées par l'orthographe envoyée,
+  jamais de bascule d'accent vers l'anglais ;
+- **aux couleurs du produit présenté, sans exagérer** (MyWebtel : bleu nuit `#06213e`, bleu `#008ff1`, cyan `#05daf0`) ;
+- références de style données le 2026-11-10 : pub Drive Academy (fond clair, mots-clés, badges ✓, curseur), reportage
+  Binance (ouverture cinéma sombre), bande-annonce GTA 6 (traits de lumière, transitions franches), à doser avec retenue.
 Projet MyWebtel : direction détaillée dans `mywebtel/DIRECTION.md`.
 
 ## Direction artistique « Crochet Pop Collage »

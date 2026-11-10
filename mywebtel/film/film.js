@@ -1,4 +1,4 @@
-/* MyWebtel — film de présentation V3 (1920×1080, 30 i/s), sur la vraie interface.
+/* MyWebtel — film de présentation V5 (1920×1080, 30 i/s), sur la vraie interface, voix « Simon » (ElevenLabs).
  * Toute l'image est une fonction du temps : renderAt(t) pose chaque élément. Aucune animation automatique (les
  * transitions CSS des pages sont coupées par prep_ui.py), donc le rendu image par image est exact et reproductible.
  *
@@ -80,8 +80,8 @@
   const win = add(world, `<div class="win"><div class="chrome"><i class="d"></i><i class="d"></i><i class="d"></i>
     <div class="url">${ic("lock")}<span class="u">mywebtel.com/dashboard</span></div></div><div class="probe"></div></div>`);
   const urlEl = q(win, ".u"), probe = q(win, ".probe");
-  const PAGES = [["dashboard", "/dashboard"], ["attendance", "/attendance"], ["leaves", "/leaves"], ["absences", "/absences"], ["documents", "/documents"],
-                 ["requests", "/hr-requests"], ["content", "/content"], ["mail", "/mail"], ["support", "/support"]];
+  const PAGES = [["dashboard", "/dashboard"], ["attendance", "/attendance"], ["leaves", "/leaves"], ["absences", "/absences"], ["sign", "/documents"],
+                 ["requests", "/hr-requests"], ["content", "/content"], ["mail", "/discussions"], ["support", "/tickets"], ["agent", "/dashboard"]];
   const FR = {}, loads = [];
   PAGES.forEach(([k]) => {
     const f = document.createElement("iframe");
@@ -114,12 +114,29 @@
   const pulse = (t, t0, d = 1.4) => Math.sin(Math.PI * seg(t, t0, t0 + d));
 
   // ------------------------------------------------------------------ calques de film
+  // V5 : mélange des trois références de l'utilisateur, aux couleurs de MyWebtel (bleu nuit #06213e, bleu #008ff1,
+  // cyan #05daf0) : ouverture cinéma (reportage), cartes et badges ✓ sur fond clair (pub Drive Academy), traits de
+  // lumière et montée finale (bande-annonce), avec retenue.
+  Object.assign(ICON, {
+    pen: '<path d="M4 20l4-1 11-11-3-3L5 16z"/>',
+    printer: '<path d="M7 9V3h10v6M7 17H4v-6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v6h-3"/><rect x="7" y="14" width="10" height="7"/>',
+    scan: '<path d="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3M4 12h16"/>',
+    check: '<path d="M5 12.5l4.5 4.5L19 7.5"/>',
+  });
+  const light = add(stage, `<div id="light"></div>`);
+  stage.insertBefore(light, fx);
   const CURSOR = `<svg class="cursor" viewBox="0 0 34 44"><path d="M3 2l26 24H16l7 14-5 2-7-14-8 8z" fill="#fff" stroke="#041b34" stroke-width="2.4" stroke-linejoin="round"/></svg>`;
+  const halo = add(stage, `<div class="halo"></div>`);
+  stage.insertBefore(halo, view);
   const cur = add(fx, CURSOR), rip = add(fx, `<div class="ripple"></div>`);
   const clock = add(fx, `<div class="note" style="right:70px;bottom:46px;font-size:26px;gap:14px">${ic("clock")}<span style="font-weight:500;color:var(--muted)">Jeudi 15 octobre</span><b class="ct" style="font-variant-numeric:tabular-nums;font-size:30px"></b></div>`);
-  const TASKS = [["clock", "Pointage", "Commencer ma journée", ["hook", 0, "Pointer"], -560, -250], ["calendar", "Mes congés", "24 jours disponibles", ["hook", 0, "congé"], 470, -290],
-                 ["file", "Mes documents", "Avenant au contrat", ["hook", 0, "document"], -500, 220], ["mail", "Mail", "Réunion client de jeudi", ["hook", 0, "collègue"], 500, 235]];
+  // ouverture : les démarches du quotidien
+  const TASKS = [["clock", "Pointage", "Commencer ma journée", ["hook", 0, "Pointer"], -560, -250], ["calendar", "Mes congés", "24 jours disponibles", ["hook", 0, "congé"], 480, -280],
+                 ["file", "Fiche de paie", "Octobre 2026 · PDF", ["hook", 0, "fiche"], -520, 210], ["pen", "Document à signer", "Avenant au contrat", ["hook", 0, "signer"], 500, 230]];
   const tasks = TASKS.map(([i, a, b]) => add(fx, `<div class="task"><span class="ti">${ic(i)}</span><div>${a}<small>${b}</small></div></div>`));
+  const digits = add(fx, `<div class="digits" style="top:330px"></div>`);
+  const kinFou = add(fx, `<div class="kin" style="top:600px;color:#eef5ff"></div>`);
+  const kinQ = add(fx, `<div class="kin" style="top:500px;color:#fff;font-size:72px"></div>`);
   const spark = add(fx, `<div class="abs" style="left:960px;top:540px;width:16px;height:16px;margin:-8px 0 0 -8px;border-radius:50%;background:#fff;box-shadow:0 0 40px 18px rgba(5,218,240,.8)"></div>`);
   const LOGO = "brand/webtel-logo.svg", LW = 960, LH = Math.round(LW * 1224 / 3520);
   const logo = add(fx, `<div class="abs" style="left:${960 - LW / 2}px;top:${470 - LH / 2}px;width:${LW}px;height:${LH}px">
@@ -127,102 +144,114 @@
       <img class="lt" src="${LOGO}" style="position:absolute;inset:0;width:100%;clip-path:inset(0 0 0 24%)"></div>`);
   const lm = q(logo, ".lm"), lt = q(logo, ".lt");
   const tag = add(fx, `<div class="center tagline" style="top:${470 + LH / 2 + 56}px">MYWEBTEL · ESPACE COLLABORATEUR</div>`);
+  // signature : « imprimer, signer, scanner ? Sauf que non. »
+  const paper = add(fx, `<div class="layer" style="background:radial-gradient(1400px 900px at 50% 45%, #ffffff 0%, #f1f7fd 70%)"></div>`);
+  const kinOld = add(fx, `<div class="kin dark" style="top:430px"><span class="it k1">${ic("printer")}<s>Imprimer</s></span><span class="it k2">${ic("pen")}<s>Signer</s></span><span class="it k3">${ic("scan")}<s>Scanner</s></span></div>`);
+  const kinDoc = add(fx, `<div class="kin dark" style="top:300px;font-size:56px">Un <b style="color:var(--blue)">document</b> à signer ?</div>`);
+  const kinNon = add(fx, `<div class="kin dark" style="top:600px;font-size:84px"></div>`);
+  const mailcard = add(fx, `<div class="mailcard" style="right:70px;top:70px"><div class="from"><i>W</i><div><b style="color:var(--ink)">MyWebtel</b> · à l’instant</div></div>
+      <h4>Mywebtel — Votre code de signature</h4><p>Votre code pour signer « Avenant au contrat de travail » est :</p><span class="code">482 913</span>
+      <p style="margin-top:10px;font-size:14px">Valable 10 minutes. Ne communiquez ce code à personne.</p></div>`);
+  const toast = add(fx, `<div class="toast" style="left:50%;top:60px"><i>✓</i>Signature confirmée. Votre PDF signé est disponible.</div>`);
   const flash = add(fx, `<div class="layer" style="background:#fff"></div>`);
+  const checks = {};
+  const CHECK = (id, txt) => (checks[id] = add(fx, `<div class="check" style="left:960px;top:982px"><span class="ok">${ic("check")}</span>${txt}</div>`));
 
   // ------------------------------------------------------------------ chronologie (tout dérive des mots de la voix)
-  // V4 : chaque écran s'ouvre quand la voix prononce son nom, chaque geste tombe sur son mot, et l'image se pose
-  // après chaque résultat (respirations du texte) pour qu'on ait le temps de lire.
   const T = {};
   T.logo = onBar(W("reveal", 0, "MyWebtel") - 0.4);
   T.tag = W("reveal", 0, "espace");
-  T.winIn = W("reveal", 1, "tout") - 0.4;
-  T.dIntro = W("dashboard", 0, "Mon"); T.dPoint = W("dashboard", 1, "pointage"); T.dSolde = W("dashboard", 1, "solde");
-  T.dDocs = W("dashboard", 1, "documents"); T.dNote = W("dashboard", 1, "note");
-  T.in = W("pointage", 1, "commencez") + 0.2;            // « Commencer ma journée »
-  T.pause = W("pointage", 2, "pause");                   // « Je pars en pause »
-  T.ret = W("pointage", 2, "revenez");                   // « Je reviens de pause »
-  T.out = W("pointage", 3, "terminez") + 0.15;           // « Terminer ma journée »
-  T.saved = W("pointage", 4, "horaire"); T.minute = W("pointage", 4, "minute");
-  T.solde = W("conges", 0, "solde"); T.rights = W("conges", 1, "droits"); T.seniority = W("conges", 1, "d'ancienneté");
-  T.declare = W("absences", 0, "déclarer"); T.proof = W("absences", 0, "justificatif");
-  T.absSend = segE("absences", 0) + 0.05; T.verif = W("absences", 1, "vérifient"); T.follow = W("absences", 1, "suivez");
-  T.receive = W("documents", 0, "recevez"); T.contract = W("documents", 0, "contrat");
-  T.tabC = W("documents", 1, "contrats"); T.tabAv = W("documents", 1, "avenants"); T.tabAt = W("documents", 1, "attestations");
-  T.consult = W("documents", 2, "consultez"); T.dl = W("documents", 2, "téléchargez");
-  T.type = W("demarches", 1, "type"); T.fill = W("demarches", 1, "décrivez"); T.reqSend = W("demarches", 1, "envoyez") + 0.1;
-  T.track = W("demarches", 2, "suivez"); T.process = W("demarches", 2, "traitement");
-  T.steps = [W("demarches", 2, "étape", 0), W("demarches", 2, "par"), W("demarches", 2, "étape", 1)];
-  T.dir = W("contenu", 0, "Direction"); T.rh = W("contenu", 0, "RH"); T.it = W("contenu", 0, "l'IT");
-  T.read = W("contenu", 1, "lecture"); T.confirm = W("contenu", 1, "confirmez");
-  T.chat = W("mail", 0, "échangez"); T.mailSend = W("mail", 0, "directement") + 0.1; T.direct = W("mail", 0, "MyWebtel");
-  T.ticket = W("support", 1, "ticket") + 0.05; T.charge = W("support", 1, "prend");
-  T.end = S0("signature") - 0.2;
-  T.final = onBar(W("signature", 0, "MyWebtel") - 0.5) + 0.08;
-  const NAVT = {                                         // clic dans le menu : sur le nom de l'écran prononcé
-    attendance: W("pointage", 0, "pointage"), leaves: W("conges", 0, "congés"), absences: W("absences", 0, "absences"),
-    documents: W("documents", 0, "documents", 0), requests: W("demarches", 0, "demandes"), content: W("contenu", 0, "Contenu"),
-    mail: W("mail", 0, "Mail"), support: W("support", 0, "Support"),
+  T.winIn = W("reveal", 0, "collaborateur") + 0.5;
+  T.fou = W("hook", 0, "fou"); T.boulot = W("hook", 0, "Au"); T.ques = segT("hook", 1); T.endroit = W("hook", 1, "endroit");
+  // pointage
+  T.in = W("pointage", 0, "clic") + 0.05; T.pause = W("pointage", 0, "pause"); T.ret = W("pointage", 0, "retour"); T.out = W("pointage", 0, "départ");
+  T.saved = W("pointage", 0, "enregistré"); T.minute = W("pointage", 0, "minute");
+  // congés
+  T.solde = W("conges", 0, "solde"); T.rights = W("conges", 0, "droits"); T.seniority = W("conges", 0, "d'ancienneté");
+  // absences
+  T.declare = W("absences", 0, "déclares"); T.proof = W("absences", 0, "justificatif"); T.absSend = W("absences", 0, "et") - 0.05;
+  T.rh = W("absences", 0, "RH"); T.reste = W("absences", 0, "reste");
+  // signature
+  T.doc = W("signature", 0, "document"); T.kImp = W("signature", 0, "l'imprimer"); T.kSig = W("signature", 0, "signer", 1); T.kScan = W("signature", 0, "scanner"); T.non = W("signature", 0, "Sauf");
+  T.back = W("signature", 0, "Tu", 0) - 0.1;
+  T.open = W("signature", 0, "signes") - 0.1; T.nom = W("signature", 0, "nom"); T.draw = W("signature", 0, "dessines") - 0.15;
+  T.code = W("signature", 0, "code"); T.mail = W("signature", 0, "mail"); T.tape = W("signature", 0, "tapes"); T.signed = W("signature", 0, "signé") - 0.1;
+  // demandes RH
+  T.att = W("demandes", 0, "attestation"); T.question = W("demandes", 0, "question"); T.fill = W("demandes", 0, "demande"); T.clics = W("demandes", 0, "clics");
+  T.process = W("demandes", 0, "traitement");
+  // contenu
+  T.dir = W("contenu", 0, "Direction"); T.rhC = W("contenu", 0, "RH"); T.read = W("contenu", 0, "lis"); T.confirm = W("contenu", 0, "confirmes"); T.lu = W("contenu", 0, "clic");
+  // mail et support
+  T.chat = W("mail", 0, "échanges"); T.mailSend = W("mail", 0, "Mail") + 0.35; T.tick = W("mail", 0, "support"); T.ticket = W("mail", 0, "ticket"); T.charge = W("mail", 0, "charge");
+  // agent
+  T.launch = W("agent", 0, "l'agent"); T.ask = T.launch + 0.45; T.askSend = W("agent", 0, "solde") - 0.1;
+  T.chips = [W("agent", 0, "solde"), W("agent", 0, "démarche"), W("agent", 0, "souci")];
+  T.answer = W("agent", 0, "répond") - 0.1; T.prep = W("agent", 0, "prépare"); T.toi = W("agent", 0, "Toi"); T.okAgent = W("agent", 0, "confirmer") + 0.05;
+  T.end = W("fin", 0, "MyWebtel") - 0.8;
+  T.final = onBar(W("fin", 0, "MyWebtel") - 0.5) + 0.08;
+  // écrans : clic dans le menu sur le mot qui le nomme
+  const NAVT = {
+    attendance: W("pointage", 0, "matin"), leaves: W("conges", 0, "congés"), absences: W("absences", 0, "absence"), sign: W("signature", 0, "documents") - 0.1,
+    requests: W("demandes", 0, "attestation"), content: W("contenu", 0, "notes"), mail: W("mail", 0, "collègues"), support: W("mail", 0, "support"),
+    agent: W("agent", 0, "question") - 0.1,
   };
-  T.tickType = NAVT.support + 0.7;
-  const NAV = [[0, "dashboard"], [NAVT.attendance, "attendance"], [NAVT.leaves, "leaves"], [NAVT.absences, "absences"], [NAVT.documents, "documents"],
-               [NAVT.requests, "requests"], [NAVT.content, "content"], [NAVT.mail, "mail"], [NAVT.support, "support"]];
+  const NAV = [[0, "dashboard"], [NAVT.attendance, "attendance"], [NAVT.leaves, "leaves"], [NAVT.absences, "absences"], [NAVT.sign, "sign"],
+               [NAVT.requests, "requests"], [NAVT.content, "content"], [NAVT.mail, "mail"], [NAVT.support, "support"], [NAVT.agent, "agent"]];
   const URL = Object.fromEntries(PAGES);
+  const NAVITEM = { attendance: "attendance", leaves: "leaves", absences: "absences", sign: "documents", requests: "requests", content: "content", mail: "mail", support: "support", agent: "dashboard" };
+  // badges ✓ (style Drive Academy) : [id, texte, instant]
+  const CHECKS = [["minute", "À la minute près", T.minute], ["anciennete", "Droits ouverts après 1 an d’ancienneté", T.seniority],
+                  ["rh", "Les RH s’occupent du reste", T.rh], ["code", "Code de validation par e-mail", T.mail], ["signe", "Document signé", T.signed + 0.35],
+                  ["clics", "En deux clics", T.clics], ["lu", "Lecture confirmée", T.lu + 0.35], ["ticket", "Ticket pris en charge", T.charge],
+                  ["agent", "Rien n’est envoyé sans ta confirmation", T.okAgent + 0.3]];
+  CHECKS.forEach(([id, txt]) => CHECK(id, txt));
+  const checkEnd = i => (i + 1 < CHECKS.length ? Math.min(CHECKS[i + 1][2] - 0.2, CHECKS[i][2] + 3.2) : T.end);
 
   // ------------------------------------------------------------------ caméra
   const WIDE = { cx: 720, cy: (CH + PH) / 2, s: 0.98, rx: 0, ry: 0, y: 0 };
-  function frame(o) {                                    // gros plan : jamais les bords de la fenêtre
+  function frame(o) {
     if (o.s * 1440 >= 1940) o.cx = clamp(o.cx, 960 / o.s + 8, 1440 - 960 / o.s - 8);
-    if (o.s * (CH + PH) >= 1100) o.cy = clamp(o.cy, 540 / o.s + (o.s >= 1.6 ? CH : 8), CH + PH - 540 / o.s - 8);   // gros plan serré : sans la barre d'adresse
+    if (o.s * (CH + PH) >= 1100) o.cy = clamp(o.cy, 540 / o.s + (o.s >= 1.6 ? CH : 8), CH + PH - 540 / o.s - 8);
     return o;
   }
   const on = (get, s, extra = {}) => () => { const [x, y] = winPt(get()); return frame(Object.assign({ cx: x, cy: y, s, rx: 0, ry: 0, y: 0 }, extra)); };
   const fixed = o => () => Object.assign({}, WIDE, o);
-  // avant chaque clic de menu, la caméra recule : on voit la barre latérale et le curseur qui va cliquer
-  const navOut = pg => [NAVT[pg] - 1.1, NAVT[pg] - 0.35, fixed({ s: 0.98, rx: 2, ry: (pg.length % 2 ? 5 : -5) })];
-  const navIn = (pg, o = {}) => [NAVT[pg] + 0.25, NAVT[pg] + 1.1, fixed(Object.assign({ s: 1.04, rx: 2, ry: pg.length % 2 ? -4 : 4 }, o))];
+  const navOut = pg => [NAVT[pg] - 1.0, NAVT[pg] - 0.3, fixed({ s: 0.98, rx: 2, ry: (pg.length % 2 ? 5 : -5) })];
+  const navIn = (pg, o = {}) => [NAVT[pg] + 0.25, NAVT[pg] + 1.0, fixed(Object.assign({ s: 1.04, rx: 2, ry: pg.length % 2 ? -4 : 4 }, o))];
   const MOVES = [
-    [T.dIntro - 0.3, T.dIntro + 0.7, fixed({ s: 1.05, rx: 2, ry: -4 })],
-    [T.dPoint - 0.35, T.dPoint + 0.35, on(() => $("dashboard", ".mw-home-clock"), 1.4, { ry: -2 })],
-    [T.dSolde - 0.3, T.dSolde + 0.35, on(() => $("dashboard", ".mw-kpis a"), 1.75, { ry: 2 })],
-    [T.dDocs - 0.3, T.dDocs + 0.35, on(() => $("dashboard", ".mw-dashboard-bottom .mw-card"), 1.5, { ry: -2 })],
-    [T.dNote - 0.3, T.dNote + 0.4, on(() => $("dashboard", ".mw-home-note"), 1.4, { ry: 2 })],
-    navOut("attendance"),
-    navIn("attendance"),
-    [T.in - 1.0, T.in - 0.3, on(() => $("attendance", ".mw-punch-card"), 1.32, { ry: -2 })],
+    navOut("attendance"), navIn("attendance"),
+    [T.in - 0.9, T.in - 0.25, on(() => $("attendance", ".mw-punch-card"), 1.32, { ry: -2 })],
     [T.saved - 0.3, T.saved + 0.5, on(() => F("attendance", "today"), 1.5, { ry: 3 })],
-    [T.minute - 0.1, T.minute + 0.6, on(() => F("attendance", "today"), 1.8, { ry: 2 })],
-    navOut("leaves"),
-    navIn("leaves"),
+    [T.minute - 0.1, T.minute + 0.6, on(() => F("attendance", "today"), 1.75, { ry: 2 })],
+    navOut("leaves"), navIn("leaves"),
     [T.solde - 0.3, T.solde + 0.4, on(() => F("leaves", "metrics"), 1.45)],
-    [T.rights - 0.6, T.rights + 0.2, on(() => F("leaves", "seniority"), 2.0)],
-    [T.seniority + 0.1, T.seniority + 0.7, on(() => F("leaves", "seniority-text"), 1.7)],
-    navOut("absences"),
-    navIn("absences"),
-    [T.declare - 0.3, T.declare + 0.4, on(() => $("absences", ".mw-two > .mw-card"), 1.35, { cy: 600 })],
-    [T.verif - 0.4, T.verif + 0.3, on(() => F("absences", "abs-new"), 1.55, { cy: 380 })],
-    navOut("documents"),
-    navIn("documents"),
-    [T.receive - 0.3, T.receive + 0.4, on(() => F("documents", "doc-new"), 1.5)],
-    [T.tabC - 0.4, T.tabC + 0.2, on(() => F("documents", "doc-tabs"), 1.55, { cy: 430 })],
-    [T.consult - 0.3, T.consult + 0.4, on(() => $("documents", ".mw-preview"), 1.42)],
-    navOut("requests"),
-    navIn("requests"),
-    [T.type - 0.4, T.type + 0.2, on(() => F("requests", "req-cats"), 1.45, { cy: 560 })],
-    [T.track - 0.3, T.track + 0.4, on(() => $("requests", ".mw-filter-panel"), 1.45, { cy: 360 })],
-    navOut("content"),
-    navIn("content"),
-    [T.dir - 0.5, T.dir, on(() => $("content", ".mw-content-toolbar .mw-tabs"), 1.55)],
-    [T.read - 0.3, T.read + 0.5, on(() => $("content", ".mw-note-article"), 1.25)],
-    [T.confirm - 0.2, T.confirm + 0.4, on(() => F("content", "note-confirm"), 1.55)],
-    navOut("mail"),
-    navIn("mail"),
-    [T.chat - 0.4, T.chat + 0.3, on(() => $("mail", ".mw-note-article"), 1.35, { cy: 620 })],
-    [T.direct - 0.3, T.direct + 0.6, fixed({ s: 1.02, rx: 3, ry: 5 })],
-    navOut("support"),
-    navIn("support"),
-    [T.tickType - 0.1, T.tickType + 0.5, on(() => $("support", ".mw-two > .mw-card"), 1.3, { cy: 600 })],
-    [T.ticket + 0.3, T.ticket + 1.0, on(() => F("support", "tick-new"), 1.55)],
-    [T.charge + 0.8, T.end + 0.4, fixed({ s: 0.86, rx: 8, ry: -10 })],
+    [T.rights - 0.5, T.rights + 0.2, on(() => F("leaves", "seniority"), 1.95)],
+    navOut("absences"), navIn("absences"),
+    [T.declare - 0.4, T.declare + 0.3, on(() => $("absences", ".mw-two > .mw-card"), 1.35, { cy: 600 })],
+    [T.rh - 0.4, T.rh + 0.3, on(() => F("absences", "abs-new"), 1.5, { cy: 380 })],
+    [T.back - 0.1, T.back + 0.8, fixed({ s: 0.98, rx: 2, ry: -5 })],
+    [NAVT.sign + 0.25, NAVT.sign + 0.9, on(() => $("sign", ".mw-document-row"), 1.3, { cx: 640 })],
+    [T.open + 0.05, T.open + 0.7, on(() => F("sign", "sign-dialog"), 1.18, { cy: 470 })],
+    [T.draw - 0.35, T.draw + 0.3, on(() => F("sign", "sign-canvas"), 1.4)],
+    [T.code - 0.2, T.code + 0.4, on(() => F("sign", "sign-code-block"), 1.4)],
+    [T.signed + 0.35, T.signed + 1.1, on(() => $("sign", ".mw-preview"), 1.35, { cy: 430 })],
+    navOut("requests"), navIn("requests"),
+    [T.att + 1.1, T.att + 1.6, on(() => F("requests", "req-cats"), 1.45, { cy: 560 })],
+    [T.process - 0.5, T.process + 0.2, on(() => $("requests", ".mw-filter-panel"), 1.45, { cy: 360 })],
+    navOut("content"), navIn("content"),
+    [T.dir - 0.4, T.dir + 0.1, on(() => $("content", ".mw-content-toolbar .mw-tabs"), 1.55)],
+    [T.read - 0.2, T.read + 0.5, on(() => $("content", ".mw-note-article"), 1.25)],
+    [T.confirm - 0.1, T.confirm + 0.5, on(() => F("content", "note-confirm"), 1.55)],
+    navOut("mail"), navIn("mail"),
+    [T.chat + 0.1, T.chat + 0.6, on(() => $("mail", ".mw-note-article"), 1.35, { cy: 620 })],
+    navOut("support"), navIn("support"),
+    [T.ticket - 0.2, T.ticket + 0.4, on(() => F("support", "tick-new"), 1.5)],
+    navOut("agent"), navIn("agent", { s: 1.0, ry: -3 }),
+    [T.ask - 0.2, T.ask + 0.6, on(() => F("agent", "agent-input"), 1.7, { ry: -3 })],
+    [T.chips[0] - 0.35, T.chips[0] + 0.3, on(() => F("agent", "agent-chips"), 1.75, { ry: -2 })],
+    [T.answer - 0.45, T.answer + 0.3, on(() => F("agent", "agent-a"), 1.8, { ry: -2 })],
+    [T.prep - 0.05, T.prep + 0.6, on(() => F("agent", "agent-prep"), 1.8, { ry: -2 })],
+    [T.okAgent + 0.6, T.end + 0.4, fixed({ s: 0.88, rx: 7, ry: -9 })],
     [T.end + 0.2, T.end + 1.6, fixed({ s: 0.6, rx: 22, ry: -16, y: 260 })],
   ].sort((a, b) => a[0] - b[0]);
   function cameraAt(t) {
@@ -232,10 +261,13 @@
       const g = tgt(), p = E.inOutQuint(seg(t, a, b));
       for (const k of Object.keys(c)) c[k] = lerp(c[k], g[k] !== undefined ? g[k] : c[k], p);
     }
-    const inn = E.outQuart(seg(t, T.winIn, T.winIn + 1.6));           // la fenêtre monte du bas, inclinée
+    const inn = E.outQuart(seg(t, T.winIn, T.winIn + 1.6));
     c.y += (1 - inn) * 1000; c.rx += (1 - inn) * 28;
-    c.ry += 0.6 * Math.sin(t * 0.45); c.rx += 0.4 * Math.sin(t * 0.33 + 1);   // respiration très légère
-    return c;
+    // « Imprimer, signer, scanner » : la fenêtre recule dans le flou pendant le texte
+    const away = E.inOutCubic(seg(t, T.doc - 0.25, T.doc + 0.45)) * (1 - E.inOutCubic(seg(t, T.back - 0.1, T.back + 0.6)));
+    c.s *= 1 - 0.18 * away; c.y += 120 * away;
+    c.ry += 0.6 * Math.sin(t * 0.45); c.rx += 0.4 * Math.sin(t * 0.33 + 1);
+    return [c, away];
   }
   function applyCamera(c) {
     world.style.transform = `translate3d(960px,${(540 + c.y).toFixed(2)}px,0) rotateX(${c.rx.toFixed(3)}deg) rotateY(${c.ry.toFixed(3)}deg) scale(${c.s.toFixed(4)}) translate3d(${(-WX - c.cx).toFixed(2)}px,${(-WY - c.cy).toFixed(2)}px,0)`;
@@ -243,36 +275,31 @@
 
   // ------------------------------------------------------------------ curseur : [instant du clic, élément, visible depuis, jusqu'à]
   const nav = (pg, item) => () => F(pg, "nav-" + item);
-  const navClick = (from, pg, item) => [NAVT[pg] - 0.05, nav(from, item || pg), NAVT[pg] - 1.0, NAVT[pg] + 0.3];
-  const docTab = cat => () => q(F("documents", "doc-tabs"), `[data-doc-category="${cat}"]`);
+  const prevPage = pg => NAV[NAV.findIndex(n => n[1] === pg) - 1][1];
+  const navClick = pg => [NAVT[pg] - 0.05, nav(prevPage(pg), NAVITEM[pg]), NAVT[pg] - 0.95, NAVT[pg] + 0.3];
   const CLICKS = [
-    navClick("dashboard", "attendance"),
-    [T.in, () => F("attendance", "punch"), T.in - 0.9, T.out + 0.6],
-    [T.pause, () => F("attendance", "punch"), T.in, T.out + 0.6],
-    [T.ret, () => F("attendance", "punch"), T.in, T.out + 0.6],
-    [T.out, () => F("attendance", "punch"), T.in, T.out + 0.6],
-    navClick("attendance", "leaves"),
-    navClick("leaves", "absences"),
-    [T.proof + 0.1, () => F("absences", "abs-upload"), T.proof - 0.7, T.absSend + 0.5],
-    [T.absSend, () => F("absences", "abs-send"), T.proof, T.absSend + 0.5],
-    navClick("absences", "documents"),
-    [T.tabC, docTab("contrat"), T.tabC - 0.7, T.consult + 0.4],
-    [T.tabAt, docTab("attestation"), T.tabC, T.consult + 0.4],
-    [T.consult, () => q(F("documents", "doc-new"), ".mw-icon-button"), T.tabC, T.dl + 0.5],
-    [T.dl, () => $("documents", ".mw-preview-actions .mw-button"), T.consult, T.dl + 0.5],
-    navClick("documents", "requests"),
-    [T.type, () => q(F("requests", "req-cats"), "button"), T.type - 0.7, T.reqSend + 0.5],
-    [T.fill - 0.2, () => F("requests", "req-subject"), T.type, T.reqSend + 0.5],
-    [T.reqSend, () => F("requests", "req-send"), T.type, T.reqSend + 0.5],
-    navClick("requests", "content"),
-    [T.confirm, () => F("content", "note-check"), T.confirm - 0.7, T.confirm + 1.1],
-    [T.confirm + 0.6, () => F("content", "note-btn"), T.confirm, T.confirm + 1.1],
-    navClick("content", "mail"),
-    [T.chat - 0.35, () => F("mail", "mail-input"), T.chat - 1.0, T.mailSend + 0.5],
-    [T.mailSend, () => F("mail", "mail-send"), T.chat - 0.35, T.mailSend + 0.5],
-    navClick("mail", "support"),
-    [T.tickType, () => F("support", "tick-subject"), T.tickType - 0.6, T.ticket + 0.5],
-    [T.ticket, () => F("support", "tick-send"), T.tickType, T.ticket + 0.5],
+    navClick("attendance"),
+    [T.in, () => F("attendance", "punch"), T.in - 0.9, T.out + 0.6], [T.pause, () => F("attendance", "punch"), T.in, T.out + 0.6],
+    [T.ret, () => F("attendance", "punch"), T.in, T.out + 0.6], [T.out, () => F("attendance", "punch"), T.in, T.out + 0.6],
+    navClick("leaves"), navClick("absences"),
+    [T.proof + 0.1, () => F("absences", "abs-upload"), T.proof - 0.6, T.absSend + 0.5], [T.absSend, () => F("absences", "abs-send"), T.proof, T.absSend + 0.5],
+    navClick("sign"),
+    [T.open, () => F("sign", "sign-open"), T.open - 0.75, T.open + 0.25],
+    [T.draw, () => q(F("sign", "sign-tabs"), '[data-sign-mode="draw"]'), T.draw - 0.6, T.draw + 1.3],
+    [T.code, () => F("sign", "sign-code-btn"), T.code - 0.6, T.signed + 0.4], [T.tape - 0.15, () => F("sign", "sign-code"), T.code, T.signed + 0.4],
+    [T.tape + 0.55, () => F("sign", "sign-consent"), T.code, T.signed + 0.4], [T.signed, () => F("sign", "sign-confirm"), T.code, T.signed + 0.4],
+    navClick("requests"),
+    [T.fill - 0.2, () => q(F("requests", "req-cats"), "button"), T.fill - 0.8, T.clics + 0.5], [T.clics, () => F("requests", "req-send"), T.fill - 0.2, T.clics + 0.5],
+    navClick("content"),
+    [T.confirm, () => F("content", "note-check"), T.confirm - 0.7, T.lu + 0.5], [T.lu, () => F("content", "note-btn"), T.confirm, T.lu + 0.5],
+    navClick("mail"),
+    [T.mailSend, () => F("mail", "mail-send"), T.mailSend - 0.8, T.mailSend + 0.4],
+    navClick("support"),
+    [T.ticket - 0.1, () => F("support", "tick-send"), T.ticket - 0.8, T.ticket + 0.4],
+    [NAVT.agent - 0.05, () => F("dashboard", "nav-dashboard"), NAVT.agent - 0.9, NAVT.agent + 0.2],
+    [T.launch, () => F("agent", "agent-launcher"), NAVT.agent + 0.2, T.launch + 0.4],
+    [T.askSend, () => F("agent", "agent-send"), T.launch + 0.4, T.askSend + 0.4],
+    [T.okAgent, () => F("agent", "agent-confirm"), T.toi, T.okAgent + 0.6],
   ].sort((a, b) => a[0] - b[0]);
   function cursorAt(t) {
     let k = -1;
@@ -291,7 +318,7 @@
   }
   const press = (el, t, tc) => { if (el) el.style.transform = `scale(${(1 - 0.04 * Math.max(0, 1 - Math.abs(t - tc) / 0.12)).toFixed(4)})`; };
 
-  // ------------------------------------------------------------------ états des écrans (libellés réels du PHP)
+  // ------------------------------------------------------------------ états des écrans (libellés réels)
   function hhmm(m) { m = Math.round(m); return String(Math.floor(m / 60)).padStart(2, "0") + ":" + String(m % 60).padStart(2, "0"); }
   function setValue(el, v, focus) {
     if (!el) return;
@@ -299,126 +326,183 @@
     if (focus && el.ownerDocument.activeElement !== el) el.focus({ preventScroll: true });
     if (!focus && el.ownerDocument.activeElement === el) el.blur();
   }
+  // signature dessinée : écriture manuscrite révélée au rythme de la plume, puis le paraphe, sur le vrai canvas
+  let sigDrawn = -1;
+  function drawSignature(cv, p) {
+    const k = Math.round(p * 400);
+    if (!cv || k === sigDrawn) return;
+    sigDrawn = k;
+    const c = cv.getContext("2d"), w = cv.width, hgt = cv.height;
+    c.clearRect(0, 0, w, hgt);
+    if (p <= 0) return;
+    const pt = clamp(p / 0.8), pf = seg(p, 0.8, 1);
+    c.save();
+    c.translate(w / 2, hgt * 0.56); c.rotate(-0.05);
+    c.font = "128px Z003, 'URW Chancery L', cursive";
+    c.textAlign = "center"; c.textBaseline = "middle";
+    const tw = c.measureText("A. Ndiaye").width;
+    c.beginPath(); c.rect(-tw / 2 - 30, -hgt, (tw + 60) * pt, hgt * 2); c.clip();
+    c.fillStyle = "#0b2a4d"; c.strokeStyle = "#0b2a4d"; c.lineWidth = 2.2;
+    c.fillText("A. Ndiaye", 0, 0); c.strokeText("A. Ndiaye", 0, 0);
+    c.restore();
+    if (pf > 0) {                                   // paraphe
+      c.save(); c.strokeStyle = "#0b2a4d"; c.lineWidth = 5; c.lineCap = "round";
+      c.beginPath();
+      const n = Math.round(60 * pf);
+      for (let i = 0; i <= n; i++) {
+        const u = i / 60, x = w * (0.2 + 0.62 * u), y = hgt * (0.86 - 0.06 * Math.sin(Math.PI * u)) - 22 * Math.pow(u, 6);
+        i ? c.lineTo(x, y) : c.moveTo(x, y);
+      }
+      c.stroke(); c.restore();
+    }
+  }
   function screens(t) {
-    // Mon espace : l'horloge en direct
+    // Mon espace : horloge
     const clk = F("dashboard", "clock");
     if (clk) { const s = 7 * 3600 + 28 * 60 + 40 + Math.max(0, Math.floor(t - T.winIn)); clk.innerHTML = `${hhmm(s / 60 - (s % 60) / 60)}<small>:${String(s % 60).padStart(2, "0")}</small>`; }
-    glow($("dashboard", ".mw-home-clock"), pulse(t, T.dPoint - 0.1, 1.3));
-    glow($("dashboard", ".mw-kpis a"), pulse(t, T.dSolde - 0.1, 1.2));
-    glow($("dashboard", ".mw-dashboard-bottom .mw-card"), pulse(t, T.dDocs - 0.1, 1.2));
-    glow($("dashboard", ".mw-home-note"), pulse(t, T.dNote - 0.1, 1.4));
-    // Pointage : À commencer → Au travail → En pause → Au travail → Journée terminée
+    // Pointage
     const stage = t < T.in ? 0 : t < T.pause ? 1 : t < T.ret ? 2 : t < T.out ? 3 : 4;
     const badge = F("attendance", "day-badge");
-    if (badge) {
-      setText(badge, ["Journée à commencer", "Au travail", "En pause", "Au travail", "Journée terminée"][stage]);
-      badge.className = "mw-badge " + ["amber", "green", "amber", "green", ""][stage];
-    }
+    if (badge) { setText(badge, ["Journée à commencer", "Au travail", "En pause", "Au travail", "Journée terminée"][stage]); badge.className = "mw-badge " + ["amber", "green", "amber", "green", ""][stage]; }
     const steps = F("attendance", "steps");
-    if (steps) Array.from(steps.children).forEach((d, i) => {
-      const done = [0, 1, 1, 2, 3][stage], curr = [0, 1, 1, 2, -1][stage];
-      d.className = i < done ? "complete" : i === curr ? "current" : "";
-    });
+    if (steps) Array.from(steps.children).forEach((d, i) => { const done = [0, 1, 1, 2, 3][stage], curr = [0, 1, 1, 2, -1][stage]; d.className = i < done ? "complete" : i === curr ? "current" : ""; });
     setText(F("attendance", "punch-label"), ["Commencer ma journée", "Je pars en pause", "Je reviens de pause", "Terminer ma journée", "Journée terminée"][stage]);
     const punch = F("attendance", "punch");
     if (punch) { punch.style.opacity = stage === 4 ? "0.55" : "1"; press(punch, t, [T.in, T.pause, T.ret, T.out].reduce((a, b) => Math.abs(t - b) < Math.abs(t - a) ? b : a)); }
     ["07:28", "12:30", "13:30", "16:34"].forEach((v, i) => {
       const b = F("attendance", "today-" + i);
       setText(b, stage > i ? v : "—");
-      if (b) glow(b.parentElement, Math.max(pulse(t, [T.in, T.pause, T.ret, T.out][i] + 0.05, 0.9), pulse(t, T.saved + 0.15 + 0.3 * i, 1.0)));
+      if (b) glow(b.parentElement, Math.max(pulse(t, [T.in, T.pause, T.ret, T.out][i] + 0.05, 0.9), pulse(t, T.saved + 0.1 + 0.25 * i, 1.0)));
     });
-    // Mes congés : le solde, puis la règle d'ancienneté
+    // Mes congés
     const met = F("leaves", "metrics");
     if (met) glow(met.firstElementChild, pulse(t, T.solde - 0.1, 1.6));
-    glow(F("leaves", "seniority"), pulse(t, T.rights - 0.2, 2.2));
-    glow(F("leaves", "seniority-text"), pulse(t, T.seniority, 1.6));
-    // Mes absences : déclaration avec justificatif, puis vérification RH
+    glow(F("leaves", "seniority"), pulse(t, T.rights - 0.2, 2.4));
+    // Mes absences
     const ab = D("absences");
     if (ab) {
       const [d0, d1] = ab.querySelectorAll('input[type="date"]');
-      setValue(d0, t >= T.declare + 0.15 ? "2026-10-20" : ""); setValue(d1, t >= T.declare + 0.45 ? "2026-10-21" : "");
-      setText(ab.querySelector('[data-duration="calendar"]'), t >= T.declare + 0.45 ? "2 jours" : "0 jour");
+      setValue(d0, t >= T.declare + 0.1 ? "2026-11-16" : ""); setValue(d1, t >= T.declare + 0.35 ? "2026-11-17" : "");
+      setText(ab.querySelector('[data-duration="calendar"]'), t >= T.declare + 0.35 ? "2 jours" : "0 jour");
       const up = F("absences", "abs-upload"), got = t >= T.proof + 0.15;
       if (up) { setText(up.querySelector("b"), got ? "certificat-medical.pdf" : "Glissez et déposez votre fichier ici"); setText(up.querySelector("small"), got ? "PDF · 312 Ko · prêt à l’envoi" : "ou cliquez pour parcourir vos fichiers · PDF, JPG ou PNG · 5 Mo maximum"); glow(up, pulse(t, T.proof + 0.1, 1.0)); }
-      FR.absences.contentWindow.scrollTo(0, Math.round(110 * E.inOutCubic(seg(t, T.proof + 0.3, T.absSend - 0.2)) * (1 - E.inOutCubic(seg(t, T.absSend + 0.3, T.follow)))));
+      FR.absences.contentWindow.scrollTo(0, Math.round(110 * E.inOutCubic(seg(t, T.proof + 0.2, T.absSend - 0.15)) * (1 - E.inOutCubic(seg(t, T.absSend + 0.3, T.rh)))));
       press(F("absences", "abs-send"), t, T.absSend);
       const n = F("absences", "abs-new");
-      if (n) { n.hidden = t < T.absSend + 0.25; glow(n, pulse(t, T.absSend + 0.3, 1.4)); }
-      const nb = F("absences", "abs-badge");
-      if (nb) setText(nb, t >= T.verif ? "Vérification RH" : "Déclarée");
-      if (n) glow(n, Math.max(pulse(t, T.absSend + 0.3, 1.2), pulse(t, T.follow, 1.2)));
+      if (n) { n.hidden = t < T.absSend + 0.25; glow(n, Math.max(pulse(t, T.absSend + 0.3, 1.2), pulse(t, T.rh, 1.4))); }
+      setText(F("absences", "abs-badge"), t >= T.rh ? "Vérification RH" : "Déclarée");
       const pr = F("absences", "abs-process");
-      if (pr) Array.from(pr.children).forEach((s, i) => { s.className = (t >= T.verif ? i === 1 : i === 0) ? "current" : ""; });
+      if (pr) Array.from(pr.children).forEach((s, i) => { s.className = (t >= T.rh ? i === 1 : i === 0) ? "current" : ""; });
     }
-    // Mes documents : un document arrive, puis le filtre « Contrats »
-    const dn = F("documents", "doc-new");
-    if (dn) { dn.hidden = t < T.receive - 0.1; glow(dn, pulse(t, T.receive - 0.05, 1.5)); }
-    const arrived = t >= T.receive - 0.1, pv = $("documents", ".mw-preview");      // l'aperçu suit le document sélectionné
-    if (pv) {
-      setText(pv.querySelector("h3"), arrived ? "Avenant au contrat de travail" : "Décompte de prestation — Septembre 2026");
-      setText(pv.querySelector(".mw-preview-stage b"), arrived ? "AVENANT AU CONTRAT DE TRAVAIL" : "DÉCOMPTE DE PRESTATION");
-      const old = F("documents", "doc-old");
-      if (old) old.classList.toggle("selected", !arrived);
+    // Signature (gabarit réel + parcours IT11)
+    const sg = D("sign");
+    if (sg) {
+      const row = sg.querySelector(".mw-document-row");
+      if (row) glow(row, pulse(t, NAVT.sign + 0.4, 1.4));
+      press(F("sign", "sign-open"), t, T.open);
+      glow(F("sign", "sign-open"), pulse(t, T.open - 0.4, 0.8));
+      const dlg = F("sign", "sign-dialog"), openD = t >= T.open + 0.1 && t < T.signed + 0.3;
+      if (dlg) {
+        if (openD && !dlg.open) dlg.showModal(); if (!openD && dlg.open) dlg.close();
+        const p = E.outCubic(seg(t, T.open + 0.1, T.open + 0.45)) * (1 - E.inCubic(seg(t, T.signed + 0.05, T.signed + 0.3)));
+        dlg.style.opacity = p.toFixed(3); dlg.style.transform = `translateY(${(20 * (1 - p)).toFixed(1)}px) scale(${(0.97 + 0.03 * p).toFixed(4)})`;
+        if (dlg.ownerDocument.activeElement && dlg.ownerDocument.activeElement.closest && dlg.ownerDocument.activeElement.closest(".mw-sign-close")) dlg.ownerDocument.activeElement.blur();
+      }
+      const drawMode = t >= T.draw;
+      const tabs = F("sign", "sign-tabs");
+      if (tabs) tabs.querySelectorAll("button").forEach(b => b.classList.toggle("selected", (b.dataset.signMode === "draw") === drawMode));
+      const nm = F("sign", "sign-name-mode"), dm = F("sign", "sign-draw-mode");
+      if (nm) nm.hidden = drawMode; if (dm) dm.hidden = !drawMode;
+      const r1 = F("sign", "sign-style-1");
+      if (r1 && r1.parentElement) glow(r1.parentElement, pulse(t, T.nom - 0.2, 1.0));
+      glow(F("sign", "sign-preview"), pulse(t, T.nom - 0.1, 1.1));
+      drawSignature(F("sign", "sign-canvas"), E.inOutSine(seg(t, T.draw + 0.15, T.code - 0.35)));
+      const cb = F("sign", "sign-code-btn");
+      if (cb) { setText(cb, t >= T.code + 0.05 ? "Renvoyer le code" : "Recevoir mon code par e-mail"); press(cb, t, T.code); }
+      setValue(F("sign", "sign-code"), t >= T.tape - 0.1 ? "482913".slice(0, Math.round(6 * seg(t, T.tape - 0.1, T.tape + 0.4))) : "", t > T.tape - 0.15 && t < T.tape + 0.5);
+      glow(F("sign", "sign-code"), pulse(t, T.tape + 0.35, 0.8));
+      const cs = F("sign", "sign-consent");
+      if (cs) cs.checked = t >= T.tape + 0.55;
+      press(F("sign", "sign-confirm"), t, T.signed);
+      const done = t >= T.signed + 0.3;
+      const sb = F("sign", "sign-badge");
+      if (sb) { setText(sb, done ? "Signé" : "À signer"); sb.className = "mw-badge " + (done ? "green" : "amber"); glow(sb, pulse(t, T.signed + 0.3, 1.0)); }
+      const od = F("sign", "sign-on-doc");
+      if (od) { setText(od, "A. Ndiaye"); od.style.fontSize = "19px"; }
+      if (od) od.style.opacity = E.outCubic(seg(t, T.signed + 0.5, T.signed + 1.1)).toFixed(3);
+      const ob = sg.querySelector(".mw-sign-open");
+      if (ob) { ob.style.opacity = done ? "0.5" : "1"; }
+      glow($("sign", ".mw-preview-stage"), pulse(t, T.signed + 0.6, 1.6));
     }
-    const tabs = F("documents", "doc-tabs");
-    if (tabs) {                                          // Tous → Contrats → Attestations → Tous
-      const cat = t >= T.consult - 0.05 ? "all" : t >= T.tabAt ? "attestation" : t >= T.tabC ? "contrat" : "all";
-      tabs.querySelectorAll("button").forEach(b => b.classList.toggle("selected", b.dataset.docCategory === cat));
-      D("documents").querySelectorAll(".mw-document-row").forEach(r => {
-        const h3 = r.querySelector("h3").textContent;
-        if (r === dn) { r.hidden = t < T.receive - 0.1 || (cat === "attestation"); return; }
-        r.hidden = cat === "contrat" ? !/contrat/i.test(h3) : cat === "attestation" ? !/attestation/i.test(h3) : false;
-      });
-      if (dn) glow(dn, Math.max(pulse(t, T.receive - 0.05, 1.5), pulse(t, T.tabAv - 0.1, 0.9), pulse(t, T.consult, 1.0)));
-    }
-    glow($("documents", ".mw-preview"), pulse(t, T.consult + 0.1, 1.4));
-    const dlb = $("documents", ".mw-preview-actions .mw-button");
-    if (dlb) { press(dlb, t, T.dl); glow(dlb, pulse(t, T.dl, 1.0)); }
-    // Mes demandes RH : type, formulaire, envoi, suivi
+    // Mes demandes RH
     const cats = F("requests", "req-cats");
-    if (cats) glow(cats.querySelector("button"), pulse(t, T.type, 1.0));
-    setValue(F("requests", "req-subject"), typed("Attestation de salaire", t, T.fill - 0.2, T.fill + 0.4), t > T.fill - 0.25 && t < T.fill + 0.5);
-    setValue(F("requests", "req-desc"), typed("Pour un dossier de location. Merci !", t, T.fill + 0.5, T.reqSend - 0.2), t > T.fill + 0.45 && t < T.reqSend);
-    press(F("requests", "req-send"), t, T.reqSend);
+    if (cats) { const bs = cats.querySelectorAll("button"); glow(bs[0], Math.max(pulse(t, T.att, 0.9), pulse(t, T.fill - 0.2, 0.8))); glow(bs[1], pulse(t, T.question, 0.9)); }
+    setValue(F("requests", "req-subject"), typed("Attestation de salaire", t, T.fill, T.fill + 0.35), t > T.fill - 0.05 && t < T.fill + 0.4);
+    setValue(F("requests", "req-desc"), typed("Pour un dossier de location. Merci !", t, T.fill + 0.38, T.clics - 0.12), t > T.fill + 0.35 && t < T.clics);
+    press(F("requests", "req-send"), t, T.clics);
     const rn = F("requests", "req-new");
-    if (rn) { rn.hidden = t < T.reqSend + 0.2; glow(rn, pulse(t, T.reqSend + 0.25, 1.4)); }
+    if (rn) { rn.hidden = t < T.clics + 0.2; glow(rn, Math.max(pulse(t, T.clics + 0.25, 1.0), pulse(t, T.process, 1.2))); }
     const rb = F("requests", "req-badge");
-    if (rb) { const on = t >= T.process; setText(rb, on ? "En cours" : "Envoyée"); rb.className = "mw-badge" + (on ? "" : " amber"); }
-    const rtabs = $("requests", ".mw-filter-panel .mw-tabs");            // « étape par étape » : En attente, En cours, Traitées
-    if (rtabs) Array.from(rtabs.children).slice(1).forEach((b, i) => glow(b, pulse(t, T.steps[i] - 0.05, 0.6)));
-    // Contenu : Direction, RH, IT, puis confirmation de lecture
+    if (rb) { const ok = t >= T.process; setText(rb, ok ? "En cours" : "Envoyée"); rb.className = "mw-badge" + (ok ? "" : " amber"); }
+    // Contenu
     const ctab = D("content") && D("content").querySelectorAll(".mw-content-toolbar .mw-tab");
-    if (ctab && ctab.length > 3) [T.dir, T.rh, T.it].forEach((tt, i) => glow(ctab[i + 1], pulse(t, tt - 0.05, 0.7)));
+    if (ctab && ctab.length > 3) [T.dir, T.rhC].forEach((tt, i) => glow(ctab[i + 1], pulse(t, tt - 0.05, 0.8)));
+    glow($("content", ".mw-note-body"), pulse(t, T.read - 0.1, 1.2));
     const chk = F("content", "note-check");
     if (chk) chk.checked = t >= T.confirm;
-    press(F("content", "note-btn"), t, T.confirm + 0.6);
-    const lu = t >= T.confirm + 0.7;
+    press(F("content", "note-btn"), t, T.lu);
+    const lu = t >= T.lu + 0.1;
     const nr = F("content", "note-read");
     if (nr) { setText(nr, lu ? "✓ Lu" : "● Non lu"); nr.className = "mw-badge " + (lu ? "green" : "blue"); }
     setText(F("content", "note-list-read"), lu ? "✓ Lu" : "● Non lu");
-    glow(F("content", "note-confirm"), pulse(t, T.confirm + 0.7, 1.2));
-    glow($("content", ".mw-note-body"), pulse(t, T.read - 0.1, 1.2));
-    // Mail : réponse tapée puis envoyée
+    glow(F("content", "note-confirm"), pulse(t, T.lu + 0.1, 1.2));
+    // Mail
     const sent = t >= T.mailSend + 0.1;
-    setValue(F("mail", "mail-input"), sent ? "" : typed("C’est confirmé : jeudi à 10 h, en salle de réunion à Ouakam.", t, T.chat - 0.3, T.mailSend - 0.15), t > T.chat - 0.35 && !sent);
+    setValue(F("mail", "mail-input"), sent ? "" : typed("C’est confirmé : jeudi à 10 h, en salle de réunion à Ouakam.", t, NAVT.mail + 0.5, T.mailSend - 0.15), t > NAVT.mail + 0.45 && !sent);
     const rep = F("mail", "mail-reply");
     if (rep) { rep.hidden = !sent; rep.style.transform = `translateY(${(14 * (1 - E.outCubic(seg(t, T.mailSend + 0.1, T.mailSend + 0.5)))).toFixed(1)}px)`; }
     press(F("mail", "mail-send"), t, T.mailSend);
-    // Support IT : ticket ouvert puis pris en charge
-    setValue(F("support", "tick-subject"), typed("Messagerie inaccessible", t, T.tickType + 0.05, T.tickType + 0.7), t > T.tickType && t < T.tickType + 0.75);
-    setValue(F("support", "tick-desc"), typed("Je n’arrive plus à ouvrir ma messagerie depuis ce matin.", t, T.tickType + 0.8, T.ticket - 0.2), t > T.tickType + 0.75 && t < T.ticket);
-    press(F("support", "tick-send"), t, T.ticket);
+    // Support IT
+    setValue(F("support", "tick-subject"), typed("Messagerie inaccessible", t, NAVT.support + 0.35, NAVT.support + 0.75), t > NAVT.support + 0.3 && t < NAVT.support + 0.8);
+    setValue(F("support", "tick-desc"), typed("Je n’arrive plus à ouvrir ma messagerie depuis ce matin.", t, NAVT.support + 0.8, T.ticket - 0.2), t > NAVT.support + 0.75 && t < T.ticket);
+    press(F("support", "tick-send"), t, T.ticket - 0.1);
     const tn = F("support", "tick-new");
-    if (tn) { tn.hidden = t < T.ticket + 0.2; glow(tn, Math.max(pulse(t, T.ticket + 0.25, 1.2), pulse(t, T.charge, 1.4))); }
+    if (tn) { tn.hidden = t < T.ticket + 0.1; glow(tn, Math.max(pulse(t, T.ticket + 0.15, 1.0), pulse(t, T.charge, 1.4))); }
     const tb = F("support", "tick-badge");
-    if (tb) { const on = t >= T.charge; setText(tb, on ? "Pris en charge" : "Envoyé"); tb.className = "mw-badge" + (on ? "" : " amber"); }
+    if (tb) { const ok = t >= T.charge; setText(tb, ok ? "Pris en charge" : "Envoyé"); tb.className = "mw-badge" + (ok ? "" : " amber"); }
+    // Agent MyWebtel
+    const ap = F("agent", "agent-panel"), al = F("agent", "agent-launcher");
+    if (ap) {
+      const o = E.outCubic(seg(t, T.launch + 0.05, T.launch + 0.45));
+      ap.style.opacity = o.toFixed(3); ap.style.transform = `translateY(${(30 * (1 - o)).toFixed(1)}px)`;
+      ap.style.visibility = o > 0.01 ? "visible" : "hidden";
+      if (al) { al.style.opacity = (1 - o).toFixed(3); press(al, t, T.launch); glow(al, pulse(t, T.launch - 0.6, 0.8)); }
+      const qTxt = "Il me reste combien de congés ? Je voudrais poser du 22 au 24 décembre.";
+      const asked = t >= T.askSend + 0.1;
+      setValue(F("agent", "agent-input"), asked ? "" : typed(qTxt, t, T.ask, T.askSend - 0.15), t > T.ask - 0.05 && !asked);
+      const qa = F("agent", "agent-q"), qt = F("agent", "agent-q-text");
+      if (qa) qa.hidden = !asked; setText(qt, qTxt);
+      press(F("agent", "agent-send"), t, T.askSend);
+      const chips = F("agent", "agent-chips");
+      if (chips) Array.from(chips.children).forEach((c, i) => glow(c, pulse(t, T.chips[i] - 0.05, 0.8)));
+      const aa = F("agent", "agent-a"), at = F("agent", "agent-a-text");
+      const aTxt = "Il vous reste 24 jours sur la période du 01/06/2026 au 31/05/2027. J’ai préparé votre demande :";
+      if (aa) aa.hidden = t < T.answer;
+      setText(at, t < T.answer ? "" : (t < T.answer + 0.35 ? "•••" : typed(aTxt, t, T.answer + 0.35, T.prep - 0.05)));
+      const pc = F("agent", "agent-prep");
+      if (pc) { pc.hidden = t < T.prep; const e = enter(t, T.prep, 0.6, 16); pc.style.opacity = e.o.toFixed(3); pc.style.transform = `translateY(${e.y.toFixed(1)}px)`; glow(pc, pulse(t, T.prep + 0.1, 1.2)); }
+      const pb = F("agent", "agent-prep-badge"), ok = t >= T.okAgent + 0.1;
+      if (pb) { setText(pb, ok ? "✓ Demande envoyée" : "À confirmer"); pb.className = "mw-badge " + (ok ? "green" : "amber"); }
+      const pa = F("agent", "agent-prep-actions");
+      if (pa) pa.style.opacity = ok ? "0.45" : "1";
+      press(F("agent", "agent-confirm"), t, T.okAgent);
+      glow(F("agent", "agent-confirm"), pulse(t, T.toi, 1.2));
+    }
   }
   function pagesAt(t) {
     let ci = 0;
     NAV.forEach((n, i) => { if (t >= n[0]) ci = i; });
     const [tn, id] = NAV[ci];
-    // un clic de menu : l'écran suivant s'affiche aussitôt, comme dans l'application (la barre latérale ne bouge pas) ;
-    // seul le contenu principal arrive en léger fondu, sans superposer deux écrans
     const p = ci ? 0.35 + 0.65 * E.outCubic(seg(t, tn, tn + 0.3)) : 1;
     PAGES.forEach(([k]) => { FR[k].style.visibility = k === id ? "visible" : "hidden"; });
     const main = $(id, ".mw-main-wrap");
@@ -433,28 +517,56 @@
     st(glowA, { x: 60 * Math.sin(t * 0.12), y: 40 * Math.cos(t * 0.1) });
     st(glowB, { x: -50 * Math.sin(t * 0.09), y: 30 * Math.sin(t * 0.14) });
 
-    // ouverture : les démarches apparaissent sur les mots, puis convergent vers un point de lumière
-    const conv = seg(t, W("hook", 1, "temps") - 0.1, T.logo - 0.4);
+    // ouverture (reportage) : démarches dans la nuit, l'heure qui défile, la question
+    const conv = seg(t, T.endroit - 0.2, T.logo - 0.4);
+    const scatter = E.inOutCubic(seg(t, T.boulot - 0.1, T.boulot + 0.9)) * (1 - E.inOutCubic(seg(t, T.ques - 0.4, T.ques + 0.3)));
     TASKS.forEach((tk, i) => {
       const t0 = W(...tk[3]) - 0.12, sp = spring(t - t0, 0.7, 2.2), pull = E.inOutCubic(conv), drift = (t - t0) * 9;
-      st(tasks[i], { x: 960 - 190 + tk[4] * 0.92 * (1 - pull) + Math.sign(tk[4]) * drift * (1 - pull), y: 540 - 46 + tk[5] * 0.95 * (1 - pull),
-                     s: (1.15 + 0.25 * sp) * (1 - 0.75 * pull), o: clamp(sp * 1.3) * (1 - E.inCubic(seg(conv, 0.55, 1))),
-                     blur: 10 * (1 - clamp(sp)) + 8 * pull, ry: tk[4] > 0 ? -8 : 8 });
+      st(tasks[i], { x: 960 - 190 + tk[4] * (0.92 + 0.25 * scatter) * (1 - pull) + Math.sign(tk[4]) * drift * (1 - pull), y: 540 - 46 + tk[5] * (0.95 + 0.25 * scatter) * (1 - pull),
+                     s: (1.15 + 0.25 * sp) * (1 - 0.75 * pull) * (1 - 0.15 * scatter), o: clamp(sp * 1.3) * (1 - 0.6 * scatter) * (1 - E.inCubic(seg(conv, 0.55, 1))),
+                     blur: 10 * (1 - clamp(sp)) + 8 * pull + 5 * scatter, ry: tk[4] > 0 ? -8 : 8 });
     });
-    const sk = seg(t, T.logo - 1.2, T.logo - 0.05);
+    // l'heure s'emballe (08:00 → 19:30) sur « un temps fou »
+    const dg = seg(t, T.boulot, T.fou + 0.3), dgo = E.outCubic(seg(t, T.boulot - 0.1, T.boulot + 0.3)) * (1 - E.inCubic(seg(t, T.ques - 0.5, T.ques)));
+    setText(digits, hhmm(480 + 690 * E.inOutCubic(dg)));
+    st(digits, { o: 0.95 * dgo, s: 0.96 + 0.04 * dg, blur: 4 * (1 - dgo) });
+    const fouTxt = "un temps <b>fou</b>.";
+    kinFou.innerHTML = t < T.fou - 0.2 ? "" : fouTxt;
+    st(kinFou, { o: E.outCubic(seg(t, T.fou - 0.2, T.fou + 0.2)) * (1 - E.inCubic(seg(t, T.ques - 0.5, T.ques))), y: 20 * (1 - E.outCubic(seg(t, T.fou - 0.2, T.fou + 0.3))) });
+    // la question, tapée (pub Drive Academy) ; « même endroit » en cyan
+    const qtxt = "Et si tout se faisait au même endroit ?", qn = Math.round(qtxt.length * seg(t, T.ques, T.endroit + 0.45));
+    const qs = qtxt.slice(0, qn).replace("même endroit", "<b>même endroit</b>").replace(/même endr?o?i?t?$/, m => `<b>${m}</b>`);
+    kinQ.innerHTML = qs + (t > T.ques && t < T.logo - 0.6 && Math.floor(t * 2.5) % 2 === 0 ? '<span class="caret"></span>' : "");
+    st(kinQ, { o: seg(t, T.ques - 0.1, T.ques + 0.1) * (1 - E.inCubic(seg(t, T.logo - 0.9, T.logo - 0.4))), s: 1 + 0.03 * seg(t, T.ques, T.logo) });
+    const sk = seg(t, T.logo - 1.1, T.logo - 0.05);
     st(spark, { o: Math.sin(Math.PI * sk) * 1.2, s: 0.3 + 2.6 * E.inCubic(sk) });
     st(flash, { o: 0.8 * Math.max(0, 1 - Math.abs(t - T.logo) / 0.35) });
 
-    // fenêtre et caméra (avant le logo : son vol lit la position du logo de la barre latérale)
-    const winOn = t >= T.winIn - 0.2 && t < S0("signature") + 2.2;
+    // fenêtre et caméra
+    const winOn = t >= T.winIn - 0.2 && t < S0("fin") + 2.2;
     world.style.display = winOn ? "" : "none";
+    let away = 0;
     if (winOn) {
-      pagesAt(t); screens(t); applyCamera(cameraAt(t));
+      pagesAt(t); screens(t);
+      const [c, aw] = cameraAt(t); away = aw;
+      applyCamera(c);
       st(win, { o: 1 - E.inCubic(seg(t, T.end + 0.4, T.end + 1.9)) });
-      win.style.filter = t > T.end + 0.3 ? `blur(${(8 * seg(t, T.end + 0.3, T.end + 1.4)).toFixed(2)}px)` : "none";
+      win.style.filter = t > T.end + 0.3 ? `blur(${(8 * seg(t, T.end + 0.3, T.end + 1.4)).toFixed(2)}px)` : (away > 0.01 ? `blur(${(14 * away).toFixed(2)}px)` : "none");
     }
+    // « Imprimer. Signer. Scanner ? » puis « Sauf que non. »
+    st(paper, { o: 0.94 * away });
+    const kk = [[".k1", T.kImp], [".k2", T.kSig], [".k3", T.kScan]];
+    kk.forEach(([sel, tt]) => { const e = q(kinOld, sel), p = E.outCubic(seg(t, tt - 0.15, tt + 0.25)); e.style.opacity = p.toFixed(3); e.style.transform = `translateY(${(18 * (1 - p)).toFixed(1)}px)`; });
+    kinOld.style.setProperty("--k", E.inOutCubic(seg(t, T.non + 0.15, T.non + 0.55)).toFixed(3));
+    q(kinOld, ".k1 s").style.setProperty("--k", kinOld.style.getPropertyValue("--k"));
+    qa(kinOld, "s").forEach(e => e.style.setProperty("--k", E.inOutCubic(seg(t, T.non + 0.15, T.non + 0.55)).toFixed(3)));
+    st(kinOld, { o: away * seg(t, T.kImp - 0.3, T.kImp) });
+    const de = E.outCubic(seg(t, T.doc - 0.1, T.doc + 0.35));
+    st(kinDoc, { o: away * de * (1 - 0.55 * seg(t, T.kImp - 0.2, T.kImp + 0.2)), y: 16 * (1 - de) });
+    kinNon.innerHTML = t >= T.non - 0.05 ? "Sauf que <b style=\"color:var(--blue)\">non.</b>" : "";
+    st(kinNon, { o: away * E.outCubic(seg(t, T.non - 0.05, T.non + 0.25)), s: 0.92 + 0.08 * E.outBack2(seg(t, T.non - 0.05, T.non + 0.4)) });
 
-    // logo : la marque tourne et se pose sur le premier temps, le mot se dévoile
+    // logo
     const showLogo = (tl, tg) => {
       const pm = spring(t - (tl - 0.08), 0.62, 2.0), wt = E.outExpo(seg(t, tl + 0.12, tl + 0.95));
       st(lm, { s: 0.6 + 0.4 * pm, r: -40 * (1 - clamp(pm)), o: clamp(pm * 1.6) });
@@ -466,43 +578,62 @@
     };
     if (t < T.end) {
       const tp = showLogo(T.logo, T.tag);
-      // à l'entrée de la fenêtre, le logo vole jusqu'à celui de la barre latérale (vraie interface)
       const fly = E.inOutQuint(seg(t, T.winIn + 0.05, T.winIn + 1.35));
       let tx = 0, ty = 0, sc = 1;
       if (fly > 0 && winOn) {
         const img = $("dashboard", ".mw-brand img");
         const [x, y] = screenOf(img);
         const r = img.getBoundingClientRect();
-        probe.style.left = (r.left) + "px"; probe.style.top = (CH + r.top) + "px";
+        probe.style.left = r.left + "px"; probe.style.top = (CH + r.top) + "px";
         const a = probe.getBoundingClientRect();
-        probe.style.left = (r.right) + "px";
+        probe.style.left = r.right + "px";
         const b = probe.getBoundingClientRect();
-        const wScreen = b.left - a.left;
-        sc = lerp(1, wScreen * 1.02 / LW, fly);
+        sc = lerp(1, (b.left - a.left) * 1.02 / LW, fly);
         tx = lerp(0, x - 960, fly); ty = lerp(0, y - 470, fly);
       }
       const handoff = seg(t, T.winIn + 1.15, T.winIn + 1.4);
       st(logo, { x: tx, y: ty, s: sc, o: (t >= T.logo - 0.3 ? 1 : 0) * (1 - handoff) });
-      if (winOn) $("dashboard", ".mw-brand img").style.opacity = handoff.toFixed(3);   // le logo de la barre prend le relais
       st(tag, { c: true, y: ty * 0.9, o: tp * (1 - E.outCubic(seg(t, T.winIn, T.winIn + 0.5))) });
+      if (winOn) $("dashboard", ".mw-brand img").style.opacity = handoff.toFixed(3);
     } else {
-      const tl2 = T.final, tp = showLogo(tl2, W("signature", 1, "espace"));
-      const end = seg(t, S1("signature") - 1.0, S1("signature") - 0.1);
-      st(logo, { x: 0, y: 0, o: seg(t, tl2 - 0.7, tl2 - 0.2) * (1 - end), s: 1 + 0.025 * seg(t, tl2, S1("signature")) });
+      const tp = showLogo(T.final, W("fin", 0, "espace"));
+      const end = seg(t, S1("fin") - 1.0, S1("fin") - 0.1);
+      st(logo, { x: 0, y: 0, o: seg(t, T.final - 0.7, T.final - 0.2) * (1 - end), s: 1 + 0.025 * seg(t, T.final, S1("fin")) });
       st(tag, { c: true, y: 0, o: tp * (1 - end) });
     }
     cursorAt(t);
 
-    // heure de la journée (film) pendant le pointage
+    // traits de lumière aux changements d'écran (bande-annonce, avec retenue) + halo derrière la fenêtre
+    const navTimes = NAV.slice(1).map(n => n[0]);
+    let sw = -1; navTimes.forEach(n => { if (t >= n - 0.25 && t < n + 0.45) sw = n; });
+    light.innerHTML = sw < 0 ? "" : `<div class="streak" style="left:${(-400 + 2600 * E.inOutCubic(seg(t, sw - 0.25, sw + 0.45))).toFixed(0)}px;opacity:${(0.5 * Math.sin(Math.PI * seg(t, sw - 0.25, sw + 0.45))).toFixed(3)}"></div>`;
+    const hOn = winOn ? E.outCubic(seg(t, T.winIn + 0.8, T.winIn + 2.0)) * (1 - seg(t, T.end, T.end + 0.8)) * (1 - away) : 0;
+    st(halo, { o: 0.35 * hOn, r: (t * 12) % 360 });
+    Object.assign(halo.style, { left: "330px", top: "150px", width: "1260px", height: "800px" });
+
+    // badges ✓
+    CHECKS.forEach(([id, , t0], i) => {
+      const t1 = checkEnd(i), p = E.outBack2(seg(t, t0, t0 + 0.45)), o = seg(t, t0, t0 + 0.2) * (1 - seg(t, t1 - 0.25, t1));
+      st(checks[id], { c: true, o, y: 26 * (1 - clamp(p)), s: 0.94 + 0.06 * clamp(p) });
+    });
+    // e-mail du code et toast de signature
+    const me = E.outCubic(seg(t, T.mail - 0.15, T.mail + 0.35)), mo = 1 - E.inCubic(seg(t, T.signed - 0.3, T.signed));
+    st(mailcard, { o: me * mo, y: -40 * (1 - me), x: 30 * (1 - me) });
+    const te = E.outCubic(seg(t, T.signed + 0.35, T.signed + 0.75)), tz = 1 - seg(t, T.signed + 2.4, T.signed + 2.8);
+    st(toast, { o: te * tz, x: -310, y: -20 * (1 - te) });
+
+    // heure de la journée (pointage)
     const ck = [[T.in, 448], [T.pause, 750], [T.ret, 810], [T.out, 994]];
     let ci = -1; ck.forEach((c, i) => { if (t >= c[0] - 0.05) ci = i; });
     st(clock, { o: E.outCubic(seg(t, T.in - 0.5, T.in - 0.1)) * (1 - seg(t, NAVT.leaves - 0.4, NAVT.leaves)) });
     if (ci >= 0) { const prev = ci ? ck[ci - 1][1] : 448; setText(q(clock, ".ct"), hhmm(lerp(prev, ck[ci][1], E.inOutCubic(seg(t, ck[ci][0] - 0.05, ck[ci][0] + 0.35))))); }
     else setText(q(clock, ".ct"), "07:28");
   };
+  E.outBack2 = x => { const c1 = 1.4, c3 = c1 + 1; return 1 + c3 * Math.pow(x - 1, 3) + c1 * Math.pow(x - 1, 2); };
+  const qa = (root, sel) => Array.from(root.querySelectorAll(sel));
   // repères exportés pour les bruitages (render.js les écrit dans build/mywebtel/cues.json)
   window.FILM = { duration: TL.duration, T, clicks: CLICKS.map(c => c[0]), nav: NAV.slice(1).map(n => n[0]),
-                  tasks: TASKS.map(tk => W(...tk[3]) - 0.12) };
+                  tasks: TASKS.map(tk => W(...tk[3]) - 0.12), checks: CHECKS.map(c => c[2]) };
   Promise.all([document.fonts.ready, ...loads]).then(() => {
     const imgs = Array.from(document.images).map(i => i.decode().catch(() => {}));
     Promise.all(imgs).then(() => { window.renderAt(0); window.READY = true; });
