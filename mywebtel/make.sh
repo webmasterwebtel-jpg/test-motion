@@ -12,9 +12,17 @@ python3 mywebtel/voice/eleven_gen6.py --variant b --takes 2 mail   # « Mèl » 
 python3 mywebtel/vo_eleven.py
 python3 mywebtel/music.py
 (cd mywebtel && [ -d node_modules ] || npm ci --silent)
-node mywebtel/render.js --workers "${WORKERS:-4}"
+node mywebtel/render.js --workers "${WORKERS:-4}" --fps 60    # 60 i/s : deux images fondues par image finale = flou de mouvement
 python3 mywebtel/sfx_mix.py                   # lit cues.json, écrit par render.js
 mkdir -p output
-ffmpeg -y -loglevel error -i build/mywebtel/video_silent.mp4 -i build/mywebtel/mix.wav -map 0:v -map 1:a \
-  -c:v copy -c:a aac -b:a 256k -ar 48000 -shortest -movflags +faststart output/mywebtel_presentation.mp4
+B=build/mywebtel; V="tmix=frames=2:weights='1 1',fps=30"
+X="-c:v libx264 -preset slow -pix_fmt yuv420p -profile:v high"
+# master 1080p (≈14 Mbit/s, ≈190 Mo) : à diffuser ; trop lourd pour GitHub, il n'est pas versionné
+ffmpeg -y -loglevel error -i $B/video_silent.mp4 -vf "$V" $X -b:v 14M -maxrate 22M -bufsize 28M -pass 1 -passlogfile $B/x264pass -an -f null /dev/null
+ffmpeg -y -loglevel error -i $B/video_silent.mp4 -i $B/mix.wav -map 0:v -map 1:a -vf "$V" $X -b:v 14M -maxrate 22M -bufsize 28M -pass 2 \
+  -passlogfile $B/x264pass -c:a aac -b:a 256k -ar 48000 -shortest -movflags +faststart output/mywebtel_presentation.mp4
+# copie versionnée (< 100 Mo, limite de GitHub)
+ffmpeg -y -loglevel error -i output/mywebtel_presentation.mp4 $X -b:v 6M -maxrate 9M -bufsize 12M -pass 1 -passlogfile $B/webpass -an -f null /dev/null
+ffmpeg -y -loglevel error -i output/mywebtel_presentation.mp4 $X -b:v 6M -maxrate 9M -bufsize 12M -pass 2 -passlogfile $B/webpass -c:a copy \
+  -movflags +faststart output/mywebtel_presentation_web.mp4
 python3 .claude/skills/motion-delivery/scripts/check_delivery.py output/mywebtel_presentation.mp4 --profile presentation

@@ -1,3 +1,6 @@
 build/
 __pycache__/
 node_modules/
+
+# master MyWebtel trop lourd pour GitHub (voir mywebtel/README.md)
+output/mywebtel_presentation.mp4

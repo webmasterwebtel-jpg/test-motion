@@ -6,7 +6,9 @@ pointage (arrivée, pause, retour, fin de journée), congés (droits ouverts apr
 Contenu, Mail, Support IT et **l'Agent MyWebtel**. Voix off française (ElevenLabs eleven_v4, voix « Simon »), musique
 originale, bruitages discrets, quelques mots clés à l'écran (pas de sous-titres). Direction : `DIRECTION.md`.
 
-Rendu final : `output/mywebtel_presentation.mp4`. Regénération complète : `mywebtel/make.sh <APERCU-MYWEBTEL.html>`.
+Rendu final : `output/mywebtel_presentation.mp4` (master 1080p, ≈190 Mo, non versionné car au-dessus de la limite de
+GitHub) et `output/mywebtel_presentation_web.mp4` (copie versionnée, ≈80 Mo). Rendu à 60 i/s puis fondu deux à deux à
+30 i/s : vrai flou de mouvement. Regénération complète : `mywebtel/make.sh <APERCU-MYWEBTEL.html>` (≈1 h).
 
 ## Le film (V6)
 Une seule caméra dans un monde en 3D, dans l'esprit des trois références de l'utilisateur :
