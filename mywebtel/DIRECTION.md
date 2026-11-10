@@ -31,6 +31,25 @@
 - **10 novembre 2026 (V6), retour sur la V5 :** « La voix fait des fautes de prononciation ; je t'ai dit de faire une
   refonte de la vidéo en t'inspirant des 3 que je t'avais données, reconstruis tout carrément, impressionne-moi ! »
 
+- **10 novembre 2026 (V7), retour sur la V6 :** « la voix est beaucoup mieux, on la garde ; la vidéo est un peu fade, on
+  ne voit même pas bien les interfaces, c'est trop long, pas de musique entraînante (pas plus forte que la voix, juste
+  un peu forte), il manque des mock-ups téléphone, tablette et PC ; faut que la vidéo soit entraînante. »
+
+## Parti pris V7 (film produit rythmé)
+- **Les interfaces en grand, dans des mock-ups** : un appareil par fonction, avec la vraie mise en page responsive de la
+  plateforme (mobile sur le téléphone, tablette sur la tablette, bureau sur l'ordinateur portable). Pointage et demandes RH
+  sur le téléphone, congés et signature sur le portable, absences et contenu sur la tablette, mail sur le portable et
+  support sur le téléphone, agent sur le portable. Gros plans sur la zone utile de chaque écran.
+- **Rythme** : musique électro-pop synthétisée à 120 BPM (`music7.py`) : intro énergique, montée sur « Et si tout se
+  faisait au même endroit ? », **drop sur le logo** avec les trois appareils, groove, coupure sur « imprimer, signer,
+  scanner », retour du groove **sur les éclats**, respiration de l'agent, montée, **drop final**. L'image pulse sur la
+  grosse caisse, la caméra fouette d'un appareil à l'autre sur les temps, les mots clés claquent sur les mots de la voix.
+- **Couleurs** : fonds alternés bleu nuit / bleu vif / clair, aux couleurs de la plateforme.
+- **Durée** : 1 min 34 (voix V6 conservée, respirations raccourcies).
+- **Son** : musique ~10 dB sous la voix pendant la parole, plus présente entre les phrases ; un limiteur commandé par la
+  voix la garde au moins 7 dB sous elle à chaque instant. Bruitages : fouets, frappes des mots, touchers d'écran,
+  notification du code sur le téléphone, éclats de verre.
+
 ## Parti pris V6 (refonte complète)
 - **Ce que les trois références ont en commun** (analyse image par image) : ce sont des pubs 16:9 filmées sur l'écran
   d'un ordinateur, et toutes les trois sont **un seul mouvement de caméra continu dans un monde en 3D** où les textes,

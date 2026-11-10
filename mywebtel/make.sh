@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Film de présentation MyWebtel V6 (1920x1080, monde 3D sur la vraie interface, voix off, musique, bruitages).
+# Film de présentation MyWebtel V7 (1920x1080, mock-ups PC/tablette/téléphone sur la vraie interface, montage rythmé).
 # vraie interface -> voix (ElevenLabs « Simon », segments en cache) -> timeline -> musique -> rendu image (Chromium,
 # exporte aussi les repères des gestes) -> bruitages + mixage -> mux final.
 # Usage : mywebtel/make.sh <APERCU-MYWEBTEL.html>   (voir mywebtel/README.md)
@@ -10,7 +10,7 @@ python3 mywebtel/prep_ui.py "$APERCU"
 python3 mywebtel/voice/eleven_gen6.py --takes 1,2,3   # prises absentes seulement ; choix dans voice/picks_v6.json
 python3 mywebtel/voice/eleven_gen6.py --variant b --takes 2 mail   # « Mèl » : voyelle française stable
 python3 mywebtel/vo_eleven.py
-python3 mywebtel/music.py
+python3 mywebtel/music7.py                    # électro-pop 120 BPM synthétisée, écrit aussi ses sections dans timeline.json
 (cd mywebtel && [ -d node_modules ] || npm ci --silent)
 node mywebtel/render.js --workers "${WORKERS:-4}" --fps 60    # 60 i/s : deux images fondues par image finale = flou de mouvement
 python3 mywebtel/sfx_mix.py                   # lit cues.json, écrit par render.js

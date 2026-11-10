@@ -45,7 +45,11 @@ Exprimées le 2026-10-22 pour le film MyWebtel, à appliquer par défaut à tout
   Leur point commun, à respecter : **une caméra continue dans un monde 3D** où vivent textes, cartes et écrans (V6) ;
 - **prononciation mesurée, jamais supposée** : deux transcriptions + confiance mot à mot + formants ; pas de liaison
   fautive (« tu déclares avec » s'envoie « tu la déclare avec ») ;
-- une demande de **refonte** = reconstruire, pas retoucher.
+- une demande de **refonte** = reconstruire, pas retoucher ;
+- **film produit (V7, validé pour la voix)** : interfaces en grand dans des **mock-ups PC / tablette / téléphone**
+  (vraie mise en page responsive), montage **entraînant** calé sur une musique électro-pop à 120 BPM, musique
+  « un peu forte » mais toujours sous la voix (~10 dB pendant la parole), durée ~1 min 30. Une mise en scène
+  contemplative (V6, monde 3D survolé) a été jugée « fade, donne envie de dormir ».
 Projet MyWebtel : direction détaillée dans `mywebtel/DIRECTION.md`.
 
 ## Direction artistique « Crochet Pop Collage »

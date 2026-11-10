@@ -5,6 +5,15 @@ Les entrées de 2026-10-01 ont été reconstituées à partir de l'historique Gi
 
 ---
 
+**2026-11-10 (nuit)** — Retour sur la V6 : « la voix est beaucoup mieux, on la garde » ; « la vidéo est un peu fade, on
+ne voit même pas bien les interfaces, c'est trop long, il n'y a pas de musique entraînante (pas plus forte que la voix,
+juste un peu forte), il manque des mock-ups téléphone, tablette et PC ; elle donne envie de dormir ». → Règles : pour
+une présentation produit, **l'interface doit occuper l'écran** (gros plans, jamais de pages minuscules en perspective) ;
+**mock-ups d'appareils** pour montrer le produit ; **musique entraînante** à 120 BPM avec montées et drops, environ
+10 dB sous la voix (jamais au-dessus, limiteur commandé par la voix) ; **montage sur les temps** (fouets de caméra,
+mots qui claquent) ; viser 1 min 30 plutôt que 1 min 50. → V7 : `film/story7.js`, `music7.py`, voix V6 conservée,
+placée plus serrée (1 min 34).
+
 **2026-11-10 (soir)** — Retour sur la V5 : « La voix fait des fautes de prononciation ; je t'ai dit de faire une
 refonte de la vidéo en t'inspirant des 3 que je t'avais données, reconstruis tout carrément, impressionne-moi ! »
 → Règles : (1) une référence se lit dans sa **grammaire de mise en scène**, pas seulement dans ses effets : les trois

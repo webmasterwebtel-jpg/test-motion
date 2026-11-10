@@ -20,25 +20,25 @@ ROOT = os.path.dirname(HERE)
 OUT = os.path.join(ROOT, "build", "mywebtel")
 VOICE = os.path.join(OUT, "voice")
 SR = 48000
-BPM, BEAT = 100, 0.6
-TAIL = 3.6
+BPM, BEAT = 120, 0.5
+TAIL = 3.0
 # graphies forcées pour la prononciation -> mot affiché et cherché par le film (secours si les nombres de mots diffèrent)
 SHOWN = {"scanné": "scanner", "plu": "plus", "arrive": "arrives", "déclare": "déclares", "signe": "signes", "pose": "poses",
          "s'ouvre": "s'ouvrent", "t'a": "t'as", "Mèl": "Mail"}
 WORD = r"[\wÀ-ÿ'’-]+"
 
 # (scène, [segments], attente avant la parole, [silence après chaque segment], calage "bar" du 1er segment)
-SCENES = [
-    ("hook", ["hook", "hook2"], 1.2, [0.7, 0.9], None),
-    ("reveal", ["reveal"], 0.2, [1.1], "bar"),
-    ("pointage", ["pointage"], 0.9, [1.3], None),
-    ("conges", ["conges"], 0.9, [1.3], None),
-    ("absences", ["absences"], 0.9, [1.4], None),
-    ("signature", ["signature"], 0.9, [1.5], None),
-    ("demandes", ["demandes"], 0.9, [1.3], None),
-    ("contenu", ["contenu"], 0.9, [1.3], None),
-    ("mail", ["mail"], 0.9, [1.4], None),
-    ("agent", ["agent"], 1.0, [1.2], None),
+SCENES = [                                  # V7 : rythme serré (120 BPM), une respiration courte après chaque fonction
+    ("hook", ["hook", "hook2"], 0.5, [0.35, 0.3], None),
+    ("reveal", ["reveal"], 0.0, [0.5], "bar"),
+    ("pointage", ["pointage"], 0.4, [0.7], None),
+    ("conges", ["conges"], 0.4, [0.7], None),
+    ("absences", ["absences"], 0.4, [0.7], None),
+    ("signature", ["signature"], 0.4, [0.8], None),
+    ("demandes", ["demandes"], 0.4, [0.6], None),
+    ("contenu", ["contenu"], 0.4, [0.6], None),
+    ("mail", ["mail"], 0.4, [0.7], None),
+    ("agent", ["agent"], 0.4, [0.5], None),
     ("fin", ["fin"], 0.0, [0.6], "bar"),
 ]
 

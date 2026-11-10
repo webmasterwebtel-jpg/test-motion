@@ -139,109 +139,79 @@ def pen(t0, d, gain=0.22, pan=0.1):
     add(x * am * 0.18, t0, gain, pan)
 
 
+def hit(level=0.35):
+    """Frappe courte qui accompagne un mot qui claque : grave bref + claquement filtré."""
+    t = tv(0.25)
+    f = 70 + 90 * np.exp(-t / 0.02)
+    return (np.sin(2 * np.pi * np.cumsum(f) / SR) * np.exp(-t / 0.07) + bp(noise(0.25), 1500, 6000) * np.exp(-t / 0.012) * 0.5) * level
+
+
+def touch():
+    """Toucher d'écran : petit « tic » de verre."""
+    t = tv(0.05)
+    return (np.sin(2 * np.pi * 2300 * t) * np.exp(-t / 0.008) * 0.5 + hp(noise(0.05), 4000) * np.exp(-t / 0.003) * 0.4)
+
+
 def cues():
-    """Bruitages V6 : les instants viennent de build/mywebtel/cues.json, exporté par le film lui-même (render.js).
-    Un geste = un son ; les moments forts (logo, éclats, agent, logo final) ont une montée et un impact ; tout le reste est
-    feutré. La réverbération commune donne l'espace."""
+    """Bruitages V7 : instants exportés par le film (cues.json). Fouets de caméra, mots qui claquent, touchers, clics,
+    effets propres à chaque fonction. La musique porte les drops ; les bruitages ponctuent."""
     C = json.load(open(os.path.join(OUT, "cues.json")))
     T = C["T"]
-    # ---- I. nuit
-    d0 = T["day"]
-    amb = lp(noise(d0), 380) * 0.10 * np.minimum(1, tv(d0) / 1.5) * np.minimum(1, (d0 - tv(d0)) / 0.6)
-    add(amb, 0, 1, 0, rev=0.3)
-    for k, key in enumerate(["pointer", "conge", "fiche", "signerH"]):
-        pan = (-0.55, 0.55, -0.45, 0.45)[k]
-        add(FX.shimmer(0.9, 0.10, seed=20 + k, lo=1100, hi=3000), T[key] - 0.12, 1, pan, rev=0.7)
-        add(pop(420 + 30 * k, 640 + 30 * k, 0.22), T[key] - 0.1, 0.7, pan, rev=0.4)
-    t0, t1, n = T["boulot"] - 0.1, T["fou"] + 0.35, 28           # l'heure s'emballe : le tic-tac accélère
-    for k in range(n):
-        p = 1 - (1 - k / n) ** 1.8
-        add(tick(), t0 + (t1 - t0) * p, 0.55 if k % 2 else 0.75, 0.2 * (-1) ** k, rev=0.2)
-    add(swoosh(0.5, 1800, 500, 0.12), T["fou"] - 0.05, 1, 0, rev=0.3)
-    add(FX.riser(T["logo"] - 0.1 - (T["meme"] - 0.25), 180, 7000, 0.30), T["meme"] - 0.25, 1, 0, rev=0.25)
-    add(FX.impact(0.85), T["logo"], 1, 0, rev=0.45)
-    add(chime((587.3, 880.0, 1174.7, 1760.0), 0.10, 2.4), T["logo"] + 0.02, 1, 0, rev=0.8)
-    add(FX.shimmer(1.5, 0.09, seed=9), T["tag"] - 0.25, 1, 0, rev=0.7)
-    add(FX.reverse_swell(T["day"] - T["dive"], 0.30), T["dive"], 1, 0, rev=0.4)
-    add(swoosh(0.9, 400, 5200, 0.30), T["day"] - 0.5, 1, 0, rev=0.35)
-    add(chime((1174.7, 1760.0), 0.06, 1.8), T["day"] + 0.02, 1, 0, rev=0.8)
-    for k, dly in enumerate(C.get("tileDelays", [])):              # les pages s'allument une à une
-        add(pop(760 + 25 * k, 1040 + 25 * k, 0.07), T["day"] + 0.08 + dly, 1, 0.6 * math.sin(k * 1.7), rev=0.5)
-    # ---- II. gestes communs
+    for t in C.get("whips", []):                                   # fouets de caméra : souffle qui culmine à l'arrivée
+        add(swoosh(0.55, 500, 5200, 0.34), t - 0.5, 1, 0, rev=0.25)
+    for k, t in enumerate(C.get("slams", [])):                     # mots qui claquent
+        add(hit(0.32), t + 0.02, 1, 0.15 * (-1) ** k, rev=0.2)
+    touches = set(round(x, 3) for x in C.get("touches", []))
     for t in C["clicks"]:
-        add(tap(), t - 0.02, 0.85, 0.15, rev=0.1)
-    for a, b in C["flights"]:                                      # vols de page en page
-        add(swoosh(max(0.4, b - a), 380, 2600, 0.15), a, 1, -0.2, rev=0.25)
-    for t in C.get("lifts", []):                                   # un composant sort de sa page
-        add(pop(480, 900, 0.13), t + 0.03, 1, 0.1, rev=0.35)
-    for t in C["checks"]:                                          # pastilles ✓ : signature sonore
-        add(chime((1568.0, 2349.3), 0.05, 0.9), t + 0.02, 1, 0.25, rev=0.5)
+        add(touch() if round(t, 3) in touches else tap(), t - 0.02, 0.9, 0.1, rev=0.1)
+    for t in C["checks"]:
+        add(chime((1568.0, 2349.3), 0.06, 0.9), t + 0.02, 1, 0.25, rev=0.5)
     # pointage
     for t in (T["in"], T["pause"], T["ret"], T["out"]):
         add(pop(700, 1000, 0.17), t + 0.06, 1, 0.1)
-        roll(t - 0.05, 0.4, 0.16)
-    # congés : le solde compte jusqu'à 24, la frise se remplit, le cadenas s'ouvre
+        roll(t - 0.05, 0.35, 0.14)
+    # congés : compteur, frise, cadenas
     for k in range(1, 25):
         sk = 1 - (1 - k / 24) ** (1 / 3)
         add(tick(), T["solde"] - 0.25 + sk * 1.0, 0.45, 0.2, rev=0.1)
     add(FX.beam(380, 900, max(0.4, T["seniority"] - T["rights"]), 0.12), T["rights"] + 0.1, 1, 0, rev=0.3)
-    add(pop(900, 1300, 0.16), T["seniority"] + 0.1, 1, 0.1, rev=0.4)
+    add(pop(900, 1300, 0.18), T["seniority"] + 0.1, 1, 0.1, rev=0.4)
     # absences
     add(tick(), T["declare"] + 0.1, 0.6); add(tick(), T["declare"] + 0.35, 0.6)
-    add(swoosh(max(0.4, T["fileIn"] - T["proof"] + 0.25), 1600, 500, 0.16), T["proof"] - 0.25, 1, 0.4, rev=0.3)
-    add(FX.paper(0.3), T["fileIn"] - 0.02, 1, 0.1, rev=0.3)
-    add(swoosh(0.35, 900, 3000, 0.1), T["absSend"] + 0.05, 1, 0.3)
-    add(pop(700, 1000, 0.15), T["rh"], 1, 0.4)
-    # signature : imprimer, signer, scanner… puis les éclats
+    add(swoosh(max(0.4, T["fileIn"] - T["proof"] + 0.25), 1600, 500, 0.18), T["proof"] - 0.25, 1, -0.4, rev=0.3)
+    add(FX.paper(0.32), T["fileIn"] - 0.02, 1, 0.1, rev=0.3)
+    add(pop(700, 1000, 0.15), T["rh"], 1, 0.3)
+    # signature
     add(FX.printer(0.8, 0.22), T["kImp"] - 0.45, 1, 0.3, rev=0.3)
-    pen(T["kSig"] - 0.1, 0.75, 0.2, 0.3)
-    add(FX.scan(0.8, 0.16), T["kScan"] - 0.1, 1, 0.3, rev=0.3)
-    add(FX.reverse_swell(max(0.3, T["nonEnd"] - T["non"]), 0.22), T["non"], 1, 0, rev=0.3)
-    add(FX.glass(0.55), T["nonEnd"], 1, 0, rev=0.55)
-    add(FX.impact(0.32, bright=False), T["nonEnd"], 1, 0, rev=0.4)
-    add(pop(560, 900, 0.18), T["recv"] - 0.3, 1, 0.1, rev=0.3)
+    pen(T["kSig"] - 0.1, 0.6, 0.2, 0.3)
+    add(FX.scan(0.7, 0.16), T["kScan"] - 0.1, 1, 0.3, rev=0.3)
+    add(FX.glass(0.6), T["nonEnd"], 1, 0, rev=0.5)
     add(pop(640, 940, 0.18), T["open"] + 0.12, 1, 0.1, rev=0.3)
-    add(pop(800, 1150, 0.10), T["nom"] - 0.15, 1, 0.2)
     pen(T["draw"] + 0.15, max(0.4, T["drawEnd"] - T["draw"] - 0.15), 0.24, 0.1)
-    add(swoosh(0.45, 2400, 700, 0.1), T["mail"] - 0.2, 1, 0.6, rev=0.3)
-    add(ping(), T["mail"] - 0.05, 0.7, 0.6, rev=0.5)
+    add(swoosh(0.45, 2400, 700, 0.12), T["code"] - 0.15, 1, 0.6, rev=0.3)          # le téléphone arrive
+    add(chime((1318.5, 1760.0), 0.12, 0.8), T["mail"] - 0.08, 1, 0.6, rev=0.4)      # notification
     keys(T["tape"] - 0.1, T["tape"] + 0.45, 6, 0.4, 0.1)
     add(tick(), T["consent"], 0.7, 0.2)
-    add(chime((1318.5, 1975.5, 2637.0), 0.10, 1.8), T["signed"] + 0.3, 1, 0.1, rev=0.6)
-    add(FX.shimmer(0.9, 0.07, seed=31), T["signed"] + 0.5, 1, 0.2, rev=0.6)
-    # demandes RH
+    add(chime((1318.5, 1975.5, 2637.0), 0.10, 1.6), T["signed"] + 0.3, 1, 0.1, rev=0.6)
+    add(FX.shimmer(0.8, 0.07, seed=31), T["signed"] + 0.5, 1, 0.2, rev=0.6)
+    # demandes, contenu, mail, support
     keys(T["fill"], T["fill"] + 0.35, 8, 0.4, -0.2)
     keys(T["fill"] + 0.38, T["clics"] - 0.12, 12, 0.4, -0.2)
-    add(swoosh(0.35, 900, 3000, 0.1), T["clics"] + 0.05, 1, 0.3)
     add(pop(700, 1000, 0.15), T["process"], 1, 0.4)
-    # contenu
     add(tick(), T["confirm"] + 0.02, 0.7, 0.2)
-    # mail
-    keys(T["mailType"], T["mailSend"] - 0.15, 22, 0.36, 0.2)
+    keys(T["mailType"], T["mailSend"] - 0.15, 20, 0.36, 0.2)
     add(swoosh(0.35, 900, 3000, 0.12), T["mailSend"] + 0.05, 1, 0.3)
-    add(pop(600, 880, 0.18), T["mailSend"] + 0.15, 1, 0.3)
-    # support
-    keys(T["tickType"], T["ticket"] - 0.2, 20, 0.36, -0.2)
-    add(pop(560, 900, 0.22), T["ticket"] + 0.15, 1, 0.4)
+    keys(T["tickType"], T["ticket"] - 0.2, 18, 0.36, -0.2)
+    add(pop(560, 900, 0.2), T["ticket"] + 0.15, 1, 0.4)
     add(pop(700, 1000, 0.15), T["charge"], 1, 0.4)
-    # ---- agent : la nuit tombe, l'étincelle, les faisceaux vers les pages
-    add(FX.reverse_swell(1.6, 0.18), T["dusk"], 1, 0, rev=0.5)
-    add(FX.shimmer(1.8, 0.12, seed=41, lo=1500, hi=4800), T["q"] - 0.45, 1, -0.3, rev=0.75)
-    add(swoosh(0.6, 500, 2600, 0.16), T["launch"] - 0.05, 1, 0.1, rev=0.35)
-    keys(T["ask"], T["askSend"] - 0.15, 26, 0.32, 0.1)
-    add(swoosh(0.3, 1000, 3200, 0.1), T["askSend"] + 0.05, 1, 0.1)
+    # agent
+    add(FX.shimmer(1.6, 0.12, seed=41, lo=1500, hi=4800), T["q"] - 0.45, 1, -0.3, rev=0.75)
+    keys(T["ask"], T["askSend"] - 0.15, 24, 0.32, 0.1)
     for k, t in enumerate(T["chips"]):
-        add(FX.beam(520 * 1.12 ** k, 1560 * 1.12 ** k, 0.5, 0.16), t - 0.1, 1, (-0.4, 0.4, 0.1)[k], rev=0.5)
+        add(FX.beam(520 * 1.12 ** k, 1560 * 1.12 ** k, 0.5, 0.16), t - 0.1, 1, (-0.4, 0.4, 0.4)[k], rev=0.5)
     add(FX.shimmer(1.0, 0.06, seed=43), T["answer"] + 0.3, 1, 0.1, rev=0.5)
     add(pop(560, 860, 0.2), T["prep"] + 0.02, 1, 0.1, rev=0.35)
     add(chime((1318.5, 1760.0), 0.09, 1.1), T["okAgent"] + 0.1, 1, 0.1, rev=0.5)
-    add(swoosh(max(0.4, T["agentSent"] - T["okAgent"]), 2600, 500, 0.16), T["okAgent"] + 0.05, 1, 0.3, rev=0.3)
-    add(pop(600, 900, 0.18), T["agentSent"], 1, 0.3, rev=0.4)
-    # ---- III. fin
-    add(FX.riser(max(0.6, T["final"] - 0.1 - T["end"]), 160, 7500, 0.30), T["end"], 1, 0, rev=0.3)
-    add(FX.impact(0.8), T["final"], 1, 0, rev=0.5)
-    add(chime((587.3, 880.0, 1174.7, 1760.0), 0.10, 3.0), T["final"] + 0.02, 1, 0, rev=0.85)
-    add(FX.shimmer(1.6, 0.08, seed=51), T["finTag"] - 0.25, 1, 0, rev=0.7)
 
 
 # ------------------------------------------------------------------ mixage
@@ -268,13 +238,7 @@ def main():
     vo = np.pad(vo, (0, max(0, N - len(vo))))[:N]
     mu, _ = sf.read(os.path.join(OUT, "music.wav"), always_2d=True)
     mu = np.pad(mu, ((0, max(0, N - len(mu))), (0, 0)))[:N]
-    # « Sauf que non. » : la musique se retire juste avant, les éclats tombent dans le silence, elle revient ensuite
-    T = json.load(open(os.path.join(OUT, "cues.json")))["T"]
-    tt = np.arange(N) / SR
-    cut = np.clip((tt - (T["non"] - 0.25)) / 0.2, 0, 1) * (1 - np.clip((tt - (T["nonEnd"] + 0.35)) / 0.5, 0, 1))
-    mu *= (1 - 0.88 * cut)[:, None]
-    # ouverture : la première phrase doit être limpide, la nuit reste en retrait jusqu'au logo
-    mu *= (10 ** (-5 / 20) + (1 - 10 ** (-5 / 20)) * np.clip((tt - (T["logo"] - 0.6)) / 0.5, 0, 1))[:, None]
+    # V7 : la musique gère elle-même ses coupures (« Sauf que non ») et ses montées (music7.py)
     # zones de parole
     speech = np.zeros(N, bool)
     for s in TL["scenes"]:
@@ -282,16 +246,34 @@ def main():
             speech[int(g["start"] * SR):int(g["end"] * SR)] = True
     v_db = rms_db(vo[speech])
     m_db = rms_db(mu.mean(1))
-    mu *= 10 ** ((v_db - 13 - m_db) / 20)                    # musique à -13 dB de la voix…
+    mu *= 10 ** ((v_db - 6 - m_db) / 20)                     # V7 : musique présente, -6 dB de la voix en moyenne…
     hop = 480
     lvl = np.abs(vo[: N // hop * hop]).reshape(-1, hop).max(1)
     e = env_follow(lvl, 0.004, 0.25)                          # …puis ducking -7 dB quand la voix parle
     e = e / (np.percentile(e[e > 0], 95) + 1e-9)
     duck = np.clip(e / 0.25, 0, 1)
-    g_db = -8 * env_follow(duck, 0.03, 0.45)                 # retour lent : pas de pompage entre les mots
+    g_db = -5 * env_follow(duck, 0.03, 0.35)                 # …et -5 dB quand la voix parle (retour assez vif entre les phrases)
     g = np.repeat(10 ** (g_db / 20), hop)
     g = np.pad(g, (0, N - len(g)), mode="edge")
     mu = mu * g[:, None]
+    # limiteur commandé par la voix : pendant la parole, la musique reste au moins 6 dB sous la voix, instant par instant
+    hop2 = 960                                                # trames de 20 ms (50 par seconde)
+    nf = N // hop2
+    ve = np.sqrt(np.mean(vo[: nf * hop2].reshape(nf, hop2) ** 2, 1)) + 1e-9
+    me = np.sqrt(np.mean(mu.mean(1)[: nf * hop2].reshape(nf, hop2) ** 2, 1)) + 1e-9
+    def follow(x, up, down, fs=50.0):                         # suiveur d'enveloppe à la cadence des trames
+        au, ad = math.exp(-1 / (up * fs)), math.exp(-1 / (down * fs))
+        out = np.empty_like(x); e = x[0]
+        for i, v in enumerate(x):
+            e = au * e + (1 - au) * v if v > e else ad * e + (1 - ad) * v
+            out[i] = e
+        return out
+    ve = follow(ve, 0.01, 0.45)                                # la voix « tient » ~450 ms après chaque mot (fins de mots douces)
+    sp2 = speech[: nf * hop2].reshape(nf, hop2).mean(1) > 0.2
+    need = np.where(sp2 & (ve > 10 ** ((v_db - 40) / 20)), np.minimum(1.0, ve * 10 ** (-7 / 20) / me), 1.0)
+    gl = follow(need, 0.25, 0.01)                              # le gain descend tout de suite, remonte en douceur
+    gl = np.repeat(gl, hop2); gl = np.pad(gl, (0, N - len(gl)), mode="edge")
+    mu = mu * gl[:, None]
     sfx = bus * (10 ** ((20 * np.log10(np.abs(vo).max()) - 10 - 20 * np.log10(np.abs(bus).max() + 1e-9)) / 20))
     mix = np.stack([vo, vo], 1) + mu + sfx
     mix *= 0.9 / (np.abs(mix).max() + 1e-9)

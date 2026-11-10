@@ -1,22 +1,21 @@
 # MyWebtel : film de présentation
 
-Film de 1 min 48 (1920×1080, 30 i/s) qui présente MyWebtel, l'espace collaborateur de Webtel, **sur sa vraie interface** :
-pointage (arrivée, pause, retour, fin de journée), congés (droits ouverts après 1 an d'ancienneté), Mes absences,
-**signature de documents** (nom manuscrit ou signature dessinée, code de validation par e-mail), Mes demandes RH,
-Contenu, Mail, Support IT et **l'Agent MyWebtel**. Voix off française (ElevenLabs eleven_v4, voix « Simon »), musique
-originale, bruitages discrets, quelques mots clés à l'écran (pas de sous-titres). Direction : `DIRECTION.md`.
+Film de 1 min 34 (1920×1080, 30 i/s) qui présente MyWebtel, l'espace collaborateur de Webtel, **sur sa vraie interface**,
+dans des **mock-ups d'ordinateur portable, de tablette et de téléphone** (vraie mise en page responsive de la plateforme) :
+pointage, congés (droits ouverts après 1 an d'ancienneté), Mes absences, **signature de documents** (nom manuscrit ou
+signature dessinée, code de validation par e-mail), Mes demandes RH, Contenu, Mail, Support IT et **l'Agent MyWebtel**.
+Voix off française (ElevenLabs eleven_v4, voix « Simon »), musique électro-pop originale à 120 BPM, bruitages, mots clés
+à l'écran (pas de sous-titres). Direction : `DIRECTION.md`.
 
-Rendu final : `output/mywebtel_presentation.mp4` (master 1080p, ≈190 Mo, non versionné car au-dessus de la limite de
-GitHub) et `output/mywebtel_presentation_web.mp4` (copie versionnée, ≈80 Mo). Rendu à 60 i/s puis fondu deux à deux à
-30 i/s : vrai flou de mouvement. Regénération complète : `mywebtel/make.sh <APERCU-MYWEBTEL.html>` (≈1 h).
+Rendu final : `output/mywebtel_presentation.mp4` (master 1080p, non versionné car au-dessus de la limite de GitHub) et
+`output/mywebtel_presentation_web.mp4` (copie versionnée). Rendu à 60 i/s puis fondu deux à deux à 30 i/s : vrai flou de
+mouvement. Regénération complète : `mywebtel/make.sh <APERCU-MYWEBTEL.html>` (≈1 h).
 
-## Le film (V6)
-Une seule caméra dans un monde en 3D, dans l'esprit des trois références de l'utilisateur :
-1. **Nuit** : les démarches flottent dans le noir, l'heure s'emballe, des fils de lumière les rassemblent dans un anneau ;
-   le logo naît dans l'anneau sur le premier temps et la caméra le traverse.
-2. **Le monde MyWebtel** : les vraies pages sont posées comme les quartiers d'un plan ; la caméra vole de page en page,
-   le composant utile sort de sa page en relief et on s'en sert (clics, saisie, états réels).
-3. **Fin** : la nuit retombe, le plan s'illumine, le logo revient dans l'anneau.
+## Le film (V7)
+Accroche typographique sur fond bleu nuit, montée, **drop sur le logo** et les trois appareils ; puis une fonction par
+appareil, en gros plan, la caméra fouettant d'un appareil à l'autre sur les temps ; « imprimer, signer, scanner » vole en
+éclats sur le retour du groove ; l'agent éclaire ses sources ; **drop final** sur les trois appareils et le logo.
+Versions précédentes (V6 : monde 3D survolé, `film/story.js` dans l'historique Git) : voir `DIRECTION.md`.
 
 ## Vraie interface
 Les écrans viennent de l'aperçu HTML généré par le PHP de la plateforme (archive « MYWEBTEL_fichiers_retrouves_PARTIEL »,
@@ -41,11 +40,11 @@ reçoit exactement les mêmes états à chaque image.
 | Prise retenue pour chaque phrase (après contrôle, voir plus bas) | `voice/picks_v6.json` | |
 | Placement des segments sur la grille (100 BPM), respirations, mots datés au caractère près | `vo_eleven.py` | `vo.wav`, `timeline.json` |
 | Logo Webtel vectorisé (potrace) ; variantes blanche (nuit) et bleu profond (relief) | `vectorize_logo.py` | `film/brand/*.svg` |
-| Musique composée en MIDI (FluidSynth + MuseScore General) + nappe synthétisée + réverbération | `music.py`, `audio_fx.py` | `music.wav`, `music/` |
+| Musique électro-pop 120 BPM entièrement synthétisée (batterie, basse, accords « supersaw » avec pompage, arpèges, montées, drops), sections écrites dans `timeline.json` | `music7.py`, `audio_fx.py` | `music.wav`, `music7/` |
 | Vraie interface : écrans de l'aperçu PHP préparés pour le film | `prep_ui.py` | `ui.json` (non versionné) |
-| Film HTML piloté par le temps (`renderAt(t)`) : moteur 3D, interface, mise en scène | `film/engine.js`, `film/ui.js`, `film/story.js` | |
+| Film HTML piloté par le temps (`renderAt(t)`) : moteur 3D, interface, mise en scène avec mock-ups | `film/engine.js`, `film/ui.js`, `film/story7.js` | |
 | Rendu image par image (Chromium + ffmpeg) ; exporte aussi les repères des gestes | `render.js` | `video_silent.mp4`, `cues.json` |
-| Bruitages synthétisés calés sur les gestes du film, réverbération, ducking, loudness -16 LUFS | `sfx_mix.py`, `audio_fx.py` | `sfx.wav`, `mix.wav` |
+| Bruitages calés sur les gestes du film, réverbération, ducking + limiteur commandé par la voix, loudness -16 LUFS | `sfx_mix.py`, `audio_fx.py` | `sfx.wav`, `mix.wav` |
 
 `timeline.json` (mots datés) est la seule source des temps : le film en dérive ses gestes (chaque clic tombe sur le mot
 qui le nomme, les logos sur un premier temps), la musique ses sections, et les bruitages lisent les gestes exportés par
