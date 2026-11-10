@@ -185,7 +185,7 @@ def cues():
     pen(T["draw"] + 0.15, T["code"] - 0.5 - T["draw"])
     add(ping(), T["mail"] - 0.1, 0.8, 0.5)                              # l'e-mail du code arrive
     keys(T["tape"] - 0.1, T["tape"] + 0.4, 6, 0.4, 0.1)
-    add(tick(), T["tape"] + 0.55, 0.7, 0.2)                             # case de consentement
+    add(tick(), T["mail"] + 0.3, 0.7, 0.2)                             # case de consentement
     add(chime((1318.5, 1975.5, 2637.0), 0.1, 1.6), T["signed"] + 0.3, 1, 0.1)
     # 8. demandes RH : frappe, envoi, suivi
     keys(T["fill"], T["fill"] + 0.35, 8, 0.4, -0.2)

@@ -287,7 +287,7 @@
     [T.open, () => F("sign", "sign-open"), T.open - 0.75, T.open + 0.25],
     [T.draw, () => q(F("sign", "sign-tabs"), '[data-sign-mode="draw"]'), T.draw - 0.6, T.draw + 1.3],
     [T.code, () => F("sign", "sign-code-btn"), T.code - 0.6, T.signed + 0.4], [T.tape - 0.15, () => F("sign", "sign-code"), T.code, T.signed + 0.4],
-    [T.tape + 0.55, () => F("sign", "sign-consent"), T.code, T.signed + 0.4], [T.signed, () => F("sign", "sign-confirm"), T.code, T.signed + 0.4],
+    [T.mail + 0.3, () => F("sign", "sign-consent"), T.code, T.signed + 0.4], [T.signed, () => F("sign", "sign-confirm"), T.code, T.signed + 0.4],
     navClick("requests"),
     [T.fill - 0.2, () => q(F("requests", "req-cats"), "button"), T.fill - 0.8, T.clics + 0.5], [T.clics, () => F("requests", "req-send"), T.fill - 0.2, T.clics + 0.5],
     navClick("content"),
@@ -422,7 +422,7 @@
       setValue(F("sign", "sign-code"), t >= T.tape - 0.1 ? "482913".slice(0, Math.round(6 * seg(t, T.tape - 0.1, T.tape + 0.4))) : "", t > T.tape - 0.15 && t < T.tape + 0.5);
       glow(F("sign", "sign-code"), pulse(t, T.tape + 0.35, 0.8));
       const cs = F("sign", "sign-consent");
-      if (cs) cs.checked = t >= T.tape + 0.55;
+      if (cs) cs.checked = t >= T.mail + 0.3;
       press(F("sign", "sign-confirm"), t, T.signed);
       const done = t >= T.signed + 0.3;
       const sb = F("sign", "sign-badge");
