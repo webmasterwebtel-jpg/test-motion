@@ -1,0 +1,6 @@
+{
+ "_note": "Prise retenue pour chaque phrase (eleven_v4, voix Simon) : deux transcriptions (Whisper, Parakeet), confiance mot à mot et formants des voyelles sensibles. voice6b = graphie « Mèl » (voyelle française stable) pour le menu Mail.",
+ "hook": "voice6/t2", "hook2": "voice6/t3", "reveal": "voice6/t1", "pointage": "voice6/t1", "conges": "voice6/t1",
+ "absences": "voice6/t3", "signature": "voice6/t1", "demandes": "voice6/t3", "contenu": "voice6/t3", "mail": "voice6b/t2",
+ "agent": "voice6/t2", "fin": "voice6/t2"
+}

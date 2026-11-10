@@ -28,6 +28,41 @@
   **vraies interfaces**, bruitages et effets **sans exagérer**, pro, premium et impressionnant ; l'accent ne doit jamais
   basculer vers l'anglais ; **aux couleurs du logiciel, sans exagérer**.
 
+- **10 novembre 2026 (V6), retour sur la V5 :** « La voix fait des fautes de prononciation ; je t'ai dit de faire une
+  refonte de la vidéo en t'inspirant des 3 que je t'avais données, reconstruis tout carrément, impressionne-moi ! »
+
+## Parti pris V6 (refonte complète)
+- **Ce que les trois références ont en commun** (analyse image par image) : ce sont des pubs 16:9 filmées sur l'écran
+  d'un ordinateur, et toutes les trois sont **un seul mouvement de caméra continu dans un monde en 3D** où les textes,
+  les cartes et les écrans sont posés dans l'espace (survol d'une carte puis plongée sur la tour Eiffel chez Drive
+  Academy, travelling dans la ville et à travers des cadres de néon chez GTA, travelling de cinéma chez Binance). La V5
+  gardait une fenêtre de navigateur et des zooms : c'était la mauvaise grammaire.
+- **Le monde MyWebtel** : les vraies pages de l'interface sont posées sur un sol comme les quartiers d'un plan
+  (Pointage, Mes congés, Mes absences, Mes documents, Mes demandes RH, Contenu, Mail, Support IT, Mon espace au
+  centre). La caméra vole de page en page (on monte, on traverse le plan, on redescend) ; à chaque fonction, le
+  composant utile **sort de la page en relief** (copie exacte de la page, découpée) avec un halo aux couleurs de la
+  plateforme, et on s'en sert : clics, saisie, états réels.
+- **Ouverture (Binance)** : nuit bleu marine en format cinéma, trait de lumière anamorphique, les démarches en cartes de
+  verre qui défilent, tunnel de graduations sur « un temps fou », fils de lumière qui rassemblent tout dans un anneau ;
+  le logo naît dans l'anneau sur le premier temps, la caméra le traverse et l'on découvre le plan d'en haut.
+- **Corps (Drive Academy)** : mots clés tapés mot à mot sur la voix (« un clic. », « à la minute près. », « en deux
+  clics. »…), pastilles ✓, curseur, cartes en verre avec halo ; le justificatif PDF arrive en volant ; la règle
+  d'ancienneté devient une frise qui se remplit et un cadenas qui s'ouvre.
+- **Signature** : « Imprimer. Signer. Scanner ? » sur un panneau de verre avec la feuille (impression, signature à
+  l'encre, faisceau du scanner) ; sur « non. », le panneau **vole en éclats** (façon Binance) et révèle la vraie page.
+- **Agent (moment fort)** : la nuit retombe sur le plan, l'étincelle de l'agent (icône réelle du bouton « Agent
+  MyWebtel ») apparaît au-dessus de tout, le panneau en sort ; ses réponses envoient des **faisceaux de lumière vers les
+  pages concernées** (congés, demandes RH, support) ; la demande confirmée redescend vers « Mes demandes RH ».
+- **Fin (GTA)** : le plan s'illumine, le logo revient dans l'anneau sur le premier temps, avec la liste des fonctions.
+- **Voix** : nouveau modèle ElevenLabs **eleven_v4** (même voix Simon), trois prises par phrase, la meilleure choisie
+  par deux transcriptions (Whisper, Parakeet), la confiance mot à mot et le suivi des formants des voyelles sensibles.
+  Fautes corrigées : liaisons fautives (« tu la déclare‿z‿avec », « tu signe‿z‿avec », « tu la pose‿z‿à »,
+  « tu arrive‿z‿un clic », « s'ouvre‿t‿après », « t'a‿z‿une »), « MyWebtel » prononcé à l'anglaise (« web-tail ») dans
+  la V5, « Mail » prononcé « mèl » (voyelle française stable, mesurée), « plu » sans « s » (20 dB sous un vrai « s »).
+- **Son** : musique recomposée sur l'histoire (nappe grave de nuit, accord sur le logo, groove dans le monde, piano seul
+  pour l'ancienne méthode, coupure sur « Sauf que non », section cristalline pour l'agent, montée et résolution),
+  réverbération de salle commune, bruitages calés sur les gestes exportés par le film.
+
 ## Parti pris V5
 - **Trois références, une seule voix visuelle.** Ouverture façon reportage (nuit bleu marine de la barre latérale, démarches
   qui flottent, l'heure qui file) ; corps façon pub produit (fond clair, vraie interface, curseur, mots-clés ponctuels et

@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-"""Musique de fond MyWebtel : composée en MIDI, rendue piste par piste avec FluidSynth (banque libre MuseScore General).
+"""Musique de fond MyWebtel (V6) : composée en MIDI, rendue piste par piste avec FluidSynth (banque libre MuseScore General),
+plus une nappe grave synthétisée pour la nuit et une réverbération de salle commune (audio_fx.py).
 
 100 BPM, une mesure = 2,4 s, ré majeur, un accord par mesure. L'arrangement suit les scènes de build/mywebtel/timeline.json
 (voir setup) : intro au piano seul sur la nuit, accord lumineux sur le logo, groove discret qui s'étoffe au fil des
@@ -8,7 +9,9 @@ fonctions, montée, logo final et résolution.
 Sorties : build/mywebtel/music/<piste>.wav (48 kHz stéréo) et build/mywebtel/music.wav (mixage des pistes, sans ducking).
 Usage : python3 mywebtel/music.py
 """
-import json, os, random, subprocess
+import json, os, random, subprocess, sys
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import audio_fx as FX
 import numpy as np
 import soundfile as sf
 import mido
@@ -41,24 +44,34 @@ NBARS = 0
 
 
 def setup(tl):
-    """Arrangement calé sur la timeline V2 : intro (nuit) -> logo -> fonctions (A, A+, B) -> montée -> logo final."""
+    """Arrangement V6, calé sur les mots de la voix : nuit (intro) -> logo -> groove dans le monde MyWebtel (A, A+) ->
+    piano seul sur « imprimer, signer, scanner » (breath) -> groove plein (B) -> section de l'agent (agent) -> montée -> fin."""
     global NBARS
     NBARS = int(round(tl["duration"] / BAR))
     sc = {s["id"]: s for s in tl["scenes"]}
+    fold = lambda w: w.lower().replace("é", "e").replace("’", "'")
+    def W(sid, word, n=0):
+        ws = [w for g in sc[sid]["segs"] for w in g["words"] if fold(w[0]) == fold(word)]
+        return ws[n][1]
     bar_of = lambda t: int(t // BAR) + 1
-    logo = int(round((sc["reveal"]["segs"][0]["words"][0][1] - 0.4) / BAR)) + 1   # même calcul que le film (onBar)
-    ids = [s["id"] for s in tl["scenes"]]
-    a_plus, b_sec = bar_of(sc[ids[3]]["start"]), bar_of(sc[ids[len(ids) * 2 // 3]]["start"])   # le groove s'étoffe par tiers
-    final = bar_of(tl["scenes"][-1]["segs"][0]["words"][0][1] - 0.5 + BAR / 2)   # mesure la plus proche du « MyWebtel » final
-    intro = ["Bm7", "Gmaj7", "Asus", "Em9", "Asus"]
+    logo = int(round((W("reveal", "MyWebtel") - 0.35) / BAR)) + 1          # même calcul que le film (onBar)
+    final = int(round((W("fin", "MyWebtel") - 0.4) / BAR)) + 1
+    breath0, breath1 = bar_of(W("signature", "l'imprimer") - 0.6), bar_of(W("signature", "non") + 0.4)
+    a_plus, agent0 = bar_of(sc["conges"]["start"]), bar_of(sc["agent"]["start"] + 0.5) + 1
+    intro = ["Bm7", "Gmaj7", "Bm7", "Em9", "Gmaj7", "Asus"]
+    k = 0
     for b in range(1, NBARS + 1):
         if b < logo:
-            PLAN[b], SECTION[b] = intro[(b - 1) % len(intro)] if b < logo - 1 else "Asus", "intro"
-        elif b < logo + 2:
-            PLAN[b], SECTION[b] = ("D" if b == logo else "Bm7"), "logo"
+            PLAN[b], SECTION[b] = intro[(b - 1) % len(intro)] if b < logo - 1 else "Asus", "intro" if b < logo - 1 else "question"
+        elif b == logo:
+            PLAN[b], SECTION[b] = "D", "logo"
+        elif breath0 <= b <= breath1:
+            PLAN[b], SECTION[b] = ["Em9", "Gmaj7", "Asus", "Asus"][min(b - breath0, 3)], "breath"
+        elif b < final - 1 and b >= agent0:
+            PLAN[b], SECTION[b] = ["Gmaj9", "D/F#", "Em9", "Asus"][(b - agent0) % 4], "agent"
         elif b < final - 1:
-            PLAN[b] = LOOP[(b - logo - 2) % 4]
-            SECTION[b] = "A" if b < a_plus else ("A+" if b < b_sec else "B")
+            PLAN[b] = LOOP[k % 4]; k += 1
+            SECTION[b] = "A" if b < a_plus else ("A+" if b < breath0 else "B")
         elif b == final - 1:
             PLAN[b], SECTION[b] = "Asus", "lift"
         else:
@@ -110,10 +123,10 @@ def compose():
         sec = section(b)
         B0 = (b - 1) * 4                                     # temps du début de mesure
         # --- piano
-        if sec in ("intro", "breath"):
+        if sec in ("intro", "breath", "agent"):
             arp = [voic[0] - 12, voic[1], voic[2], voic[3], voic[4], voic[3], voic[2], voic[1]]
             for i, p in enumerate(arp):
-                piano.note(B0 + i * 0.5, 0.9, p, 34 + (6 if i == 0 else 0) + (b - 1) * 2 * (sec == "intro"))
+                piano.note(B0 + i * 0.5, 0.9, p, (28 if sec == "agent" else 34) + (6 if i == 0 else 0) + (b - 1) * 2 * (sec == "intro"))
         elif sec == "question":
             piano.note(B0, 3.5, voic[4] + 12, 30)
             piano.note(B0 + 2, 1.8, voic[2] + 12, 26)
@@ -142,23 +155,27 @@ def compose():
         # --- nappe et cordes
         if sec != "intro" or b >= 2:
             vel = {"intro": 40, "question": 58, "logo": 60, "A": 46, "A+": 48, "breath": 52, "B": 50,
-                   "lift": 58, "end": 54}[sec]
+                   "agent": 56, "lift": 58, "end": 54}[sec]
             for p in voic[:4]:
                 pad.note(B0, 3.95, p, vel)
-        if sec in ("question", "logo", "lift", "end", "breath"):
+        if sec in ("question", "logo", "lift", "end", "breath", "agent"):
             for p in (voic[1] + 12, voic[3] + 12):
                 strings.note(B0, 3.95, p, 44 if sec != "lift" else 54)
         # --- basse
-        if sec in ("logo", "A", "A+", "B", "lift", "end", "breath"):
-            if sec in ("A", "A+", "breath", "logo", "end"):
+        if sec in ("logo", "A", "A+", "B", "lift", "end", "breath", "agent"):
+            if sec in ("A", "A+", "breath", "logo", "end", "agent"):
                 bass.note(B0, 3.6 if sec != "end" else 3.95, root, 70)
             else:                                            # B / lift : un peu de mouvement
                 for k, d in ((0, 1.4), (1.5, 0.45), (2, 1.4), (3.5, 0.45)):
                     bass.note(B0 + k, d, root + (12 if k == 3.5 else 0), 70)
-        # --- cloche (célesta) : logo et fin
+        # --- cloche (célesta) : logo et fin ; arpèges cristallins pour l'agent
         if b in BELLS:
             for i, p in enumerate([74, 78, 81, 85, 86]):
                 bell.note(B0 + i * 0.25, 2.5, p, 50)
+        if sec == "agent":
+            up = sorted(voic[1:]) + [voic[1] + 12, voic[2] + 12]
+            for i in range(16):
+                bell.note(B0 + i * 0.25, 0.5, up[(i * 3) % len(up)] + 12, 30 + (8 if i % 4 == 0 else 0))
         # --- batterie (canal 10) : discrète
         if sec in ("A", "A+", "B", "lift"):
             for k in range(4):
@@ -177,6 +194,10 @@ def compose():
         elif sec == "breath":
             for k in range(8):
                 drums.note(B0 + k * 0.5, 0.2, 82, 26 + (8 if k % 2 else 0))
+        elif sec == "agent":
+            drums.note(B0, 0.2, 36, 50); drums.note(B0 + 2, 0.2, 36, 42)
+            for k in range(8):
+                drums.note(B0 + k * 0.5, 0.15, 42, 20 + (6 if k % 2 else 0))
     return dict(piano=piano, pad=pad, strings=strings, bass=bass, bell=bell, drums=drums)
 
 
@@ -220,6 +241,15 @@ def main():
         a = a - 0.29 * signal.lfilter(b, aa, a, axis=0)
         sf.write(os.path.join(OUT, "music", name + ".wav"), (a * gain).astype(np.float32), SR)
         mix += a * gain
+    # nappe grave de la nuit (synthèse) : ré grave et quinte, souffle lent, jusqu'au logo
+    t = np.arange(len(mix)) / SR
+    tlogo = (BELLS[0] - 1) * BAR
+    env = np.clip(t / 2.0, 0, 1) * np.clip((tlogo + 0.6 - t) / 0.8, 0, 1)
+    lfo = 0.75 + 0.25 * np.sin(2 * np.pi * 0.11 * t)
+    drone = (np.sin(2 * np.pi * 73.42 * t) + 0.5 * np.sin(2 * np.pi * 110.0 * t) + 0.25 * np.sin(2 * np.pi * 146.83 * t * 1.003)) * env * lfo
+    drone = FX.hp(FX.lp(drone, 900), 55) * 0.08
+    mix += np.stack([drone, drone], 1)
+    mix = FX.reverb(mix, t60=2.6, wet=0.22, hpf=260, seed=4)                    # une salle commune à tous les instruments
     fade = np.clip((total - np.arange(len(mix)) / SR) / 2.4, 0, 1) ** 1.5      # fondu sur la dernière mesure
     mix *= fade[:, None]
     mix /= np.abs(mix).max() + 1e-9

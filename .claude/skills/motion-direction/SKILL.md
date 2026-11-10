@@ -42,6 +42,10 @@ Exprimées le 2026-10-22 pour le film MyWebtel, à appliquer par défaut à tout
 - **aux couleurs du produit présenté, sans exagérer** (MyWebtel : bleu nuit `#06213e`, bleu `#008ff1`, cyan `#05daf0`) ;
 - références de style données le 2026-11-10 : pub Drive Academy (fond clair, mots-clés, badges ✓, curseur), reportage
   Binance (ouverture cinéma sombre), bande-annonce GTA 6 (traits de lumière, transitions franches), à doser avec retenue.
+  Leur point commun, à respecter : **une caméra continue dans un monde 3D** où vivent textes, cartes et écrans (V6) ;
+- **prononciation mesurée, jamais supposée** : deux transcriptions + confiance mot à mot + formants ; pas de liaison
+  fautive (« tu déclares avec » s'envoie « tu la déclare avec ») ;
+- une demande de **refonte** = reconstruire, pas retoucher.
 Projet MyWebtel : direction détaillée dans `mywebtel/DIRECTION.md`.
 
 ## Direction artistique « Crochet Pop Collage »

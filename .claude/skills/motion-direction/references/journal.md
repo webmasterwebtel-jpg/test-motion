@@ -5,6 +5,15 @@ Les entrées de 2026-10-01 ont été reconstituées à partir de l'historique Gi
 
 ---
 
+**2026-11-10 (soir)** — Retour sur la V5 : « La voix fait des fautes de prononciation ; je t'ai dit de faire une
+refonte de la vidéo en t'inspirant des 3 que je t'avais données, reconstruis tout carrément, impressionne-moi ! »
+→ Règles : (1) une référence se lit dans sa **grammaire de mise en scène**, pas seulement dans ses effets : les trois
+références sont des travellings continus dans un monde 3D, il fallait abandonner la fenêtre zoomée ; (2) une demande de
+« refonte » se traite par une reconstruction, pas par des retouches ; (3) la prononciation se **mesure** : deux
+transcriptions, confiance mot à mot, formants des voyelles, énergie des sifflantes ; traquer les liaisons fautives
+(« -es » + voyelle) et écrire le texte envoyé à la voix sans elles. → V6 : nouveau moteur 3D (`film/engine.js`,
+`ui.js`, `story.js`), voix eleven_v4 choisie prise par prise, musique et bruitages recomposés.
+
 **2026-11-10** — Nouvelle archive IT11 : présenter l'agent IA et la signature de documents (code de validation par
 e-mail). Voix ElevenLabs « Simon » choisie, mais « il dit plus avec le s » et « scannère » ; « la voix doit être
 complètement calée à la vidéo » ; refaire la vidéo dans le style des trois vidéos envoyées (pub Drive Academy, reportage

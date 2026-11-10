@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
-"""Voix off V5 (ElevenLabs, voix « Simon ») : placement des segments sur la grille et mots datés.
+"""Voix off V6 (ElevenLabs eleven_v4, voix « Simon ») : placement des segments sur la grille et mots datés.
 
-Les segments viennent de voice/eleven_gen.py (build/mywebtel/voice/<id>.mp3 + <id>.json, horodatage par caractère).
+Les segments viennent de voice/eleven_gen6.py (build/mywebtel/voice6*/t<prise>/<id>.mp3 + .json, horodatage par
+caractère) ; voice/picks_v6.json dit quelle prise est retenue pour chaque phrase.
 Ici on les rogne, on les place scène par scène sur la grille des temps (100 BPM), avec une respiration après chaque
 fonction pour laisser le temps de voir le résultat, et on écrit le même timeline.json que vo.py : le film, la musique
 et les bruitages le lisent sans changement. Les mots sont datés par l'horodatage d'ElevenLabs (au caractère près).
 
 Sorties (build/mywebtel/) : vo.wav (48 kHz mono) et timeline.json.
-Usage : python3 mywebtel/vo_eleven.py
+Usage : python3 mywebtel/vo_eleven.py   (après voice/eleven_gen6.py)
 """
 import json, math, os, re, subprocess, sys
 import numpy as np
@@ -21,8 +22,10 @@ VOICE = os.path.join(OUT, "voice")
 SR = 48000
 BPM, BEAT = 100, 0.6
 TAIL = 3.6
-# graphies forcées pour la prononciation -> mot affiché et cherché par le film
-SHOWN = {"scanné": "scanner", "plu": "plus"}
+# graphies forcées pour la prononciation -> mot affiché et cherché par le film (secours si les nombres de mots diffèrent)
+SHOWN = {"scanné": "scanner", "plu": "plus", "arrive": "arrives", "déclare": "déclares", "signe": "signes", "pose": "poses",
+         "s'ouvre": "s'ouvrent", "t'a": "t'as", "Mèl": "Mail"}
+WORD = r"[\wÀ-ÿ'’-]+"
 
 # (scène, [segments], attente avant la parole, [silence après chaque segment], calage "bar" du 1er segment)
 SCENES = [
@@ -40,11 +43,15 @@ SCENES = [
 ]
 
 
+PICKS = json.load(open(os.path.join(HERE, "voice", "picks_v6.json"), encoding="utf-8"))
+
+
 def load(sid):
-    wav = os.path.join(VOICE, sid + ".wav")
-    subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", os.path.join(VOICE, sid + ".mp3"), "-ac", "1", "-ar", str(SR), wav], check=True)
+    base = os.path.join(OUT, PICKS[sid], sid)
+    wav = base + ".48k.wav"
+    subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", base + ".mp3", "-ac", "1", "-ar", str(SR), wav], check=True)
     a, _ = sf.read(wav)
-    al = json.load(open(os.path.join(VOICE, sid + ".json"), encoding="utf-8"))
+    al = json.load(open(base + ".json", encoding="utf-8"))
     return a, al
 
 
@@ -63,7 +70,7 @@ def trim(a, floor_db=-50, margin=0.04):
     return out, i0 / SR
 
 
-def words_of(al):
+def words_of(al, shown_text=None):
     """Mots et instant de leur première lettre, depuis l'horodatage par caractère."""
     chars, t0 = al["characters"], al["character_start_times_seconds"]
     words, cur, start = [], "", None
@@ -78,14 +85,14 @@ def words_of(al):
             cur = ""
     if cur:
         words.append([cur, start])
-    out = []
-    for w, t in words:                     # « l'agent » -> « l'agent » ; « t'as » reste entier ; affichage normalisé
-        out.append([SHOWN.get(w.lower(), w), t])
-    return out
+    shown = re.findall(WORD, shown_text) if shown_text else []
+    if len(shown) == len(words):            # même découpage : chaque mot prononcé prend la graphie affichée
+        return [[sw, t] for sw, (w, t) in zip(shown, words)]
+    return [[SHOWN.get(w, SHOWN.get(w.lower(), w)), t] for w, t in words]
 
 
 def main():
-    rows = {r[0]: r for r in json.load(open(os.path.join(HERE, "voice", "script_v5.json"), encoding="utf-8"))}
+    rows = {r[0]: r for r in json.load(open(os.path.join(HERE, "voice", "script_v6.json"), encoding="utf-8"))}
     t, scenes, clips, nwords, speech = 0.0, [], [], 0, 0.0
     for sid, segs, lead, gaps, snap in SCENES:
         start = math.ceil(t / BEAT - 1e-6) * BEAT
@@ -97,7 +104,7 @@ def main():
                 cur = math.ceil(cur / unit - 1e-6) * unit
             a, al = load(seg_id)
             a, off = trim(a)
-            ws = [[w, round(cur + max(0.0, x - off), 3)] for w, x in words_of(al)]
+            ws = [[w, round(cur + max(0.0, x - off), 3)] for w, x in words_of(al, rows[seg_id][1])]
             items.append(dict(text=rows[seg_id][1], start=round(cur, 3), end=round(cur + len(a) / SR, 3), words=ws))
             clips.append((cur, a))
             nwords += len(ws)
@@ -117,7 +124,7 @@ def main():
     track = signal.sosfilt(signal.butter(2, 70, "high", fs=SR, output="sos"), track)   # la voix est déjà mastérisée
     track *= 10 ** (-3 / 20) / (np.abs(track).max() + 1e-9)
     sf.write(os.path.join(OUT, "vo.wav"), track.astype(np.float32), SR)
-    tl = dict(bpm=BPM, beat=BEAT, fps=30, duration=round(total, 3), engine="elevenlabs:simon", scenes=scenes)
+    tl = dict(bpm=BPM, beat=BEAT, fps=30, duration=round(total, 3), engine="elevenlabs:eleven_v4:simon", scenes=scenes)
     json.dump(tl, open(os.path.join(OUT, "timeline.json"), "w"), ensure_ascii=False, indent=1)
     span = end_speech - scenes[0]["segs"][0]["start"]
     print("durée %.1f s (%d mesures) · parole %.1f s · %d mots · %.0f mots/min sur la durée parlée"
