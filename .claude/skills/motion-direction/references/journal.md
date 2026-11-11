@@ -5,6 +5,13 @@ Les entrées de 2026-10-01 ont été reconstituées à partir de l'historique Gi
 
 ---
 
+**2026-11-11** — Retour sur la V7 : « toujours pas ça, et pourquoi ce battement boom boom de l'écran en permanence ?
+Le mock-up de l'ordinateur n'est pas bien fait ; garde la voix et fais une refonte complète, digne d'une présentation
+Apple ». → Règles : **l'image ne pulse jamais sur la musique** (ni caméra, ni échelle des appareils, ni fond) : le
+rythme reste dans le son ; **style keynote Apple** : fond sombre, un appareil à la fois, mouvements lents et continus,
+titres sobres avec un mot clé en dégradé, aucun éclair, fouet ni secousse ; **appareils en volume soignés** (portable
+avec charnière, clavier, pavé tactile). → V8 : `mywebtel/film/story8.js`, bruitages adoucis (plus de frappes ni de verre).
+
 **2026-11-10 (nuit)** — Retour sur la V6 : « la voix est beaucoup mieux, on la garde » ; « la vidéo est un peu fade, on
 ne voit même pas bien les interfaces, c'est trop long, il n'y a pas de musique entraînante (pas plus forte que la voix,
 juste un peu forte), il manque des mock-ups téléphone, tablette et PC ; elle donne envie de dormir ». → Règles : pour

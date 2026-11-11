@@ -11,11 +11,12 @@ Rendu final : `output/mywebtel_presentation.mp4` (master 1080p, non versionné c
 `output/mywebtel_presentation_web.mp4` (copie versionnée). Rendu à 60 i/s puis fondu deux à deux à 30 i/s : vrai flou de
 mouvement. Regénération complète : `mywebtel/make.sh <APERCU-MYWEBTEL.html>` (≈1 h).
 
-## Le film (V7)
-Accroche typographique sur fond bleu nuit, montée, **drop sur le logo** et les trois appareils ; puis une fonction par
-appareil, en gros plan, la caméra fouettant d'un appareil à l'autre sur les temps ; « imprimer, signer, scanner » vole en
-éclats sur le retour du groove ; l'agent éclaire ses sources ; **drop final** sur les trois appareils et le logo.
-Versions précédentes (V6 : monde 3D survolé, `film/story.js` dans l'historique Git) : voir `DIRECTION.md`.
+## Le film (V8)
+Façon présentation de produit : scène sombre, un appareil à la fois, mouvements lents, titres sobres. Accroche
+typographique, logo, **l'ordinateur portable s'ouvre** entre la tablette et le téléphone ; puis une fonction par
+appareil, en gros plan sur la vraie interface ; « imprimer, signer, scanner » est barré ; la fenêtre de signature et le
+panneau de l'agent sortent de l'écran ; final sur les trois appareils et le logo. L'image ne bat jamais sur la musique.
+Versions précédentes (V7 : montage rythmé, `film/story7.js` ; V6 : monde 3D survolé) : historique Git et `DIRECTION.md`.
 
 ## Vraie interface
 Les écrans viennent de l'aperçu HTML généré par le PHP de la plateforme (archive « MYWEBTEL_fichiers_retrouves_PARTIEL »,
@@ -38,11 +39,11 @@ reçoit exactement les mêmes états à chaque image.
 | Texte : `[id, texte affiché, texte envoyé à la voix]` (graphies qui forcent la prononciation, sans liaisons fautives) | `voice/script_v6.json` | |
 | Voix « Simon » (ElevenLabs `eleven_v4`, texte voisin pour une prosodie continue), plusieurs prises par phrase | `voice/eleven_gen6.py` | `voice6/t<prise>/<id>.mp3`, `.json` |
 | Prise retenue pour chaque phrase (après contrôle, voir plus bas) | `voice/picks_v6.json` | |
-| Placement des segments sur la grille (100 BPM), respirations, mots datés au caractère près | `vo_eleven.py` | `vo.wav`, `timeline.json` |
+| Placement des segments sur la grille (120 BPM), respirations, mots datés au caractère près | `vo_eleven.py` | `vo.wav`, `timeline.json` |
 | Logo Webtel vectorisé (potrace) ; variantes blanche (nuit) et bleu profond (relief) | `vectorize_logo.py` | `film/brand/*.svg` |
 | Musique électro-pop 120 BPM entièrement synthétisée (batterie, basse, accords « supersaw » avec pompage, arpèges, montées, drops), sections écrites dans `timeline.json` | `music7.py`, `audio_fx.py` | `music.wav`, `music7/` |
 | Vraie interface : écrans de l'aperçu PHP préparés pour le film | `prep_ui.py` | `ui.json` (non versionné) |
-| Film HTML piloté par le temps (`renderAt(t)`) : moteur 3D, interface, mise en scène avec mock-ups | `film/engine.js`, `film/ui.js`, `film/story7.js` | |
+| Film HTML piloté par le temps (`renderAt(t)`) : moteur 3D, interface, mise en scène avec mock-ups | `film/engine.js`, `film/ui.js`, `film/story8.js` | |
 | Rendu image par image (Chromium + ffmpeg) ; exporte aussi les repères des gestes | `render.js` | `video_silent.mp4`, `cues.json` |
 | Bruitages calés sur les gestes du film, réverbération, ducking + limiteur commandé par la voix, loudness -16 LUFS | `sfx_mix.py`, `audio_fx.py` | `sfx.wav`, `mix.wav` |
 

@@ -35,7 +35,26 @@
   ne voit même pas bien les interfaces, c'est trop long, pas de musique entraînante (pas plus forte que la voix, juste
   un peu forte), il manque des mock-ups téléphone, tablette et PC ; faut que la vidéo soit entraînante. »
 
-## Parti pris V7 (film produit rythmé)
+- **11 novembre 2026 (V8), retour sur la V7 :** « toujours pas ça, et pourquoi ce battement boom boom de l'écran en
+  permanence ? Le mock-up de l'ordinateur n'est pas bien fait, garde la voix et fais une refonte complète, digne d'une
+  présentation Apple. »
+
+## Parti pris V8 (présentation façon keynote) : version en cours
+- **Une scène sombre, un appareil à la fois** : fond bleu nuit presque noir, lueurs très lentes, lumière de l'écran qui
+  se répand sous l'appareil. Chaque appareil arrive de la droite, net et lent, puis cède la place au suivant.
+- **Aucun battement à l'image** : ni la caméra, ni les appareils, ni le fond ne suivent la grosse caisse. Pas d'éclair,
+  de fouet de caméra ni de secousse. Le rythme vient de la musique et du montage sur les mots de la voix.
+- **Appareils en volume** (`film/story8.js`, CSS `.d3`) : ordinateur portable refait (capot, écran, charnière, clavier
+  touche par touche, grilles, pavé tactile ; il **s'ouvre** au moment du logo), tablette et téléphone avec tranche,
+  verre et reflet qui balaie l'écran à l'arrivée.
+- **Typographie** : un surtitre (nom de la fonction) et un titre court dont le mot clé est en dégradé bleu/cyan, à côté
+  de l'appareil ; petites légendes en pastille pendant les gros plans. Jamais de sous-titres complets.
+- **Gros plans** sur la vraie interface ; la fenêtre de signature et le panneau de l'agent sortent de l'écran, entourés
+  d'une lueur ; les sources de l'agent sont des pastilles reliées par des fils de lumière.
+- **Voix et placement inchangés** (V6/V7, 1 min 34). Musique `music7.py` conservée ; bruitages adoucis (souffle à
+  l'arrivée d'un appareil, touchers, notification ; plus de frappes ni d'éclats de verre).
+
+## Parti pris V7 (film produit rythmé, remplacé)
 - **Les interfaces en grand, dans des mock-ups** : un appareil par fonction, avec la vraie mise en page responsive de la
   plateforme (mobile sur le téléphone, tablette sur la tablette, bureau sur l'ordinateur portable). Pointage et demandes RH
   sur le téléphone, congés et signature sur le portable, absences et contenu sur la tablette, mail sur le portable et

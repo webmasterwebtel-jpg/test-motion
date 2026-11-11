@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Film de présentation MyWebtel V7 (1920x1080, mock-ups PC/tablette/téléphone sur la vraie interface, montage rythmé).
+# Film de présentation MyWebtel V8 (1920x1080, mock-ups PC/tablette/téléphone sur la vraie interface, style keynote).
 # vraie interface -> voix (ElevenLabs « Simon », segments en cache) -> timeline -> musique -> rendu image (Chromium,
 # exporte aussi les repères des gestes) -> bruitages + mixage -> mux final.
 # Usage : mywebtel/make.sh <APERCU-MYWEBTEL.html>   (voir mywebtel/README.md)

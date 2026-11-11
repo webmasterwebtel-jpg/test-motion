@@ -153,18 +153,16 @@ def touch():
 
 
 def cues():
-    """Bruitages V7 : instants exportés par le film (cues.json). Fouets de caméra, mots qui claquent, touchers, clics,
+    """Bruitages V8 : instants exportés par le film (cues.json). Souffle doux à l'arrivée de chaque appareil, touchers, clics,
     effets propres à chaque fonction. La musique porte les drops ; les bruitages ponctuent."""
     C = json.load(open(os.path.join(OUT, "cues.json")))
     T = C["T"]
-    for t in C.get("whips", []):                                   # fouets de caméra : souffle qui culmine à l'arrivée
-        add(swoosh(0.55, 500, 5200, 0.34), t - 0.5, 1, 0, rev=0.25)
-    for k, t in enumerate(C.get("slams", [])):                     # mots qui claquent
-        add(hit(0.32), t + 0.02, 1, 0.15 * (-1) ** k, rev=0.2)
+    for k, t in enumerate(C.get("moves", [])):                     # un appareil arrive : souffle doux, sans impact
+        add(swoosh(0.9, 420, 2600, 0.15), t + 0.05, 1, 0.25 * (-1) ** k, rev=0.45)
     touches = set(round(x, 3) for x in C.get("touches", []))
     for t in C["clicks"]:
         add(touch() if round(t, 3) in touches else tap(), t - 0.02, 0.9, 0.1, rev=0.1)
-    for t in C["checks"]:
+    for t in C.get("checks", []):
         add(chime((1568.0, 2349.3), 0.06, 0.9), t + 0.02, 1, 0.25, rev=0.5)
     # pointage
     for t in (T["in"], T["pause"], T["ret"], T["out"]):
@@ -185,7 +183,7 @@ def cues():
     add(FX.printer(0.8, 0.22), T["kImp"] - 0.45, 1, 0.3, rev=0.3)
     pen(T["kSig"] - 0.1, 0.6, 0.2, 0.3)
     add(FX.scan(0.7, 0.16), T["kScan"] - 0.1, 1, 0.3, rev=0.3)
-    add(FX.glass(0.6), T["nonEnd"], 1, 0, rev=0.5)
+    add(swoosh(0.7, 2600, 500, 0.14), T["nonEnd"] - 0.25, 1, 0, rev=0.5)     # la feuille s'efface, sans fracas
     add(pop(640, 940, 0.18), T["open"] + 0.12, 1, 0.1, rev=0.3)
     pen(T["draw"] + 0.15, max(0.4, T["drawEnd"] - T["draw"] - 0.15), 0.24, 0.1)
     add(swoosh(0.45, 2400, 700, 0.12), T["code"] - 0.15, 1, 0.6, rev=0.3)          # le téléphone arrive
