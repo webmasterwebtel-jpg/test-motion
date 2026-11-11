@@ -301,7 +301,7 @@
     text("cap", "Tu signes avec <b>ton nom</b>…", T.nom - 0.5, T.draw + 0.1, cap(560, 400));
     text("cap", "…ou tu la <b>dessines</b>", T.draw + 0.2, T.code - 0.15, cap(560, 400));
     text("cap", "Un <b>code</b> arrive par mail", T.code - 0.05, T.signed - 0.1, cap(1010, 700));
-    text("head", "<b>Signé.</b>", T.signed + 0.35, WIN.L4[1], { x: 150, y: 470, align: "left" });
+    text("cap", "Document <b>signé</b>", T.signed + 0.35, WIN.L4[1], cap());
     // demandes
     text("eyebrow", "Mes demandes RH", WIN.P5[0] + 0.5, WIN.P5[1], R(388));
     text("head md", "Une attestation ?<br>Une question ?", T.att - 0.08, w("demandes", "en") - 0.25, R(440));
