@@ -150,8 +150,8 @@
     .map(([i, a, b]) => new Obj(add(world, `<div class="chip8"><span class="ic">${ic(i)}</span><div>${a}<small>${b}</small></div></div>`), 470, 104));
 
   // ------------------------------------------------------------------ HUD : logo, textes, curseur, toucher
-  const logoHud = add(hud, `<img src="brand/webtel-logo-white.svg" style="width:900px;transform-origin:0 0">`);
-  const tagHud = add(hud, `<div class="tagline" style="color:#9fc3e6">MYWEBTEL · ESPACE COLLABORATEUR</div>`);
+  const logoHud = add(hud, `<img src="brand/mywebtel-logo-white.svg" style="width:980px;transform-origin:0 0">`);
+  const tagHud = add(hud, `<div class="tagline" style="color:#9fc3e6">ESPACE COLLABORATEUR</div>`);
   const subHud = add(hud, `<div class="subline" style="color:rgba(235,244,255,.86)">Pointage<i>·</i>Congés<i>·</i>Absences<i>·</i>Signature<i>·</i>Demandes RH<i>·</i>Agent IA</div>`);
   [logoHud, tagHud, subHud].forEach(e => opa(e, 0));
   const TXT = [];
@@ -449,12 +449,12 @@
     const lgOn = (t >= T.logo - 0.1 && t < WIN.hero[1] + 0.5) || fin;
     if (lgOn) {
       const inn = E.outCubic(seg(t, t0 - 0.05, t0 + 0.7)), up = E.inOutCubic(seg(t, t0 + 0.75, t0 + 1.65));
-      const wd = lerp(900, 430, up), hg = wd * 1224 / 3520, cy = lerp(500, 118, up);
-      logoHud.style.transform = `translate(${(CX - wd / 2).toFixed(1)}px,${(cy - hg / 2).toFixed(1)}px) scale(${(wd / 900 * (0.94 + 0.06 * inn)).toFixed(4)})`;
+      const wd = lerp(980, 540, up), hg = wd * 880 / 3296, cy = lerp(500, 112, up);   // logo MyWebtel (3296 x 880)
+      logoHud.style.transform = `translate(${(CX - wd / 2).toFixed(1)}px,${(cy - hg / 2).toFixed(1)}px) scale(${(wd / 980 * (0.94 + 0.06 * inn)).toFixed(4)})`;
       const out = fin ? 0 : seg(t, WIN.hero[1], WIN.hero[1] + 0.45);
       opa(logoHud, inn * (1 - out)); blur(logoHud, 14 * (1 - inn));
       const ta = E.outCubic(seg(t, tg - 0.15, tg + 0.5));
-      tagHud.style.transform = `translate(${(CX - tagHud.offsetWidth / 2).toFixed(1)}px,${(lerp(660, 205, up) + 14 * (1 - ta)).toFixed(1)}px)`;
+      tagHud.style.transform = `translate(${(CX - tagHud.offsetWidth / 2).toFixed(1)}px,${(lerp(670, 200, up) + 14 * (1 - ta)).toFixed(1)}px)`;
       tagHud.style.letterSpacing = (0.36 + 0.2 * (1 - ta)).toFixed(3) + "em";
       opa(tagHud, ta * (1 - out));
       const sa = fin ? E.outCubic(seg(t, T.finTag + 0.7, T.finTag + 1.5)) : 0;

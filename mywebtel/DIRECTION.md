@@ -39,7 +39,7 @@
   permanence ? Le mock-up de l'ordinateur n'est pas bien fait, garde la voix et fais une refonte complète, digne d'une
   présentation Apple. »
 
-## Parti pris V8 (présentation façon keynote) : version en cours
+## Parti pris V8 (présentation façon keynote)
 - **Une scène sombre, un appareil à la fois** : fond bleu nuit presque noir, lueurs très lentes, lumière de l'écran qui
   se répand sous l'appareil. Chaque appareil arrive de la droite, net et lent, puis cède la place au suivant.
 - **Aucun battement à l'image** : ni la caméra, ni les appareils, ni le fond ne suivent la grosse caisse. Pas d'éclair,
@@ -53,6 +53,10 @@
   d'une lueur ; les sources de l'agent sont des pastilles reliées par des fils de lumière.
 - **Voix et placement inchangés** (V6/V7, 1 min 34). Musique `music7.py` conservée ; bruitages adoucis (souffle à
   l'arrivée d'un appareil, touchers, notification ; plus de frappes ni d'éclats de verre).
+- **Retour du 11 novembre au soir :** « voici le bon logo » (logo **MyWebtel**) et « la musique est trop faible, on
+  entend presque rien ». Le logo MyWebtel remplace l'ancien logo Webtel au début, à la fin et dans la barre latérale de
+  l'interface (mention « Espace collaborateur » dessous). La musique remonte : ~6-7 dB sous la voix pendant la parole,
+  ~4-5 dB entre les phrases (au lieu de ~11 dB) ; deux transcriptions du mixage restent exactes.
 
 ## Parti pris V7 (film produit rythmé, remplacé)
 - **Les interfaces en grand, dans des mock-ups** : un appareil par fonction, avec la vraie mise en page responsive de la

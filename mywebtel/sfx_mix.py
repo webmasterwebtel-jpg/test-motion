@@ -244,17 +244,20 @@ def main():
             speech[int(g["start"] * SR):int(g["end"] * SR)] = True
     v_db = rms_db(vo[speech])
     m_db = rms_db(mu.mean(1))
-    mu *= 10 ** ((v_db - 6 - m_db) / 20)                     # V7 : musique présente, -6 dB de la voix en moyenne…
+    # Niveaux de la musique (retour du 2026-11-11 : « la musique est trop faible, on entend presque rien » ; la V8 la
+    # laissait ~11 dB sous la voix). Demande d'origine : « pas plus forte que la voix, juste un peu forte ».
+    MUSIC_DB, DUCK_DB, GAP_DB = -1.0, -3.0, 4.0              # niveau de base / baisse sous la parole / écart minimal garanti
+    mu *= 10 ** ((v_db + MUSIC_DB - m_db) / 20)              # musique presque au niveau de la voix entre les phrases…
     hop = 480
     lvl = np.abs(vo[: N // hop * hop]).reshape(-1, hop).max(1)
     e = env_follow(lvl, 0.004, 0.25)                          # …puis ducking -7 dB quand la voix parle
     e = e / (np.percentile(e[e > 0], 95) + 1e-9)
     duck = np.clip(e / 0.25, 0, 1)
-    g_db = -5 * env_follow(duck, 0.03, 0.35)                 # …et -5 dB quand la voix parle (retour assez vif entre les phrases)
+    g_db = DUCK_DB * env_follow(duck, 0.03, 0.35)            # …baissée quand la voix parle (retour assez vif entre les phrases)
     g = np.repeat(10 ** (g_db / 20), hop)
     g = np.pad(g, (0, N - len(g)), mode="edge")
     mu = mu * g[:, None]
-    # limiteur commandé par la voix : pendant la parole, la musique reste au moins 6 dB sous la voix, instant par instant
+    # limiteur commandé par la voix : pendant la parole, la musique reste au moins GAP_DB sous la voix, instant par instant
     hop2 = 960                                                # trames de 20 ms (50 par seconde)
     nf = N // hop2
     ve = np.sqrt(np.mean(vo[: nf * hop2].reshape(nf, hop2) ** 2, 1)) + 1e-9
@@ -266,9 +269,9 @@ def main():
             e = au * e + (1 - au) * v if v > e else ad * e + (1 - ad) * v
             out[i] = e
         return out
-    ve = follow(ve, 0.01, 0.45)                                # la voix « tient » ~450 ms après chaque mot (fins de mots douces)
+    ve = follow(ve, 0.01, 0.18)                                # la voix « tient » ~180 ms après chaque mot : la musique suit les fins de phrase
     sp2 = speech[: nf * hop2].reshape(nf, hop2).mean(1) > 0.2
-    need = np.where(sp2 & (ve > 10 ** ((v_db - 40) / 20)), np.minimum(1.0, ve * 10 ** (-7 / 20) / me), 1.0)
+    need = np.where(sp2 & (ve > 10 ** ((v_db - 40) / 20)), np.minimum(1.0, ve * 10 ** (-GAP_DB / 20) / me), 1.0)
     gl = follow(need, 0.25, 0.01)                              # le gain descend tout de suite, remonte en douceur
     gl = np.repeat(gl, hop2); gl = np.pad(gl, (0, N - len(gl)), mode="edge")
     mu = mu * gl[:, None]

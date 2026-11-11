@@ -274,10 +274,24 @@ def build_agent(pages):
     return h.replace("</main>", "</main>" + panel, 1)
 
 
+def brand(h):
+    """Logo de la barre latérale : l'aperçu d'octobre porte l'ancien logo Webtel ; l'utilisateur a fourni le bon logo
+    MyWebtel le 2026-11-11 (film/brand/mywebtel-logo-white.svg, tracé par vectorize_logo.py). Le logo contenant déjà
+    « MyWebtel », la mention dessous devient « Espace collaborateur »."""
+    import base64
+    svg = open(os.path.join(ROOT, "mywebtel", "film", "brand", "mywebtel-logo-white.svg"), "rb").read()
+    src = "data:image/svg+xml;base64," + base64.b64encode(svg).decode()
+    h, n = re.subn(r'(<a class="mw-brand"[^>]*>)<img src="data:[^"]*"([^>]*)><span>MYWEBTEL · ESPACE<br>COLLABORATEUR</span>',
+                   lambda m: f'{m.group(1)}<img src="{src}" style="filter:none"{m.group(2)}><span>ESPACE COLLABORATEUR</span>', h, count=1)
+    assert n == 1, "logo de la barre latérale introuvable"
+    return h
+
+
 def main():
     ui = build(load_pages(sys.argv[1]))
     ui["agent"] = build_agent(load_pages(sys.argv[1]))
     ui["sign"] = build_signature(load_pages(sys.argv[1]))
+    ui = {k: brand(v) for k, v in ui.items()}
     os.makedirs(OUT, exist_ok=True)
     with open(os.path.join(OUT, "ui.json"), "w", encoding="utf-8") as f:
         json.dump(ui, f, ensure_ascii=False)

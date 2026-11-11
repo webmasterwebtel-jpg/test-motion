@@ -48,12 +48,14 @@ Exprimées le 2026-10-22 pour le film MyWebtel, à appliquer par défaut à tout
 - une demande de **refonte** = reconstruire, pas retoucher ;
 - **film produit (V7, validé pour la voix)** : interfaces en grand dans des **mock-ups PC / tablette / téléphone**
   (vraie mise en page responsive), montage **entraînant** calé sur une musique électro-pop à 120 BPM, musique
-  « un peu forte » mais toujours sous la voix (~10 dB pendant la parole), durée ~1 min 30. Une mise en scène
+  « un peu forte » mais toujours sous la voix : **~6-7 dB sous la voix pendant la parole, ~4-5 dB entre les phrases**
+  (à ~10-11 dB, jugée « trop faible, on entend presque rien » le 2026-11-11), durée ~1 min 30. Une mise en scène
   contemplative (V6, monde 3D survolé) a été jugée « fade, donne envie de dormir ».
 - **film produit, style « présentation Apple » (V8, demandé le 2026-11-11)** : fond sombre, un appareil à la fois,
   mouvements lents et continus, titres sobres. **L'image ne bat jamais sur la musique** (la V7 pulsait sur la grosse
   caisse : « pourquoi ce battement boom boom de l'écran ? ») ; pas d'éclairs, de fouets ni de secousses ; mock-ups en
   volume soignés (le portable de la V7 a été jugé « pas bien fait »).
+- **logo : « MyWebtel »** (fourni le 2026-11-11 ; `mywebtel/film/brand/mywebtel-logo*.svg`), pas l'ancien logo Webtel.
 Projet MyWebtel : direction détaillée dans `mywebtel/DIRECTION.md`.
 
 ## Direction artistique « Crochet Pop Collage »

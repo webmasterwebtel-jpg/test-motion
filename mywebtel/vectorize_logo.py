@@ -1,22 +1,30 @@
 #!/usr/bin/env python3
-"""Vectorise le logo Webtel fourni (PNG) en SVG : une couche bleue, une couche grise, tracées par potrace.
+"""Vectorise un logo bicolore fourni en PNG (une couche bleue, une couche grise) en SVG net, tracé par potrace.
 
-Le PNG d'origine (565x250) est trop petit pour la 1080p : on sépare les deux couleurs, on agrandit chaque masque x8
-avec un lissage, on seuille, puis potrace produit des courbes nettes. La mention « MYWEBTEL · ESPACE COLLABORATEUR »
-n'est pas tracée : elle est réécrite en texte dans le film.
-Usage : python3 mywebtel/vectorize_logo.py logo.png mywebtel/film/brand/webtel-logo.svg
+Le PNG fourni est trop petit pour la 1080p : on sépare les deux couleurs, on agrandit chaque masque x8 avec un lissage,
+on seuille, puis potrace produit des courbes nettes. Écrit aussi la variante de nuit (gris -> blanc) à côté.
+Usage :
+  python3 mywebtel/vectorize_logo.py logo-mywebtel.png mywebtel/film/brand/mywebtel-logo.svg          (logo MyWebtel, 490x168)
+  python3 mywebtel/vectorize_logo.py logo.png webtel-logo.svg --blue 26,146,248 --grey 80,80,76 --crop 190   (ancien logo Webtel)
 """
-import re, subprocess, sys, tempfile, os
+import argparse, re, subprocess, tempfile, os
 import numpy as np
 from PIL import Image, ImageFilter
 
-BLUE, GREY = (26, 146, 248), (80, 80, 76)
+ap = argparse.ArgumentParser()
+ap.add_argument("src"); ap.add_argument("dst")
+ap.add_argument("--blue", default="1,152,252"); ap.add_argument("--grey", default="74,73,72")
+ap.add_argument("--crop", type=int, default=0, help="garde seulement les N premières lignes (0 = tout)")
+ap.add_argument("--night-blue", default="24,163,255", help="bleu de la variante de nuit, un peu plus clair sur fond sombre")
+A = ap.parse_args()
+rgb = lambda s: tuple(int(v) for v in s.split(","))
+BLUE, GREY = rgb(A.blue), rgb(A.grey)
 SCALE = 8
 
-src, dst = sys.argv[1], sys.argv[2]
+src, dst = A.src, A.dst
 a = np.asarray(Image.open(src).convert("RGB")).astype(float)
-crop = a[:190]                                            # au-dessus de la mention texte
-bg = np.array([240, 247, 255.0])
+crop = a[:A.crop] if A.crop else a
+bg = np.median(np.concatenate([crop[:4].reshape(-1, 3), crop[-4:].reshape(-1, 3)]), 0)   # fond : bandes du haut et du bas
 
 
 def mask(col):
@@ -46,4 +54,8 @@ ys, xs = np.nonzero((mask(BLUE) + mask(GREY)) > 0.3)
 x0, x1, y0, y1 = (xs.min() - 2) * SCALE, (xs.max() + 3) * SCALE, (ys.min() - 2) * SCALE, (ys.max() + 3) * SCALE
 body = "".join(f'<g transform="{tr}" fill="rgb{col}" stroke="none" class="{n}">{p}</g>' for n, col, tr, p in paths)
 open(dst, "w").write(f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="{x0} {y0} {x1 - x0} {y1 - y0}">{body}</svg>')
-print(dst, x1 - x0, y1 - y0)
+night = {"grey": (255, 255, 255), "blue": rgb(A.night_blue)}
+body = "".join(f'<g transform="{tr}" fill="rgb{night[n]}" stroke="none" class="{n}">{p}</g>' for n, c, tr, p in paths)
+dn = re.sub(r"\.svg$", "-white.svg", dst)
+open(dn, "w").write(f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="{x0} {y0} {x1 - x0} {y1 - y0}">{body}</svg>')
+print(dst, dn, x1 - x0, y1 - y0)

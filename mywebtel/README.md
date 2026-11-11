@@ -4,7 +4,8 @@ Film de 1 min 34 (1920×1080, 30 i/s) qui présente MyWebtel, l'espace collabora
 dans des **mock-ups d'ordinateur portable, de tablette et de téléphone** (vraie mise en page responsive de la plateforme) :
 pointage, congés (droits ouverts après 1 an d'ancienneté), Mes absences, **signature de documents** (nom manuscrit ou
 signature dessinée, code de validation par e-mail), Mes demandes RH, Contenu, Mail, Support IT et **l'Agent MyWebtel**.
-Voix off française (ElevenLabs eleven_v4, voix « Simon »), musique électro-pop originale à 120 BPM, bruitages, mots clés
+Voix off française (ElevenLabs eleven_v4, voix « Simon »), musique électro-pop originale à 120 BPM (6-7 dB sous la voix
+pendant la parole), bruitages, mots clés
 à l'écran (pas de sous-titres). Direction : `DIRECTION.md`.
 
 Rendu final : `output/mywebtel_presentation.mp4` (master 1080p, non versionné car au-dessus de la limite de GitHub) et
@@ -27,7 +28,7 @@ reçoit exactement les mêmes états à chaque image.
 
 | Écran | Source |
 |---|---|
-| Mon espace, Pointage, Mes congés, Mes absences, Mes documents, Mes demandes RH, Contenu | aperçu PHP, tel quel |
+| Mon espace, Pointage, Mes congés, Mes absences, Mes documents, Mes demandes RH, Contenu | aperçu PHP, tel quel (sauf le logo de la barre latérale : logo MyWebtel fourni le 11/11/2026 à la place de l'ancien logo Webtel) |
 | Signature | page et fenêtre « Signer le document » réelles de l'aperçu, complétées avec les libellés du modèle IT11 (`signatures.php` : onglets « Nom manuscrit » / « Dessiner », code par e-mail valable 10 minutes, consentement) |
 | Menu Mail et Support IT | routes et icônes réelles (`interface.php` IT11) |
 | Contenu des pages Mail et Support IT | **composé** avec les composants de la plateforme (pas de rendu disponible) |
@@ -40,7 +41,7 @@ reçoit exactement les mêmes états à chaque image.
 | Voix « Simon » (ElevenLabs `eleven_v4`, texte voisin pour une prosodie continue), plusieurs prises par phrase | `voice/eleven_gen6.py` | `voice6/t<prise>/<id>.mp3`, `.json` |
 | Prise retenue pour chaque phrase (après contrôle, voir plus bas) | `voice/picks_v6.json` | |
 | Placement des segments sur la grille (120 BPM), respirations, mots datés au caractère près | `vo_eleven.py` | `vo.wav`, `timeline.json` |
-| Logo Webtel vectorisé (potrace) ; variantes blanche (nuit) et bleu profond (relief) | `vectorize_logo.py` | `film/brand/*.svg` |
+| Logo MyWebtel fourni (PNG 490×168) vectorisé (potrace), avec sa variante de nuit (gris → blanc) | `vectorize_logo.py` | `film/brand/mywebtel-logo*.svg` |
 | Musique électro-pop 120 BPM entièrement synthétisée (batterie, basse, accords « supersaw » avec pompage, arpèges, montées, drops), sections écrites dans `timeline.json` | `music7.py`, `audio_fx.py` | `music.wav`, `music7/` |
 | Vraie interface : écrans de l'aperçu PHP préparés pour le film | `prep_ui.py` | `ui.json` (non versionné) |
 | Film HTML piloté par le temps (`renderAt(t)`) : moteur 3D, interface, mise en scène avec mock-ups | `film/engine.js`, `film/ui.js`, `film/story8.js` | |

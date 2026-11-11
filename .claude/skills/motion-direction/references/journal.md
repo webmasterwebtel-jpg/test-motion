@@ -5,6 +5,13 @@ Les entrées de 2026-10-01 ont été reconstituées à partir de l'historique Gi
 
 ---
 
+**2026-11-11 (soir)** — Retour sur la V8 : envoi du **bon logo, « MyWebtel »** (icône + mot « MyWebtel » gris et bleu) ;
+« la musique est trop faible, on entend presque rien ». → Règles : **logo MyWebtel** partout (ouverture, fin, barre
+latérale de l'interface ; l'ancien logo Webtel de l'aperçu n'est plus utilisé) ; **musique ~6-7 dB sous la voix pendant
+la parole et ~4-5 dB entre les phrases** (la V8 était à ~11 dB : inaudible sur haut-parleurs d'ordinateur), en vérifiant
+l'intelligibilité par transcription du mixage. → `vectorize_logo.py` paramétrable, `prep_ui.py` remplace le logo de la
+barre latérale, `sfx_mix.py` : `MUSIC_DB, DUCK_DB, GAP_DB = -1, -3, 4`.
+
 **2026-11-11** — Retour sur la V7 : « toujours pas ça, et pourquoi ce battement boom boom de l'écran en permanence ?
 Le mock-up de l'ordinateur n'est pas bien fait ; garde la voix et fais une refonte complète, digne d'une présentation
 Apple ». → Règles : **l'image ne pulse jamais sur la musique** (ni caméra, ni échelle des appareils, ni fond) : le
