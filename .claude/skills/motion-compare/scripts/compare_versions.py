@@ -102,7 +102,7 @@ def main():
     print("\nIMAGE : %d plage(s) différente(s) (écart moyen > %.1f %%), %.1f %% des images au total" % (
         len(spans), DIFF_THR, 100 * (diff > DIFF_THR).mean()))
     for s0, s1 in spans[:25]:
-        seg = diff[int(s0 * fps):int(s1 * fps)]
+        i0 = int(round(s0 * fps)); seg = diff[i0:max(i0 + 1, int(round(s1 * fps)))]   # arrondi : une plage d'une image ne doit pas être vide
         print("  %6.2f → %6.2f s  (%.2f s, écart moyen %.1f %%, max %.1f %%)" % (s0, s1, s1 - s0, seg.mean(), seg.max()))
     if len(spans) > 25:
         print("  … %d autres" % (len(spans) - 25))
